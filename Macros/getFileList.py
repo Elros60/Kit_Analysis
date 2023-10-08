@@ -4,7 +4,8 @@ import argparse
 import os
 import alienpy.alien as alien
 
-""" 
+"""
+Macro for preparation of input text file used for AOD merger  
 ---- How to run:
 python3 getFileList.py -r 505713 -y 2021 -p NOV -u arakotoz
 """
