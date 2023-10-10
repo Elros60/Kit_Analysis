@@ -23,6 +23,10 @@
 #include <TPad.h>
 #include <TLegend.h>
 #include <TString.h>
+#include <TCollection.h>
+#include <TKey.h>
+#include <TClass.h>
+
 #include <RooRealVar.h>
 #include <RooArgList.h>
 #include <RooCrystalBall.h>
@@ -44,6 +48,7 @@ void AddData(RooWorkspace &ws, TChain *dChain);
 void DoMassFitting(RooWorkspace &ws);
 void DoSplot(RooWorkspace &ws);
 void DrawPlots(RooWorkspace &ws);
+void GetTree(TChain *fChain, std::string FileName="AO2D.root", std::string TreeName="O2rtdimuonall");
 
 void JPsiQAFit(){
 
@@ -52,11 +57,15 @@ void JPsiQAFit(){
 
 	// Reading unbinned data from AO2D
 	TChain *dataChain = new TChain();
+	/*
 	TString tree_list[] = {"DF_2302029532114912", "DF_2302029532142432", "DF_2302029540324192", "DF_2302029601531360", "DF_2302029575874464", "DF_2302029590405856", "DF_2302029646758464", "DF_2302029579578944"};
 	for(int i=0; i<size(tree_list);i++){
 		std::string file_name(tree_list[i]);
 		dataChain->Add(Form("AO2D.root?#%s/O2rtdimuonall", file_name.c_str()));
 	}
+	*/
+	GetTree(dataChain);
+
 	cout << "Total entries before cuts: " << dataChain->GetEntries() <<endl;
 
 	// Processing
@@ -69,6 +78,23 @@ void JPsiQAFit(){
 }
 
 
+void GetTree(TChain *fChain, std::string FileName="AO2D.root", std::string TreeName="O2rtdimuonall"){
+	TFile *fInput = TFile::Open(FileName.c_str());
+	TIter keyList(fInput->GetListOfKeys());
+	TKey *key;
+	while ((key = (TKey*)keyList())) {
+	    TClass *cl = gROOT->GetClass(key->GetClassName());
+	    //if (!cl->InheritsFrom("TDirectoryFile")) continue;
+	    std::string dir = key->GetName();
+	    if(dir == "parentFiles") continue;
+	    cout << dir <<endl;
+	    fChain->Add(Form("%s?#%s/%s",FileName.c_str(),dir.c_str(),TreeName.c_str()));
+  	}
+
+}
+
+
+
 void AddMassModel(RooWorkspace &ws){
 
 	cout << "Adding model..." <<endl;
@@ -77,7 +103,7 @@ void AddMassModel(RooWorkspace &ws){
 	// Invariant mass
 	//====================================================
 	// Initializing free variables 
-	RooRealVar x("fMass","M_{#mu^{+}#mu^{-}}",2.6,3.6, "GeV/c2");
+	RooRealVar x("fMass","M_{#mu^{+}#mu^{-}}",2.5,5.0, "GeV/c2");
 
 	// Initializing double-sided crystalball function for signal
 	RooRealVar x0("x0","m_{0}",3.097,2.95,3.15);
@@ -93,6 +119,9 @@ void AddMassModel(RooWorkspace &ws){
 	// Initializing exponential function for background
 	RooRealVar a0("a0","a_{0}",-1,-5,5);
 	RooExponential BKG = RooExponential("BKG","Power background", x, a0);
+
+
+
 
 
 	//====================================================
@@ -168,22 +197,23 @@ void AddData(RooWorkspace &ws, TChain *dChain){
 	//RooRealVar Eta("fEta","#eta",-3.5,-2.6);
 
 	// Single muon selection
-	//RooRealVar Eta1("fEta1","#eta_{1}",-3.6,-2.5);
-	//RooRealVar Eta2("fEta1","#eta_{2}",-3.6,-2.5);
-	RooRealVar Chi2MCHMFT1("fChi2MatchMCHMFT1","fChi2MatchMCHMFT1",0.0,1000.0);
-	RooRealVar Chi2MCHMFT2("fChi2MatchMCHMFT2","fChi2MatchMCHMFT2",0.0,1000.0);
+	RooRealVar Eta1("fEta1","#eta_{1}",-3.6,-2.5);
+	RooRealVar Eta2("fEta2","#eta_{2}",-3.6,-2.5);
+	//RooRealVar Chi2MCHMFT1("fChi2MatchMCHMFT1","fChi2MatchMCHMFT1",0.0,1000.0);
+	//RooRealVar Chi2MCHMFT2("fChi2MatchMCHMFT2","fChi2MatchMCHMFT2",0.0,1000.0);
 	RooRealVar pT1("fPt1", "fPt1",0.0,10.0,"GeV/c");
 	RooRealVar pT2("fPt2", "fPt2",0.0,10.0,"GeV/c");
 
 	// Dimuon selection
 	RooRealVar Sign("fSign","fSign",-3,3);
-	RooRealVar Chi2pca("fChi2pca","fChi2pca",0.0, 4.0);
+	//RooRealVar Chi2pca("fChi2pca","fChi2pca",0.0, 4.0);
 	RooRealVar pT("fPt", "fPt",0.0,4.0,"GeV/c");
 	//RooRealVar Eta("fEta","#eta",-3.5,-2.6);
 
 	// Initializing data set with selected cuts
-	std::string Filter = "fPt1>0.5 && fPt2>0.5 && fSign==0 && fChi2MatchMCHMFT1<40 && fChi2MatchMCHMFT2<40";
-	RooDataSet data("data", "unbinned dataset", dChain, RooArgSet(*x, *Tauz, pT1, pT2, Sign, Chi2MCHMFT1, Chi2MCHMFT2, pT), Filter.c_str());
+	//std::string Filter = "fPt1>0.5 && fPt2>0.5 && fSign==0 && fChi2MatchMCHMFT1<40 && fChi2MatchMCHMFT2<40";
+	std::string Filter = "fPt1>1.0 && fPt2>1.0 && fSign==0";
+	RooDataSet data("data", "unbinned dataset", dChain, RooArgSet(*x, *Tauz, pT1, pT2, Eta1, Eta2, Sign, pT), Filter.c_str());
 	data.Print();
 	ws.import(data);
 }
@@ -318,7 +348,7 @@ void DrawPlots(RooWorkspace &ws){
 	gStyle->SetLegendFont(22);
    	//gStyle->SetLegendTextSize(0.1);
 	c->cd(1);
-	RooPlot *xframe = x->frame();
+	RooPlot *xframe = x->frame(nBins=20);
 	xframe->SetTitle("M_{#mu#mu} fitted with unbinned tree using LHC23K_pass1_small");
 	data.plotOn(xframe);
    	model->plotOn(xframe, Name("FullModel"));
