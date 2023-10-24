@@ -39,6 +39,8 @@
 #include <RooProdPdf.h>
 #include <RooChi2Var.h>
 #include "RooStats/SPlot.h"
+#include <RooChebychev.h>
+#include <RooHist.h>
 
 using namespace RooFit;
 using namespace RooStats;
@@ -72,7 +74,7 @@ void JPsiQAFit(){
 	AddMassModel(wspace);
 	AddData(wspace, dataChain);
 	DoMassFitting(wspace);
-	DoSplot(wspace);
+	//DoSplot(wspace);
 	DrawPlots(wspace);
 
 }
@@ -103,23 +105,36 @@ void AddMassModel(RooWorkspace &ws){
 	// Invariant mass
 	//====================================================
 	// Initializing free variables 
-	RooRealVar x("fMass","M_{#mu^{+}#mu^{-}}",2.5,5.0, "GeV/c2");
+	RooRealVar x("fMass","M_{#mu^{+}#mu^{-}}",2.0,4.0, "GeV/c2");
 
 	// Initializing double-sided crystalball function for signal
 	RooRealVar x0("x0","m_{0}",3.097,2.95,3.15);
-	RooRealVar sigmaL("sigmaL","#sigma_{L}",0.008,0,1.0);
-	RooRealVar sigmaR("sigmaR","#sigma_{R}",0.07,0.0,1.0);
-	RooRealVar alphaL("alphaL","#alpha_{L}",0.5,0.0,2.0);
-	RooRealVar nL("nL","n_{L}",0.5,0.0,5.0);
-	RooRealVar alphaR("alphaR","#alpha_{R}",0.5,0.0,2.0);
-	RooRealVar nR("nR","n_{R}",0.5,0.0,5.0);
+	RooRealVar sigmaL("sigmaL","#sigma_{L}",0.05,0.01,0.2);
+	RooRealVar sigmaR("sigmaR","#sigma_{R}",0.08,0.05,0.2);
+	RooRealVar alphaL("alphaL","#alpha_{L}",0.8,0.05,2.0);
+	RooRealVar alphaR("alphaR","#alpha_{R}",0.8,0.05,1.5);
+	RooRealVar nL("nL","n_{L}",0.05,0.0005,2.0);
+	RooRealVar nR("nR","n_{R}",0.05,0.0005,2.0);
 	//RooCrystalBall signal = RooCrystalBall("signal", "double-sided crystalball function", x, x0, sigmaL, alphaL, nL, false);
-	RooCrystalBall signal = RooCrystalBall("signal", "double-sided crystalball function", x, x0, sigmaL, sigmaR, alphaL, nL, alphaR, nR);
+	RooCrystalBall signal = RooCrystalBall("signal", "double-sided crystalball function", x, x0, sigmaL, alphaL, nL, alphaR, nR);
 
 	// Initializing exponential function for background
-	RooRealVar a0("a0","a_{0}",-1,-5,5);
-	RooExponential BKG = RooExponential("BKG","Power background", x, a0);
+	//RooRealVar a0("a0","a_{0}",-0.5,-2,2);
+	//RooExponential BKG = RooExponential("BKG","Power background", x, a0);
 
+	// Initializing Chebyshev polynomials for background
+	
+	// Convenient to set intial values to negative better guiding fit
+	RooRealVar a0("a0","a_{0}",-0.01,-1.0,1.0);
+	RooRealVar a1("a1","a_{1}",-0.01,-1.0,1.0);
+	RooRealVar a2("a2","a_{2}",-0.01,-1.0,1.0);
+	//RooRealVar a3("a3","a_{3}",0.1,-2.0,2.0);
+	//RooRealVar a4("a4","a_{4}",0.0,-2.0,2.0);
+	//RooRealVar a5("a5","a_{5}",0.0,-2.0,2.0);
+	//RooRealVar a6("a6","a_{6}",0.0,-2.0,2.0);
+	//RooRealVar a7("a7","a_{7}",0.0,-2.0,2.0);
+	RooChebychev BKG = RooChebychev("BKG","Chebyshev background",x, {a0,a1,a2});
+	
 
 
 
@@ -157,9 +172,9 @@ void AddMassModel(RooWorkspace &ws){
 	RooRealVar sigmaL_BKG("sigmaL_BKG","sigmaL_BKG",0.005,0,0.01);
 	RooRealVar sigmaR_BKG("sigmaR_BKG","sigmaR_BKG",0.005,0,0.01);
 	RooRealVar alphaL_BKG("alphaL_BKG","alphaL_BKG",1,0,10);
-	RooRealVar nL_BKG("nL_BKG","nL_BKG",1,0,10);
+	RooRealVar nL_BKG("nL_BKG","nL_BKG",1.,0.5,10);
 	RooRealVar alphaR_BKG("alphaR_BKG","alphaR_BKG",1,0,10);
-	RooRealVar nR_BKG("nR_BKG","nR_BKG",1,0,10);
+	RooRealVar nR_BKG("nR_BKG","nR_BKG",1.,0.5,10);
 	RooCrystalBall BKG_tau = RooCrystalBall("BKG_tau", "double-sided crystalball function", Tauz, tau0_BKG, sigmaL_BKG, sigmaR_BKG, alphaL_BKG, nL_BKG, alphaR_BKG, nR_BKG);
 
 
@@ -169,8 +184,8 @@ void AddMassModel(RooWorkspace &ws){
 	//====================================================
 
 	// Yields for fitting
-	RooRealVar sigYield("sigYield", "N_{sig}", 50, 0., 10000);
-   	RooRealVar bkgYield("bkgYield", "N_{bkg}", 100, 0., 10000);
+	RooRealVar sigYield("sigYield", "N_{sig}", 50, 0., 100000000);
+   	RooRealVar bkgYield("bkgYield", "N_{bkg}", 100, 0., 1000000000);
    	RooRealVar fGauss1("fGauss1","fGauss1",0.,0.,10000);
    	RooRealVar fGauss2("fGauss2","fGauss2",0.,0.,10000);
    	// Combining
@@ -197,23 +212,25 @@ void AddData(RooWorkspace &ws, TChain *dChain){
 	//RooRealVar Eta("fEta","#eta",-3.5,-2.6);
 
 	// Single muon selection
-	RooRealVar Eta1("fEta1","#eta_{1}",-3.6,-2.5);
-	RooRealVar Eta2("fEta2","#eta_{2}",-3.6,-2.5);
+	RooRealVar Eta1("fEta1","#eta_{1}",-4.0,-2.5);
+	RooRealVar Eta2("fEta2","#eta_{2}",-4.0,-2.5);
 	//RooRealVar Chi2MCHMFT1("fChi2MatchMCHMFT1","fChi2MatchMCHMFT1",0.0,1000.0);
 	//RooRealVar Chi2MCHMFT2("fChi2MatchMCHMFT2","fChi2MatchMCHMFT2",0.0,1000.0);
+	RooRealVar Chi2MCHMID1("fChi2MatchMCHMID1","fChi2MatchMCHMID1",0.0,4.0);
+	RooRealVar Chi2MCHMID2("fChi2MatchMCHMID2","fChi2MatchMCHMID2",0.0,4.0);
 	RooRealVar pT1("fPt1", "fPt1",0.0,10.0,"GeV/c");
 	RooRealVar pT2("fPt2", "fPt2",0.0,10.0,"GeV/c");
 
 	// Dimuon selection
 	RooRealVar Sign("fSign","fSign",-3,3);
 	//RooRealVar Chi2pca("fChi2pca","fChi2pca",0.0, 4.0);
-	RooRealVar pT("fPt", "fPt",0.0,4.0,"GeV/c");
+	RooRealVar pT("fPt", "fPt",2.0,10.0,"GeV/c");
 	//RooRealVar Eta("fEta","#eta",-3.5,-2.6);
 
 	// Initializing data set with selected cuts
 	//std::string Filter = "fPt1>0.5 && fPt2>0.5 && fSign==0 && fChi2MatchMCHMFT1<40 && fChi2MatchMCHMFT2<40";
 	std::string Filter = "fPt1>1.0 && fPt2>1.0 && fSign==0";
-	RooDataSet data("data", "unbinned dataset", dChain, RooArgSet(*x, *Tauz, pT1, pT2, Eta1, Eta2, Sign, pT), Filter.c_str());
+	RooDataSet data("data", "unbinned dataset", dChain, RooArgSet(*x, *Tauz, pT1, pT2, Eta1, Eta2, Sign, pT, Chi2MCHMID1, Chi2MCHMID2), Filter.c_str());
 	data.Print();
 	ws.import(data);
 }
@@ -303,8 +320,10 @@ void DoMassFitting(RooWorkspace &ws){
 void DrawPlots(RooWorkspace &ws){
 	cout << "Plotting results" <<endl;
 	// Initializing plot canvas
-	TCanvas *c = new TCanvas("Fit","Fit plots",1200,600);
-	c->Divide(2);
+	TCanvas *c1 = new TCanvas("FitInvMass","Fit result for invariant mass");
+	//TCanvas *c2 = new TCanvas("FitTauz","Fit results for tauz");
+	TCanvas *c3 = new TCanvas("Resi&Pull", "Residu and pulls plot for invarian mass fit", 1200, 600);
+	c3->Divide(2);
 
 	// Get ingredients from workspace
 	//RooAbsPdf *tau_model = ws.pdf("tau_model");
@@ -317,26 +336,26 @@ void DrawPlots(RooWorkspace &ws){
 
 	RooRealVar *x = ws.var("fMass");
 	RooRealVar *Tauz = ws.var("fTauz");
-	Tauz->setRange("left",-0.003,0.0000001);
+	//Tauz->setRange("left",-0.003,0.0000001);
 	Tauz->setRange("full",-0.004,0.004);
 	//RooRealVar *Tauz = ws.var("fTauz");
 	RooRealVar *sigYield = ws.var("sigYield");
 	RooRealVar *bkgYield = ws.var("bkgYield");
 
-	RooDataSet& data = static_cast<RooDataSet&>(*ws.data("dataWithSWeights"));
-	//RooDataSet& data = static_cast<RooDataSet&>(*ws.data("data"));
+	//RooDataSet& data = static_cast<RooDataSet&>(*ws.data("dataWithSWeights"));
+	RooDataSet& data = static_cast<RooDataSet&>(*ws.data("data"));
 
-	RooDataSet dataw_sig{data.GetName(), data.GetTitle(), &data, *data.get(), nullptr, "sigYield_sw"};
-    RooDataSet dataw_bkg{data.GetName(), data.GetTitle(), &data, *data.get(), nullptr, "bkgYield_sw"};
+	//RooDataSet dataw_sig{data.GetName(), data.GetTitle(), &data, *data.get(), nullptr, "sigYield_sw"};
+    //RooDataSet dataw_bkg{data.GetName(), data.GetTitle(), &data, *data.get(), nullptr, "bkgYield_sw"};
 
     // Fitting tau with sWeighted data;
-    gauss_tau->fitTo(dataw_sig,Extended(kTRUE),Range("left"));
-    double renorm_scale = dataw_sig.sumEntries("fTauz>-0.003&&fTauz<0.0000001"); // normalization w.r.t left
+    //gauss_tau->fitTo(dataw_sig,Extended(kTRUE),Range("full"));
+    //double renorm_scale = dataw_sig.sumEntries("fTauz>-0.003&&fTauz<0.0000001"); // normalization w.r.t left
 
 
     // Chi-square extraction
-    int nBins = 20;
-    int ndf = 10;
+    int nBins = 30;
+    int ndf = 11;
     TH1* hist_sdata = data.createHistogram("fMass", nBins);
     RooDataHist* h_sdata = new RooDataHist("h_sdata", "h_sdata", RooArgSet(*x), hist_sdata);
     RooChi2Var* chi2Var = new RooChi2Var("chi2","chi2", *model, *h_sdata, DataError(RooAbsData::Poisson));
@@ -347,9 +366,9 @@ void DrawPlots(RooWorkspace &ws){
 	// Initializing data frame for plots
 	gStyle->SetLegendFont(22);
    	//gStyle->SetLegendTextSize(0.1);
-	c->cd(1);
-	RooPlot *xframe = x->frame(nBins=20);
-	xframe->SetTitle("M_{#mu#mu} fitted with unbinned tree using LHC23K_pass1_small");
+	c1->cd();
+	RooPlot *xframe = x->frame(nBins=50);
+	xframe->SetTitle("M_{#mu#mu} fitted with unbinned data");
 	data.plotOn(xframe);
    	model->plotOn(xframe, Name("FullModel"));
    	model->plotOn(xframe, Components(*signal), LineStyle(kDashed), LineColor(kRed), Name("signal_Model"));
@@ -364,8 +383,24 @@ void DrawPlots(RooWorkspace &ws){
     lgd1->AddEntry(xframe->findObject("FullModel"), "Full Model", "L");
     lgd1->Draw();
 
-   	
-   	c->cd(2);
+    RooPlot *ResiFrame = x->frame(Title("Residu Distribution"));
+    RooPlot *PullFrame = x->frame(Title("Pull Distribution"));
+    RooHist *hResidu = xframe->residHist();
+    RooHist *hPull = xframe->pullHist();
+
+    ResiFrame->addPlotable(hResidu,"P");
+    PullFrame->addPlotable(hPull,"P");
+    c3->cd(1);
+    gPad->SetLeftMargin(0.15);
+    ResiFrame->Draw();
+    c3->cd(2);
+    gPad->SetLeftMargin(0.15);
+    PullFrame->Draw();
+
+
+
+   	/*
+   	c2->cd();
 	RooPlot *tauframe = Tauz->frame(nBins=100);
 	tauframe->SetAxisRange(2,300,"Y");
 	tauframe->SetTitle("#tau_{z}");
@@ -386,9 +421,7 @@ void DrawPlots(RooWorkspace &ws){
     lgd2->AddEntry(tauframe->findObject("dataw_sig"), "J/#Psi", "L");
     lgd2->AddEntry(tauframe->findObject("dataw_bkg"), "Bkg", "L");
     lgd2->Draw();
-
-	
-
+    */
 
 
 }
