@@ -15,7 +15,7 @@ def getRunFileList(Input, Output, Local):
 
     if Local:
         #findCmd = "find {}/*/{}".format(Input, "AO2D.root")
-        findCmd = "{}/**/{}".format(Input, "AO2D.root")
+        findCmd = "{}/*/{}".format(Input, "AO2D.root")
         print(findCmd)
         # FileList = os.listdir(findCmd)
         FileList = glob(findCmd, recursive=True)
@@ -44,8 +44,8 @@ def getRunFileList(Input, Output, Local):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get file lists")
     parser.add_argument("--Input", "-i", help="Directory to input files", required=True)
-    parser.add_argument("--Output", "-o", help="Directory to output files", default="./AODList.txt")
-    parser.add_argument("--Local", "-l", help="Local mode", default=False)
+    parser.add_argument("--Output", "-o", help="Directory to output files", default="./input_data.txt")
+    parser.add_argument("--Local", "-l", help="Local mode", default=True)
 
     args = parser.parse_args()
     getRunFileList(args.Input, args.Output, args.Local)
