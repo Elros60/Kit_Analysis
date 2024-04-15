@@ -26,6 +26,7 @@
 #include <TCollection.h>
 #include <TKey.h>
 #include <TClass.h>
+#include <TROOT.h>
 
 #include <RooRealVar.h>
 #include <RooArgList.h>
