@@ -465,6 +465,7 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
     TCanvas *c4POI = new TCanvas("v24POI");
     c1POI->cd();
     hist_c22POIMass->SetMarkerStyle(20);
+    hist_c22POIMass->SetStats(0);
     if (fPropError) {
       hist_c22POIMass->Draw("EP");
     } else {
@@ -472,6 +473,7 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
     }
     c2POI->cd();
     hist_v22POIMass->SetMarkerStyle(20);
+    hist_v22POIMass->SetStats(0);
     if (fPropError) {
       hist_v22POIMass->Draw("EP");
     } else {
@@ -479,6 +481,7 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
     }
     c3POI->cd();
     hist_c24POIMass->SetMarkerStyle(20);
+    hist_c24POIMass->SetStats(0);
     if (fPropError) {
       hist_c24POIMass->Draw("EP");
     } else {
@@ -486,6 +489,7 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
     }
     c4POI->cd();
     hist_v24POIMass->SetMarkerStyle(20);
+    hist_v24POIMass->SetStats(0);
     if (fPropError) {
       hist_v24POIMass->Draw("EP");
     } else {
@@ -497,6 +501,7 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
   TCanvas *cEP = new TCanvas("v2EP");
   cSP->cd();
   hist_v2SP->SetMarkerStyle(20);
+  hist_v2SP->SetStats(0);
   if (fPropError) {
     hist_v2SP->Draw("EP");
   } else {
@@ -504,6 +509,7 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
   }
   cEP->cd();
   hist_v2EP->SetMarkerStyle(20);
+  hist_v2EP->SetStats(0);
   if (fPropError) {
     hist_v2EP->Draw("EP");
   } else {
