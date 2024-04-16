@@ -90,17 +90,17 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
     fChain_REF->SetBranchAddress("fCentFT0C", &CentFT0REF);
 
     TH1F *hist_c22REF = new TH1F("c22REF", "c22REF", NBinsMult, Cent);
-    hist_c22REF->GetXaxis()->SetName("Centrality (%)");
-    hist_c22REF->GetYaxis()->SetName("c^{Ref}_2{2}");
+    hist_c22REF->GetXaxis()->SetTitle("Centrality (%)");
+    hist_c22REF->GetYaxis()->SetTitle("c^{Ref}_{2}{2}");
     TH1F *hist_v22REF = new TH1F("v22REF", "v22REF", NBinsMult, Cent);
-    hist_v22REF->GetXaxis()->SetName("Centrality (%)");
-    hist_v22REF->GetYaxis()->SetName("v^{Ref}_2{2}");
+    hist_v22REF->GetXaxis()->SetTitle("Centrality (%)");
+    hist_v22REF->GetYaxis()->SetTitle("v^{Ref}_{2}{2}");
     TH1F *hist_c24REF = new TH1F("c24REF", "c24REF", NBinsMult, Cent);
-    hist_c24REF->GetXaxis()->SetName("Centrality (%)");
-    hist_c24REF->GetYaxis()->SetName("c^{Ref}_2{4}");
+    hist_c24REF->GetXaxis()->SetTitle("Centrality (%)");
+    hist_c24REF->GetYaxis()->SetTitle("c^{Ref}_{2}{4}");
     TH1F *hist_v24REF = new TH1F("v24REF", "v24REF", NBinsMult, Cent);
-    hist_v24REF->GetXaxis()->SetName("Centrality (%)");
-    hist_v24REF->GetYaxis()->SetName("v^{Ref}_2{4}");
+    hist_v24REF->GetXaxis()->SetTitle("Centrality (%)");
+    hist_v24REF->GetYaxis()->SetTitle("v^{Ref}_{2}{4}");
 
     // Loop over all event Q-vectors
     for (int i = 0; i < fChain_REF->GetEntries(); i++) {
@@ -309,27 +309,27 @@ void FlowAnalysis(float dimuonMassMin = 0., float dimuonMassMax = 4.,
 
   TH1F *hist_c22POIMass =
       new TH1F("c22POIMass", "c22POIMass", NBinsMass, MassBins);
-  hist_c22POIMass->GetXaxis()->SetName("M_{\\mu \\mu} (GeV/c^{2})");
-  hist_c22POIMass->GetYaxis()->SetName("c^{\\textit{J/\\Psi}}_2{2}");
+  hist_c22POIMass->GetXaxis()->SetTitle("M_{#mu #mu} (GeV/c^{2})");
+  hist_c22POIMass->GetYaxis()->SetTitle("c^{J/#psi}_{2}{2}");
   TH1F *hist_v22POIMass =
       new TH1F("v22POIMass", "v22POIMass", NBinsMass, MassBins);
-  hist_v22POIMass->GetXaxis()->SetName("M_{\\mu \\mu} (GeV/c^{2})");
-  hist_v22POIMass->GetYaxis()->SetName("v^{\\textit{J/\\Psi}}_2{2}");
+  hist_v22POIMass->GetXaxis()->SetTitle("M_{#mu #mu} (GeV/c^{2})");
+  hist_v22POIMass->GetYaxis()->SetTitle("v^{J/#psi}_{2}{2}");
   TH1F *hist_c24POIMass =
       new TH1F("c24POIMass", "c24POIMass", NBinsMass, MassBins);
-  hist_c24POIMass->GetXaxis()->SetName("M_{\\mu \\mu} (GeV/c^{2})");
-  hist_c24POIMass->GetYaxis()->SetName("c^{\\textit{J/\\Psi}}_2{4}");
+  hist_c24POIMass->GetXaxis()->SetTitle("M_{#mu #mu} (GeV/c^{2})");
+  hist_c24POIMass->GetYaxis()->SetTitle("c^{J/#psi}_{2}{4}");
   TH1F *hist_v24POIMass =
       new TH1F("v24POIMass", "v24POIMass", NBinsMass, MassBins);
-  hist_v24POIMass->GetXaxis()->SetName("M_{\\mu \\mu} (GeV/c^{2})");
-  hist_v24POIMass->GetYaxis()->SetName("v^{\\textit{J/\\Psi}}_2{4}");
+  hist_v24POIMass->GetXaxis()->SetTitle("M_{#mu #mu} (GeV/c^{2})");
+  hist_v24POIMass->GetYaxis()->SetTitle("v^{J/#psi}_{2}{4}");
 
   TH1F *hist_v2SP = new TH1F("v2SP", "v2SP", NBinsMass, MassBins);
-  hist_v2SP->GetXaxis()->SetName("M_{\\mu \\mu} (GeV/c^{2})");
-  hist_v2SP->GetYaxis()->SetName("v^{\\textit{J/\\Psi}}_2{SP}");
+  hist_v2SP->GetXaxis()->SetTitle("M_{#mu #mu} (GeV/c^{2})");
+  hist_v2SP->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
   TH1F *hist_v2EP = new TH1F("v2EP", "v2EP", NBinsMass, MassBins);
-  hist_v2EP->GetXaxis()->SetName("M_{\\mu \\mu} (GeV/c^{2})");
-  hist_v2EP->GetYaxis()->SetName("v^{\\textit{J/\\Psi}}_2{EP}");
+  hist_v2EP->GetXaxis()->SetTitle("M_{#mu #mu} (GeV/c^{2})");
+  hist_v2EP->GetYaxis()->SetTitle("v^{J/#psi}_{2}{EP}");
 
   // Loop over all dimuons
   for (int i = 0; i < fChain_POI->GetEntries(); i++) {
