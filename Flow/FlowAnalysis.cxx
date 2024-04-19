@@ -35,26 +35,27 @@ using namespace std;
 
 void LoadData(TChain *fChain, std::string TreeName = "O2rerefflow",
               std::string FileName = "AO2D.root");
-void CreateBins(float *axis, float min, float max, int Nbins = 10);
+void CreateBins(double *axis, double min, double max, int Nbins = 10);
 
 void FlowAnalysis(std::array<float, 3> dimuonMassRange,
                   std::array<float, 3> dimuonPtRange,
-                  std::array<float, 2> dimuonCentRange, bool fPropError = true,
-                  bool fCumulant = true) {
+                  std::array<float, 2> dimuonCentRange,
+                  bool fCumulant = false) {
 
   TChain *fChain_REF = new TChain();
   if (fCumulant) {
     LoadData(fChain_REF, "O2rerefflow");
   }
+
   TChain *fChain_POI = new TChain();
   LoadData(fChain_POI, "O2rtdimuonall");
 
   int NBinsMass = static_cast<int>(dimuonMassRange[2]);
   int NBinsPt = static_cast<int>(dimuonPtRange[2]);
   int NBinsMult = 10;
-  float Cent[11] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
-  float *MassBins = new float[NBinsMass + 1];
-  float *PtBins = new float[NBinsPt + 1];
+  double Cent[11] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
+  double *MassBins = new double[NBinsMass + 1];
+  double *PtBins = new double[NBinsPt + 1];
 
   CreateBins(MassBins, dimuonMassRange[0], dimuonMassRange[1], NBinsMass);
   CreateBins(PtBins, dimuonPtRange[0], dimuonPtRange[1], NBinsPt);
@@ -63,7 +64,6 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
   // Post-processing of reference flow for cumulants
   //////////////////////////////////////////////////////////////////////////////////////
   if (fCumulant) {
-
     TProfile *Corr22Ref = new TProfile(
         "Corr22Ref", "Profile of <2> with n=2 for ref", NBinsMult, Cent);
     TProfile *Corr24Ref = new TProfile(
@@ -163,56 +163,44 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
     c1REF->cd();
     hist_c22REF->SetMarkerStyle(20);
     hist_c22REF->SetStats(0);
-    if (fPropError) {
-      hist_c22REF->Draw("EP");
-    } else {
-      hist_c22REF->Draw("HIST P");
-    }
+    hist_c22REF->Draw("EP");
+
     c2REF->cd();
     hist_v22REF->SetMarkerStyle(20);
     hist_v22REF->SetStats(0);
-    if (fPropError) {
-      hist_v22REF->Draw("EP");
-    } else {
-      hist_v22REF->Draw("HIST P");
-    }
+    hist_v22REF->Draw("EP");
+
     c3REF->cd();
     hist_c24REF->SetMarkerStyle(20);
     hist_c24REF->SetStats(0);
-    if (fPropError) {
-      hist_c24REF->Draw("EP");
-    } else {
-      hist_c24REF->Draw("HIST P");
-    }
+    hist_c24REF->Draw("EP");
+
     c4REF->cd();
     hist_v24REF->SetMarkerStyle(20);
     hist_v24REF->SetStats(0);
-    if (fPropError) {
-      hist_v24REF->Draw("EP");
-    } else {
-      hist_v24REF->Draw("HIST P");
-    }
+    hist_v24REF->Draw("EP");
   }
 
   //////////////////////////////////////////////////////////////////////////////////////
   // Post-processing for POI flow
   //////////////////////////////////////////////////////////////////////////////////////
+  /*
   TProfile3D *Corr22Poi =
       new TProfile3D("Corr22Poi", "Profile of <2> with n=2 for poi", NBinsMass,
                      MassBins, NBinsPt, PtBins, NBinsMult, Cent);
   TProfile3D *Corr24Poi =
       new TProfile3D("Corr24Poi", "Profile of <4> with n=2 for poi", NBinsMass,
                      MassBins, NBinsPt, PtBins, NBinsMult, Cent);
+  */
 
-  TProfile3D *U2Q2 = new TProfile3D("U2Q2", "U2Q2", NBinsMass, MassBins,
-                                    NBinsPt, PtBins, NBinsMult, Cent);
-  TProfile3D *R2SP = new TProfile3D("R2SP", "Resolution SP", NBinsMass,
-                                    MassBins, NBinsPt, PtBins, NBinsMult, Cent);
-  TProfile3D *Cos2DeltaPhi =
-      new TProfile3D("Cos2DeltaPhi", "Cos2DeltaPhi", NBinsMass, MassBins,
-                     NBinsPt, PtBins, NBinsMult, Cent);
-  TProfile3D *R2EP = new TProfile3D("R2EP", "Resolution EP", NBinsMass,
-                                    MassBins, NBinsPt, PtBins, NBinsMult, Cent);
+  TProfile2D *U2Q2 =
+      new TProfile2D("U2Q2", "U2Q2", NBinsMass, MassBins, NBinsPt, PtBins);
+  TProfile2D *R2SP = new TProfile2D("R2SP", "Resolution SP", NBinsMass,
+                                    MassBins, NBinsPt, PtBins);
+  TProfile2D *Cos2DeltaPhi = new TProfile2D(
+      "Cos2DeltaPhi", "Cos2DeltaPhi", NBinsMass, MassBins, NBinsPt, PtBins);
+  TProfile2D *R2EP = new TProfile2D("R2EP", "Resolution EP", NBinsMass,
+                                    MassBins, NBinsPt, PtBins);
 
   float M01Poi = 0.;
   float M0111Poi = 0.;
@@ -284,6 +272,7 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
           CentFT0POI <= dimuonCentRange[1])) {
       continue;
     }
+    /*
     // Fill (mass, pt, centrality) bins for cumulants
     if (fCumulant) {
       if (!(isnan(Corr2Poi) || isnan(Corr4Poi) || isinf(Corr2Poi) ||
@@ -292,132 +281,122 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
         Corr24Poi->Fill(fMass, fPt, CentFT0POI, Corr4Poi, M0111Poi);
       }
     }
+    */
 
     // Fill (mass, pt, centrality) bins for SP and EP
     if (!(isnan(fR2SP) || isinf(fR2SP) || isnan(fR2EP) || isinf(fR2EP))) {
-      U2Q2->Fill(fMass, fPt, CentFT0POI, fU2Q2);
-      R2SP->Fill(fMass, fPt, CentFT0POI, fR2SP);
-      Cos2DeltaPhi->Fill(fMass, fPt, CentFT0POI, fCos2DeltaPhi);
-      R2EP->Fill(fMass, fPt, CentFT0POI, fR2EP);
+      U2Q2->Fill(fMass, fPt, fU2Q2);
+      R2SP->Fill(fMass, fPt, fR2SP);
+      Cos2DeltaPhi->Fill(fMass, fPt, fCos2DeltaPhi);
+      R2EP->Fill(fMass, fPt, fR2EP);
     }
   }
 
   // Mass-dependent flow for POI
+  TProfile *U2Q2Mass = U2Q2->ProfileX("u2q2mass", 1, NBinsPt);
+  TProfile *R2SPMass = R2SP->ProfileX("r2spmass", 1, NBinsPt);
+  TProfile *Cos2DeltaPhiMass =
+      Cos2DeltaPhi->ProfileX("cos2deltaphimass", 1, NBinsPt);
+  TProfile *R2EPMass = R2EP->ProfileX("r2epmass", 1, NBinsPt);
+
   for (int i = 0; i < NBinsMass; i++) {
 
     // Scalar-Product & Event-Plane method
-    if (V2MultBinMass[i] != 0.) {
-      V2SP[i] = V2SP[i] / V2MultBinMass[i];
-      R2SP[i] = R2SP[i] / V2MultBinMass[i];
-      V2ESP[i] = V2ESP[i] / V2MultBinMass[i];
-      R2ESP[i] = R2ESP[i] / V2MultBinMass[i];
-      V2ESP[i] = pow(V2ESP[i] - V2SP[i] * V2SP[i], 1. / 2);
-      R2ESP[i] = pow(R2ESP[i] - R2SP[i] * R2SP[i], 1. / 2);
-      V2SP[i] = R2SP[i] > 0 ? V2SP[i] / pow(R2SP[i], 1. / 2) : 0.;
-      V2ESP[i] = pow(
-          (V2ESP[i] * V2ESP[i] / R2SP[i] +
-           0.25 * V2SP[i] * V2SP[i] * R2ESP[i] * R2ESP[i] / pow(R2SP[i], 3)) /
-              V2MultBinMass[i],
-          1. / 2);
+    float u2q2 = U2Q2Mass->GetBinContent(i + 1);
+    float u2q2e = U2Q2Mass->GetBinError(i + 1);
+    float r2sp = R2SPMass->GetBinContent(i + 1);
+    float r2spe = R2SPMass->GetBinError(i + 1);
+    float v2sp = u2q2 / pow(r2sp, 1. / 2);
+    float v2spe = pow(u2q2e * u2q2e / r2sp +
+                          0.25 * pow(r2sp, -3) * u2q2 * u2q2 * r2spe * r2spe,
+                      1. / 2);
 
-      V2EP[i] = V2EP[i] / V2MultBinMass[i];
-      R2EP[i] = R2EP[i] / V2MultBinMass[i];
-      V2EEP[i] = V2EEP[i] / V2MultBinMass[i];
-      R2EEP[i] = R2EEP[i] / V2MultBinMass[i];
-      V2EEP[i] = pow(V2EEP[i] - V2EP[i] * V2EP[i], 1. / 2);
-      R2EEP[i] = pow(R2EEP[i] - R2EP[i] * R2EP[i], 1. / 2);
-      V2EP[i] = R2EP[i] > 0 ? V2EP[i] / pow(R2EP[i], 1. / 2) : 0.;
-      V2EEP[i] = pow(
-          (V2EEP[i] * V2EEP[i] / R2EP[i] +
-           0.25 * V2EP[i] * V2EP[i] * R2EEP[i] * R2EEP[i] / pow(R2EP[i], 3)) /
-              V2MultBinMass[i],
-          1. / 2);
+    float cos2deltaphi = Cos2DeltaPhiMass->GetBinContent(i + 1);
+    float cos2deltaphie = Cos2DeltaPhiMass->GetBinError(i + 1);
+    float r2ep = R2EPMass->GetBinContent(i + 1);
+    float r2epe = R2EPMass->GetBinError(i + 1);
+    float v2ep = cos2deltaphi / pow(r2ep, 1. / 2);
+    float v2epe = pow(cos2deltaphie * cos2deltaphie / r2ep +
+                          0.25 * pow(r2ep, -3) * cos2deltaphi * cos2deltaphi *
+                              r2epe * r2epe,
+                      1. / 2);
 
-      if (fPropError) {
-        hist_v2SP->SetBinContent(i + 1, V2SP[i]);
-        hist_v2EP->SetBinContent(i + 1, V2EP[i]);
-        if (isnan(V2ESP[i]) || isnan(V2EEP[i])) {
-          hist_v2SP->SetBinError(i + 1, 0.);
-          hist_v2EP->SetBinError(i + 1, 0.);
-        } else {
-          hist_v2SP->SetBinError(i + 1, V2ESP[i]);
-          hist_v2EP->SetBinError(i + 1, V2EEP[i]);
-        }
-      } else {
-        hist_v2SP->SetBinContent(i + 1, V2SP[i]);
-        hist_v2EP->SetBinContent(i + 1, V2EP[i]);
-      }
-    }
+    hist_v2SP->SetBinContent(i + 1, v2sp);
+    hist_v2EP->SetBinContent(i + 1, v2ep);
+    hist_v2SP->SetBinError(i + 1, isnan(v2spe) ? 0. : v2spe);
+    hist_v2EP->SetBinError(i + 1, isnan(v2epe) ? 0. : v2epe);
 
-    // Multiparticle Cumulant method
-    if (fCumulant) {
-      if (Sum22POI[i] * Sum24POI[i] != 0.) {
-        C22POI[i] = C22POI[i] / Sum22POI[i];
-        C22EPOI[i] = C22EPOI[i] / Sum22POI[i];
-        C22EPOI[i] = pow(C22EPOI[i] - C22POI[i] * C22POI[i], 1. / 2);
+    /*
+      // Multiparticle Cumulant method
+      if (fCumulant) {
+        if (Sum22POI[i] * Sum24POI[i] != 0.) {
+          C22POI[i] = C22POI[i] / Sum22POI[i];
+          C22EPOI[i] = C22EPOI[i] / Sum22POI[i];
+          C22EPOI[i] = pow(C22EPOI[i] - C22POI[i] * C22POI[i], 1. / 2);
 
-        V22POI[i] = C22POI[i] * pow(C22REF, -1. / 2);
-        V22EPOI[i] = pow(C22EPOI[i] * C22EPOI[i] / (C22REF * Sum22POI[i]) +
-                             0.25 * C22POI[i] * C22POI[i] * C22EREF * C22EREF /
-                                 (pow(C22REF, 3) * Sum22REFAll),
-                         1. / 2);
-        V22EPOI[i] = V22EPOI[i] > 0 ? V22EPOI[i] : 0.;
+          V22POI[i] = C22POI[i] * pow(C22REF, -1. / 2);
+          V22EPOI[i] = pow(C22EPOI[i] * C22EPOI[i] / (C22REF * Sum22POI[i]) +
+                               0.25 * C22POI[i] * C22POI[i] * C22EREF * C22EREF
+      / (pow(C22REF, 3) * Sum22REFAll),
+                           1. / 2);
+          V22EPOI[i] = V22EPOI[i] > 0 ? V22EPOI[i] : 0.;
 
-        C24POI[i] = C24POI[i] / Sum24POI[i] - 2. * C22POI[i] * C22REF;
-        C24EPOI[i] = C24EPOI[i] / Sum24POI[i];
-        C24EPOI[i] = pow(C24EPOI[i] - C24POI[i] * C24POI[i], 1. / 2);
-        C24EPOI[i] = pow(
-            C24EPOI[i] * C24EPOI[i] / Sum24POI[i] +
-                4. * C22REF * C22REF * C22EPOI[i] * C22EPOI[i] / Sum22POI[i] +
-                4. * C22POI[i] * C22POI[i] * C22EREF * C22EREF / Sum22REFAll,
-            1. / 2);
+          C24POI[i] = C24POI[i] / Sum24POI[i] - 2. * C22POI[i] * C22REF;
+          C24EPOI[i] = C24EPOI[i] / Sum24POI[i];
+          C24EPOI[i] = pow(C24EPOI[i] - C24POI[i] * C24POI[i], 1. / 2);
+          C24EPOI[i] = pow(
+              C24EPOI[i] * C24EPOI[i] / Sum24POI[i] +
+                  4. * C22REF * C22REF * C22EPOI[i] * C22EPOI[i] / Sum22POI[i] +
+                  4. * C22POI[i] * C22POI[i] * C22EREF * C22EREF / Sum22REFAll,
+              1. / 2);
 
-        V24POI[i] = -1. * C24POI[i] * pow(-1. * C24REF, -3. / 4);
-        V24EPOI[i] = pow(
-            pow(-1. * C24REF, -6. / 4) * C24EPOI[i] * C24EPOI[i] / Sum24POI[i] +
-                pow(-1. * C24REF, -14. / 4) * C24POI[i] * C24POI[i] * C24EREF *
-                    C24EREF / Sum24REFAll * 9. / 16,
-            1. / 2);
-        if (fPropError) {
-          if (isnan(C22EPOI[i])) {
-            hist_c22POIMass->SetBinContent(i + 1, C22POI[i]);
-            hist_c22POIMass->SetBinError(i + 1, 0.);
+          V24POI[i] = -1. * C24POI[i] * pow(-1. * C24REF, -3. / 4);
+          V24EPOI[i] = pow(
+              pow(-1. * C24REF, -6. / 4) * C24EPOI[i] * C24EPOI[i] / Sum24POI[i]
+      + pow(-1. * C24REF, -14. / 4) * C24POI[i] * C24POI[i] * C24EREF * C24EREF
+      / Sum24REFAll * 9. / 16,
+              1. / 2);
+          if (fPropError) {
+            if (isnan(C22EPOI[i])) {
+              hist_c22POIMass->SetBinContent(i + 1, C22POI[i]);
+              hist_c22POIMass->SetBinError(i + 1, 0.);
+            } else {
+              hist_c22POIMass->SetBinContent(i + 1, C22POI[i]);
+              hist_c22POIMass->SetBinError(i + 1, C22EPOI[i]);
+            }
+
+            if (isnan(V22EPOI[i])) {
+              hist_v22POIMass->SetBinContent(i + 1, V22POI[i]);
+              hist_v22POIMass->SetBinError(i + 1, 0.);
+            } else {
+              hist_v22POIMass->SetBinContent(i + 1, V22POI[i]);
+              hist_v22POIMass->SetBinError(i + 1, V22EPOI[i]);
+            }
+
+            if (isnan(C24EPOI[i])) {
+              hist_c24POIMass->SetBinContent(i + 1, C24POI[i]);
+              hist_c24POIMass->SetBinError(i + 1, 0.);
+            } else {
+              hist_c24POIMass->SetBinContent(i + 1, C24POI[i]);
+              hist_c24POIMass->SetBinError(i + 1, C24EPOI[i]);
+            }
+
+            if (isnan(V24EPOI[i])) {
+              hist_v24POIMass->SetBinContent(i + 1, V24POI[i]);
+              hist_v24POIMass->SetBinError(i, 0.);
+            } else {
+              hist_v24POIMass->SetBinContent(i + 1, V24POI[i]);
+              hist_v24POIMass->SetBinError(i + 1, V24EPOI[i]);
+            }
           } else {
             hist_c22POIMass->SetBinContent(i + 1, C22POI[i]);
-            hist_c22POIMass->SetBinError(i + 1, C22EPOI[i]);
-          }
-
-          if (isnan(V22EPOI[i])) {
             hist_v22POIMass->SetBinContent(i + 1, V22POI[i]);
-            hist_v22POIMass->SetBinError(i + 1, 0.);
-          } else {
-            hist_v22POIMass->SetBinContent(i + 1, V22POI[i]);
-            hist_v22POIMass->SetBinError(i + 1, V22EPOI[i]);
-          }
-
-          if (isnan(C24EPOI[i])) {
             hist_c24POIMass->SetBinContent(i + 1, C24POI[i]);
-            hist_c24POIMass->SetBinError(i + 1, 0.);
-          } else {
-            hist_c24POIMass->SetBinContent(i + 1, C24POI[i]);
-            hist_c24POIMass->SetBinError(i + 1, C24EPOI[i]);
-          }
-
-          if (isnan(V24EPOI[i])) {
             hist_v24POIMass->SetBinContent(i + 1, V24POI[i]);
-            hist_v24POIMass->SetBinError(i, 0.);
-          } else {
-            hist_v24POIMass->SetBinContent(i + 1, V24POI[i]);
-            hist_v24POIMass->SetBinError(i + 1, V24EPOI[i]);
           }
-        } else {
-          hist_c22POIMass->SetBinContent(i + 1, C22POI[i]);
-          hist_v22POIMass->SetBinContent(i + 1, V22POI[i]);
-          hist_c24POIMass->SetBinContent(i + 1, C24POI[i]);
-          hist_v24POIMass->SetBinContent(i + 1, V24POI[i]);
         }
       }
-    }
+      */
   }
 
   //////////////////////////////////////////////////////////////////////////////////////
@@ -431,35 +410,22 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
     c1POI->cd();
     hist_c22POIMass->SetMarkerStyle(20);
     hist_c22POIMass->SetStats(0);
-    if (fPropError) {
-      hist_c22POIMass->Draw("EP");
-    } else {
-      hist_c22POIMass->Draw("HIST P");
-    }
+    hist_c22POIMass->Draw("EP");
+
     c2POI->cd();
     hist_v22POIMass->SetMarkerStyle(20);
     hist_v22POIMass->SetStats(0);
-    if (fPropError) {
-      hist_v22POIMass->Draw("EP");
-    } else {
-      hist_v22POIMass->Draw("HIST P");
-    }
+    hist_v22POIMass->Draw("EP");
+
     c3POI->cd();
     hist_c24POIMass->SetMarkerStyle(20);
     hist_c24POIMass->SetStats(0);
-    if (fPropError) {
-      hist_c24POIMass->Draw("EP");
-    } else {
-      hist_c24POIMass->Draw("HIST P");
-    }
+    hist_c24POIMass->Draw("EP");
+
     c4POI->cd();
     hist_v24POIMass->SetMarkerStyle(20);
     hist_v24POIMass->SetStats(0);
-    if (fPropError) {
-      hist_v24POIMass->Draw("EP");
-    } else {
-      hist_v24POIMass->Draw("HIST P");
-    }
+    hist_v24POIMass->Draw("EP");
   }
 
   TCanvas *cSP = new TCanvas("v2SP");
@@ -467,19 +433,12 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
   cSP->cd();
   hist_v2SP->SetMarkerStyle(20);
   hist_v2SP->SetStats(0);
-  if (fPropError) {
-    hist_v2SP->Draw("EP");
-  } else {
-    hist_v2SP->Draw("HIST P");
-  }
+  hist_v2SP->Draw("EP");
+
   cEP->cd();
   hist_v2EP->SetMarkerStyle(20);
   hist_v2EP->SetStats(0);
-  if (fPropError) {
-    hist_v2EP->Draw("EP");
-  } else {
-    hist_v2EP->Draw("HIST P");
-  }
+  hist_v2EP->Draw("EP");
 }
 
 void LoadData(TChain *fChain, std::string TreeName, std::string FileName) {
@@ -498,7 +457,7 @@ void LoadData(TChain *fChain, std::string TreeName, std::string FileName) {
   }
 }
 
-void CreateBins(float *axis, float min, float max, int Nbins) {
+void CreateBins(double *axis, double min, double max, int Nbins) {
   for (int i = 0; i < Nbins; i++) {
     axis[i] = min + i * (max - min) / Nbins;
   }
