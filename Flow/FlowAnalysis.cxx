@@ -28,22 +28,37 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include "TGraphAsymmErrors.h"
+#include <fstream>
+#include <vector>
+#include "TGraphErrors.h"
+#include "TAxis.h"
+#include <sstream>
+#include <TStyle.h>
 
 #include "Framework/Logger.h"
 
 using namespace std;
 
 void LoadData(TChain *fChain, std::string TreeName = "O2rerefflow",
-              std::string FileName = "AO2D.root");
+              std::string FileName = "AOD.root");
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
+
+void writeToFile(const char *filename, TH1F *hist);
+
+void run2_vs_run3();
+
+void plotData(const char *filename);
 
 void FlowAnalysis(std::array<float, 3> dimuonMassRange,
                   std::array<float, 3> dimuonPtRange,
                   std::array<float, 2> dimuonCentRange,
-                  bool fCumulant = false) {
+                  bool fCumulant = false)
+{
 
   TChain *fChain_REF = new TChain();
-  if (fCumulant) {
+  if (fCumulant)
+  {
     LoadData(fChain_REF, "O2rerefflow");
   }
 
@@ -63,7 +78,8 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
   //////////////////////////////////////////////////////////////////////////////////////
   // Post-processing of reference flow for cumulants
   //////////////////////////////////////////////////////////////////////////////////////
-  if (fCumulant) {
+  if (fCumulant)
+  {
     TProfile *Corr22Ref = new TProfile(
         "Corr22Ref", "Profile of <2> with n=2 for ref", NBinsMult, Cent);
     TProfile *Corr24Ref = new TProfile(
@@ -95,11 +111,13 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
     hist_v24REF->GetYaxis()->SetTitle("v^{Ref}_{2}{4}");
 
     // Loop over all event Q-vectors
-    for (int i = 0; i < fChain_REF->GetEntries(); i++) {
+    for (int i = 0; i < fChain_REF->GetEntries(); i++)
+    {
 
       fChain_REF->GetEntry(i);
       if (isnan(Corr2Ref) || isnan(Corr4Ref) || isinf(Corr2Ref) ||
-          isinf(Corr4Ref)) {
+          isinf(Corr4Ref))
+      {
         continue;
       }
 
@@ -130,7 +148,8 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
     float v24eAll = c24All > 0 ? 0. : pow(-c24All, (-3. / 4)) * c24eAll / 4;
 
     // Centrality-dependent reference flow
-    for (int i = 0; i < NBinsMult; i++) {
+    for (int i = 0; i < NBinsMult; i++)
+    {
       // Fill v2{2}
       float cor2 = Corr22Ref->GetBinContent(i + 1);
       float cor2e = Corr22Ref->GetBinError(i + 1);
@@ -154,6 +173,13 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
       hist_v24REF->SetBinContent(i + 1, v24);
       hist_v24REF->SetBinError(i + 1, v24e);
     }
+    // Write v22REF to a file
+    writeToFile("v22REF_Run3_w.txt", hist_v22REF);
+
+    // Write v24REF to a file
+    writeToFile("v24REF_Run3_w.txt", hist_v24REF);
+
+    run2_vs_run3();
 
     TCanvas *c1REF = new TCanvas("c22REF");
     TCanvas *c2REF = new TCanvas("v22REF");
@@ -214,7 +240,8 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
   float fU2Q2, fU3Q3, fCos2DeltaPhi, fCos3DeltaPhi;
   float fR2EP, fR2SP;
 
-  if (fCumulant) {
+  if (fCumulant)
+  {
     fChain_POI->SetBranchAddress("fM01POI", &M01Poi);
     fChain_POI->SetBranchAddress("fM0111POI", &M0111Poi);
     fChain_POI->SetBranchAddress("fCORR2POI", &Corr2Poi);
@@ -262,14 +289,16 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
   hist_v2EP->GetYaxis()->SetTitle("v^{J/#psi}_{2}{EP}");
 
   // Loop over all dimuons
-  for (int i = 0; i < fChain_POI->GetEntries(); i++) {
+  for (int i = 0; i < fChain_POI->GetEntries(); i++)
+  {
     fChain_POI->GetEntry(i);
     // Dimuons general selection
     // {Pt range, msass bin, centrality range}
     if (!(fPt > dimuonPtRange[0] && fPt <= dimuonPtRange[1] &&
           fMass > dimuonMassRange[0] && fMass <= dimuonMassRange[1] &&
           fEta > -4. && fEta < -2.5 && CentFT0POI > dimuonCentRange[0] &&
-          CentFT0POI <= dimuonCentRange[1])) {
+          CentFT0POI <= dimuonCentRange[1]))
+    {
       continue;
     }
     /*
@@ -284,7 +313,8 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
     */
 
     // Fill (mass, pt, centrality) bins for SP and EP
-    if (!(isnan(fR2SP) || isinf(fR2SP) || isnan(fR2EP) || isinf(fR2EP))) {
+    if (!(isnan(fR2SP) || isinf(fR2SP) || isnan(fR2EP) || isinf(fR2EP)))
+    {
       U2Q2->Fill(fMass, fPt, fU2Q2);
       R2SP->Fill(fMass, fPt, fR2SP);
       Cos2DeltaPhi->Fill(fMass, fPt, fCos2DeltaPhi);
@@ -299,7 +329,8 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
       Cos2DeltaPhi->ProfileX("cos2deltaphimass", 1, NBinsPt);
   TProfile *R2EPMass = R2EP->ProfileX("r2epmass", 1, NBinsPt);
 
-  for (int i = 0; i < NBinsMass; i++) {
+  for (int i = 0; i < NBinsMass; i++)
+  {
 
     // Scalar-Product & Event-Plane method
     float u2q2 = U2Q2Mass->GetBinContent(i + 1);
@@ -402,7 +433,8 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
   //////////////////////////////////////////////////////////////////////////////////////
   // Plot for results, save to histograms for fit
   //////////////////////////////////////////////////////////////////////////////////////
-  if (fCumulant) {
+  if (fCumulant)
+  {
     TCanvas *c1POI = new TCanvas("c22POI");
     TCanvas *c2POI = new TCanvas("v22POI");
     TCanvas *c3POI = new TCanvas("c24POI");
@@ -441,15 +473,18 @@ void FlowAnalysis(std::array<float, 3> dimuonMassRange,
   hist_v2EP->Draw("EP");
 }
 
-void LoadData(TChain *fChain, std::string TreeName, std::string FileName) {
+void LoadData(TChain *fChain, std::string TreeName, std::string FileName)
+{
 
   TFile *fInput = TFile::Open(FileName.c_str());
   TIter keyList(fInput->GetListOfKeys());
   TKey *key;
-  while ((key = (TKey *)keyList())) {
+  while ((key = (TKey *)keyList()))
+  {
     TClass *cl = gROOT->GetClass(key->GetClassName());
     std::string dir = key->GetName();
-    if (dir == "parentFiles") {
+    if (dir == "parentFiles")
+    {
       continue;
     }
     fChain->Add(
@@ -457,9 +492,263 @@ void LoadData(TChain *fChain, std::string TreeName, std::string FileName) {
   }
 }
 
-void CreateBins(double *axis, double min, double max, int Nbins) {
-  for (int i = 0; i < Nbins; i++) {
+void CreateBins(double *axis, double min, double max, int Nbins)
+{
+  for (int i = 0; i < Nbins; i++)
+  {
     axis[i] = min + i * (max - min) / Nbins;
   }
   axis[Nbins] = max;
+}
+
+void writeToFile(const char *filename, TH1F *hist)
+{
+  std::ofstream outFile(filename);
+  if (!outFile.is_open())
+  {
+    std::cerr << "Error opening file: " << filename << std::endl;
+    return;
+  }
+
+  // Write the header
+  outFile << "bin_range\tbin_content\tbin_error\n";
+
+  // Write the bin contents and errors to the file
+  for (int i = 1; i <= hist->GetNbinsX(); ++i)
+  {
+    double binMin = hist->GetXaxis()->GetBinLowEdge(i);
+    double binMax = hist->GetXaxis()->GetBinUpEdge(i);
+    double binContent = hist->GetBinContent(i);
+    double binError = hist->GetBinError(i);
+    outFile << binMin << " " << binMax << "\t" << binContent << "\t" << binError << std::endl;
+  }
+
+  outFile.close();
+}
+
+void plotData(const char *filename)
+{
+  // Open the input file
+  std::ifstream inputFile(filename);
+  if (!inputFile.is_open())
+  {
+    std::cerr << "Error: Unable to open file " << filename << std::endl;
+    return;
+  }
+
+  // Create arrays to hold data
+  const int nPoints = 9;
+  double xmin[nPoints], xmax[nPoints], y[nPoints], error[nPoints];
+
+  // Read data from file
+  for (int i = 0; i < nPoints; ++i)
+  {
+    inputFile >> xmin[i] >> xmax[i] >> y[i] >> error[i];
+  }
+
+  // Close the input file
+  inputFile.close();
+
+  // Create TGraphErrors object
+  TGraphErrors *graph = new TGraphErrors(nPoints, xmin, y, 0, error);
+  graph->SetTitle("Data Plot");
+  graph->GetXaxis()->SetTitle("Centrality");
+  graph->GetYaxis()->SetTitle("v_{2}{} Run 3 ");
+
+  // Set histogram style
+  graph->SetMarkerStyle(20);
+  graph->SetMarkerSize(1.2);
+  graph->SetMarkerColor(kBlue);
+  graph->SetLineColor(kBlue);
+
+  // Create a canvas to draw the graph
+  TCanvas *canvas = new TCanvas("canvas", "Data Plot", 800, 600);
+  graph->Draw("AP"); // Draw the graph with error bars
+
+  // Save the canvas as an image file
+  canvas->SaveAs((std::string(filename) + ".pdf").c_str());
+}
+
+void run2_vs_run3()
+{
+  double minPt = 0.2;
+  double maxPt = 5;
+
+  TCanvas c("v2_ref_cent", "", 900, 600);
+  gStyle->SetOptStat(0);
+
+  TLegend *legend = new TLegend(0.64, 0.68, 0.86, 0.83);
+  legend->SetBorderSize(0);
+  legend->SetFillColor(0);
+  legend->SetTextSize(0.03);
+
+  // Adjusted coordinates for the second legend
+  TLegend *legend2 = new TLegend(0.3, 0.88, 0.85, 0.88);
+  legend2->SetBorderSize(0);
+  legend2->SetFillColor(0);
+  legend2->SetTextSize(0.03);
+
+  // RUN3 VALUES: From v22_cent.txt
+  std::ifstream in22("v22REF_Run3_w.txt");
+  std::string skipLine22;
+  std::getline(in22, skipLine22); // Skip the first line
+
+  Float_t min, max, V2, errorStatref;
+  TGraphAsymmErrors StatGraph22;
+  Int_t pointIndex22 = 0;
+
+  while (in22 >> min >> max >> V2 >> errorStatref)
+  {
+    Float_t binCenter = (min + max) / 2;
+    Double_t binWidth = (max - min) / 2;
+    StatGraph22.SetPoint(pointIndex22, binCenter, V2);
+    StatGraph22.SetPointError(pointIndex22, binWidth, binWidth, errorStatref, errorStatref);
+    pointIndex22++;
+  }
+  in22.close();
+
+  StatGraph22.SetTitle("; Centrality; v^{REF}_{2}");
+  StatGraph22.SetMarkerStyle(20);
+  StatGraph22.SetMarkerColor(kBlue);
+  StatGraph22.SetLineColor(kBlue);
+
+  // RUN3 VALUES: From v24_cent.txt (new data)
+  std::ifstream in24("v24REF_Run3_w.txt");
+  std::string skipLine24;
+  std::getline(in24, skipLine24);
+
+  TGraphAsymmErrors StatGraph24;
+  Int_t pointIndex24 = 0;
+
+  while (in24 >> min >> max >> V2 >> errorStatref)
+  {
+    Float_t binCenter = (min + max) / 2;
+    Double_t binWidth = (max - min) / 2;
+    StatGraph24.SetPoint(pointIndex24, binCenter, V2);
+    StatGraph24.SetPointError(pointIndex24, binWidth, binWidth, errorStatref, errorStatref);
+    pointIndex24++;
+  }
+  in24.close();
+
+  StatGraph24.SetMarkerStyle(20);
+  StatGraph24.SetMarkerColor(kRed);
+  StatGraph24.SetLineColor(kRed);
+
+  // Save the canvas to a file
+  auto f = TFile::Open("run2vsrun3.root", "Recreate");
+
+  // RUN2 VALUES:
+  std::ifstream file("RUN2_v24.txt");
+
+  // Skip the header
+  std::string header;
+  std::getline(file, header);
+
+  const int nPoints = 9; // NUMBER OF POINTS
+  double x[nPoints], y[nPoints], statError[nPoints], systError[nPoints];
+
+  // Read the data
+  for (int i = 0; i < nPoints && !file.eof(); ++i)
+  {
+    file >> x[i] >> y[i] >> statError[i] >> systError[i];
+  }
+
+  file.close();
+
+  // Create a graph for the statistical errors
+  TGraphErrors *graphStat = new TGraphErrors(nPoints, x, y, nullptr, statError);
+  graphStat->SetTitle("Data with Errors;X-axis;Y-axis");
+  graphStat->SetMarkerStyle(20);
+  graphStat->SetMarkerColor(kGreen);
+  graphStat->SetLineColor(kGreen);
+  graphStat->Draw("AP");
+
+  TGraphAsymmErrors StatGraphRUN2_1;
+  StatGraphRUN2_1.SetMarkerStyle(20);
+  StatGraphRUN2_1.SetMarkerColor(kGreen);
+  StatGraphRUN2_1.SetLineColor(kGreen);
+
+  TGraphAsymmErrors StatGraphRUN2_2;
+  StatGraphRUN2_2.SetMarkerStyle(20);
+  StatGraphRUN2_2.SetMarkerColor(kViolet);
+  StatGraphRUN2_2.SetLineColor(kViolet);
+
+  std::ifstream file2("RUN2_v22.txt");
+  std::getline(file2, header);
+  double x2[nPoints], y2[nPoints], statError2[nPoints], systError2[nPoints];
+
+  // Read the data
+  for (int i = 0; i < nPoints && !file2.eof(); ++i)
+  {
+    file2 >> x2[i] >> y2[i] >> statError2[i] >> systError2[i];
+  }
+  file.close();
+
+  // Create a graph for the statistical errors
+  TGraphErrors *graphStat2 = new TGraphErrors(nPoints, x2, y2, nullptr, statError2);
+  graphStat2->SetTitle("Data with Errors;X-axis;Y-axis");
+  graphStat2->SetMarkerStyle(20);
+  graphStat2->SetMarkerColor(kViolet);
+  graphStat2->SetLineColor(kViolet);
+
+  legend->AddEntry(&StatGraphRUN2_2, "v_{2}{2} Run 2", "lp");
+  legend->AddEntry(&StatGraphRUN2_1, "v_{2}{4} Run 2", "lp");
+  legend->AddEntry(&StatGraph22, "v_{2}^{c}{2} Run 3", "lp");
+  legend->AddEntry(&StatGraph24, "v_{2}^{c}{4} Run 3", "lp");
+
+  // Convert double to string with 1 decimal place
+  std::string minPtStr = std::to_string(minPt);
+  std::string maxPtStr = std::to_string(maxPt);
+
+  // Find the position of the decimal point
+  size_t decimalPosMinPt = minPtStr.find('.');
+  size_t decimalPosMaxPt = maxPtStr.find('.');
+
+  // If the decimal point is found, truncate the string after 1 decimal place
+  if (decimalPosMinPt != std::string::npos)
+  {
+    minPtStr = minPtStr.substr(0, decimalPosMinPt + 2);
+  }
+  if (decimalPosMaxPt != std::string::npos)
+  {
+    maxPtStr = maxPtStr.substr(0, decimalPosMaxPt + 2);
+  }
+
+  // Construct the centString using minPtStr and maxPtStr
+  std::string centString = "ALICE, Pb-Pb #sqrt{s} = 5.36 TeV, -0.8 < y < 0.8, p_{T} " + minPtStr + "-" + maxPtStr + " GeV/c";
+  legend2->AddEntry(&StatGraph24, centString.c_str(), "");
+
+  // Drawing both graphs
+  StatGraph22.Draw("AP");
+  StatGraph24.Draw("P SAME");
+
+  // Systematic errors
+  for (int i = 0; i < nPoints; i++)
+  {
+    TBox *box = new TBox(x[i] - 0.1, y[i] - systError[i], x[i] + 0.1, y[i] + systError[i]);
+    box->SetFillStyle(1001);              // Solid fill
+    box->SetFillColorAlpha(kGreen, 0.35); // Semi-transparent red fill
+    box->SetLineColor(kGreen);            // Solid red outline
+    box->SetLineWidth(1);                 // Outline width
+    box->Draw("l SAME");                  // Draw with line to include the outline
+  }
+
+  for (int i = 0; i < nPoints; i++)
+  {
+    TBox *box2 = new TBox(x2[i] - 0.1, y2[i] - systError2[i], x2[i] + 0.1, y2[i] + systError2[i]);
+    box2->SetFillStyle(1001);               // Solid fill
+    box2->SetFillColorAlpha(kViolet, 0.35); // Semi-transparent red fill
+    box2->SetLineColor(kViolet);            // Solid red outline
+    box2->SetLineWidth(1);                  // Outline width
+    box2->Draw("l SAME");                   // Draw with line to include the outline
+  }
+
+  graphStat2->Draw("P SAME");
+  graphStat->Draw("P SAME");
+
+  legend->Draw("P SAME");
+  legend2->Draw("P SAME");
+
+  c.Write();
+  f->Close();
 }
