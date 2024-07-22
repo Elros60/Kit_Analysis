@@ -69,6 +69,14 @@ void ResoPlot(int NbinCent = 20) {
   TH1D *hist_RSPIm[9];
   TH1D *hist_REP[9];
 
+  // Compare with current formulae
+  TProfile2D *ResoProfileSPRe_old = new TProfile2D(
+      "ResoProfileSPRe_old", "Profile of resolution factors for SP (real)", 8,
+      Combo, NbinCent, Cent);
+
+  TH1D *hist_RSPRe_old[9];
+  TH1D *hist_RSPRe_diff[9];
+
   for (int i = 0; i < 9; i++) {
     hist_RSPRe[i] = new TH1D(Form("RSPRe_%s", ComboLabel[i].c_str()),
                              ComboLabel[i].c_str(), NbinCent, Cent);
@@ -76,6 +84,12 @@ void ResoPlot(int NbinCent = 20) {
                              ComboLabel[i].c_str(), NbinCent, Cent);
     hist_REP[i] = new TH1D(Form("REP_%s", ComboLabel[i].c_str()),
                            ComboLabel[i].c_str(), NbinCent, Cent);
+
+    // Compare with current formulae
+    hist_RSPRe_old[i] = new TH1D(Form("RSPRe_old_%s", ComboLabel[i].c_str()),
+                                 ComboLabel[i].c_str(), NbinCent, Cent);
+    hist_RSPRe_diff[i] = new TH1D(Form("RSPRe_diff_%s", ComboLabel[i].c_str()),
+                                  ComboLabel[i].c_str(), NbinCent, Cent);
   }
 
   float qvecFT0CRe, qvecFT0CIm, qvecFT0ARe, qvecFT0AIm, qvecFT0MRe, qvecFT0MIm,
@@ -180,6 +194,10 @@ void ResoPlot(int NbinCent = 20) {
           ResoProfileEP->Fill(k, centFT0C, cosPsi12);
           ResoProfileSPRe->Fill(k, centFT0C, Q12.real());
           ResoProfileSPIm->Fill(k, centFT0C, Q12.imag());
+
+          // Compare with current formulae
+          ResoProfileSPRe_old->Fill(
+              k, centFT0C, Q1.real() * Q2.real() + Q1.imag() * Q2.imag());
         }
       }
     }
@@ -209,6 +227,13 @@ void ResoPlot(int NbinCent = 20) {
         hist_RSPIm[i]->SetBinContent(j + 1, RSPIm);
         hist_REP[i]->SetBinContent(j + 1, REP);
 
+        // Compare with current formulae
+        double Q12Re_old = ResoProfileSPRe_old->GetBinContent(7, j + 1);
+        double Q13Re_old = ResoProfileSPRe_old->GetBinContent(8, j + 1);
+        double Q23Re_old = ResoProfileSPRe_old->GetBinContent(6, j + 1);
+        double RSPRe_old =
+            Q23Re_old != 0 ? TMath::Sqrt(Q12Re_old * Q13Re_old / Q23Re_old) : 0;
+        hist_RSPRe_old[i]->SetBinContent(j + 1, RSPRe_old);
       } else {
         double RSPRe = ResoProfileSPRe->GetBinContent(i + 1, j + 1);
         double RSPIm = ResoProfileSPIm->GetBinContent(i + 1, j + 1);
@@ -221,6 +246,13 @@ void ResoPlot(int NbinCent = 20) {
         hist_RSPRe[i]->SetBinContent(j + 1, pow(RSP, 0.5).real());
         hist_RSPIm[i]->SetBinContent(j + 1, pow(RSP, 0.5).imag());
         hist_REP[i]->SetBinContent(j + 1, REP);
+
+        // Compare with current formulae
+        double RSPRe_old =
+            ResoProfileSPRe_old->GetBinContent(i + 1, j + 1) >= 0
+                ? TMath::Sqrt(ResoProfileSPRe_old->GetBinContent(i + 1, j + 1))
+                : 0;
+        hist_RSPRe_old[i]->SetBinContent(j + 1, RSPRe_old);
       }
     }
   }
@@ -231,7 +263,12 @@ void ResoPlot(int NbinCent = 20) {
   auto hs1 = new THStack("hs1", "");
   auto hs2 = new THStack("hs2", "");
   auto hs3 = new THStack("hs3", "");
-  // gStyle->SetPalette(kRainBow);
+
+  // Compare with current formulae
+  TCanvas *c_old = new TCanvas("ResoPlotsRe_old", "");
+  TCanvas *c_diff = new TCanvas("ResoPlotsRe_diff", "");
+  auto hs1_old = new THStack("hs1_old", "");
+  auto hs1_diff = new THStack("hs1_diff", "");
 
   for (int i = 1; i < 9; i++) {
     hist_RSPRe[i]->SetMarkerColor(i + 1);
@@ -254,6 +291,17 @@ void ResoPlot(int NbinCent = 20) {
     hist_RSPIm[i]->SetLineColor(i + 1);
     hist_RSPIm[i]->SetMarkerStyle(i + 86);
     hs3->Add(hist_RSPIm[i]);
+
+    // Compare with current formulae
+    hist_RSPRe_old[i]->SetMarkerColor(i + 1);
+    hist_RSPRe_old[i]->SetMarkerSize(1.5);
+    hist_RSPRe_old[i]->SetLineWidth(2);
+    hist_RSPRe_old[i]->SetLineColor(i + 1);
+    hist_RSPRe_old[i]->SetMarkerStyle(i + 86);
+    hs1_old->Add(hist_RSPRe_old[i]);
+
+    hist_RSPRe_diff[i]->Add(hist_RSPRe[i], hist_RSPRe_old[i], 1., -1.);
+    hs1_diff->Add(hist_RSPRe_diff[i]);
   }
 
   hist_REP[0]->SetMarkerColor(1);
@@ -269,6 +317,16 @@ void ResoPlot(int NbinCent = 20) {
   hist_RSPIm[0]->SetLineColor(1);
   hist_RSPIm[0]->SetMarkerStyle(86);
   hs3->Add(hist_RSPIm[0]);
+
+  /*
+  // Compare with current formulae
+  hist_RSPRe_old[0]->SetMarkerColor(1);
+  hist_RSPRe_old[0]->SetMarkerSize(1.5);
+  hist_RSPRe_old[0]->SetLineWidth(2);
+  hist_RSPRe_old[0]->SetLineColor(1);
+  hist_RSPRe_old[0]->SetMarkerStyle(86);
+  hs1_old->Add(hist_RSPRe_old[0]);
+  */
 
   c->Divide(2, 1);
   c->cd(1);
@@ -288,16 +346,46 @@ void ResoPlot(int NbinCent = 20) {
   hs3->GetXaxis()->SetTitle("Centrality FT0C %");
   hs3->GetYaxis()->SetTitle("Im#{}{R_{2}(SP)}");
 
+  // Compare with current formulae
+  c_old->Divide(2, 1);
+  c_old->cd(1);
+  c_old->cd(1)->SetGrid();
+  hs1->Draw("cp nostack");
+  hs1->GetXaxis()->SetTitle("Centrality FT0C %");
+  hs1->GetYaxis()->SetTitle("Re#{}{R_{2}(SP)}");
+  c_old->cd(2);
+  c_old->cd(2)->SetGrid();
+  hs1_old->Draw("cp nostack");
+  hs1_old->GetXaxis()->SetTitle("Centrality FT0C %");
+  hs1_old->GetYaxis()->SetTitle("Re#{}{R_{2}(SP)}");
+
+  c_diff->cd();
+  c_diff->cd()->SetGrid();
+  hs1_diff->Draw("cp nostack");
+  hs1_diff->GetXaxis()->SetTitle("Centrality FT0C %");
+  hs1_diff->GetYaxis()->SetTitle("#Delta{R_{2}(SP)}");
+
   TFile f("histos.root", "RECREATE");
-  TList *l = new TList();
+  TList *l1 = new TList();
+  TList *l2 = new TList();
   for (int i = 0; i < 9; i++) {
-    l->Add(hist_RSPRe[i]);
-    l->Add(hist_RSPIm[i]);
-    l->Add(hist_REP[i]);
+    l1->Add(hist_RSPRe[i]);
+    l1->Add(hist_RSPIm[i]);
+    l1->Add(hist_REP[i]);
+
+    // Compare with current formulae
+    l2->Add(hist_RSPRe_old[i]);
   }
-  l->Add(c);
-  l->Add(c1);
-  l->Write("ResolutionHistList", TObject::kSingleKey);
+
+  l1->Add(c);
+  l1->Add(c1);
+  l1->Write("ResolutionHistList_New", TObject::kSingleKey);
+
+  // Compare with current formulae
+  l2->Add(c_old);
+  l2->Add(c_diff);
+  l2->Write("ResolutionHistList_Old", TObject::kSingleKey);
+
   f.ls();
   f.Close();
 }
