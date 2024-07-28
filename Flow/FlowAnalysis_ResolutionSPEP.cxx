@@ -42,7 +42,8 @@ void LoadData(TChain *fChain, std::string TreeName = "O2rerefflow",
 double getEventPlane(int n, double x, double y);
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
 
-void ResoPlot(int NbinCent = 20) {
+// Resolution factor(Reference flow) evaluation with all events included
+void Resolution(int NbinCent = 20) {
   TChain *fChain_Qvec = new TChain("Qvectors");
   TChain *fChain_Event = new TChain("EventExtended");
   LoadData(fChain_Qvec, "O2reqvectorctr");

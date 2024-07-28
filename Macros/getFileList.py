@@ -15,7 +15,7 @@ def getRunFileList(Input, Output, Local):
 
     if Local:
         #findCmd = "find {}/*/{}".format(Input, "AO2D.root")
-        findCmd = "{}/*/{}".format(Input, "AO2D.root")
+        findCmd = "{}/**/{}".format(Input, "AO2D.root")
         print(findCmd)
         # FileList = os.listdir(findCmd)
         FileList = glob(findCmd, recursive=True)
