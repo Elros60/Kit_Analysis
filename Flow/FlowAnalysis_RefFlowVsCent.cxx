@@ -43,7 +43,7 @@ void LoadData(TChain *fChain, std::string TreeName = "O2rerefflow",
               std::string FileName = "AO2D.root");
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
 
-void RefFlowVsCent(std::string FileName = "input_data.txt") {
+void FlowAnalysis_RefFlowVsCent(std::string FileName = "input_data.txt") {
 
   // Load data from AO2Ds
   TChain *fChain_Flow = new TChain();

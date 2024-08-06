@@ -59,7 +59,7 @@ double *CreateBinsFromAxis(TAxis *axis);
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
 void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax);
 
-void FlowAnalysisNew(std::string FileName = "AnalysisResults.root") {
+void FlowAnalysis_Cumulants(std::string FileName = "AnalysisResults.root") {
 
   // Load data from AnalysisResults.root
   TFile *Input_File = TFile::Open(FileName.c_str());

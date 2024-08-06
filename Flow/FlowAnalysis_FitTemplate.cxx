@@ -58,7 +58,8 @@ using namespace RooFit;
 double *CreateBinsFromAxis(TAxis *axis);
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
 
-void FlowAnalysis_Fitting(std::string FileName = "AnalysisResults_Flow.root") {
+void FlowAnalysis_FitTemplate(
+    std::string FileName = "AnalysisResults_Flow.root") {
 
   // Load data from AnalysisResults.root
   TFile *Input_File = TFile::Open(FileName.c_str());

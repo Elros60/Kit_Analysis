@@ -47,7 +47,7 @@ using namespace std;
 
 vector<string> tokenize(string input_string);
 
-void FlowAnalysis_NUAcorrections(
+void FlowAnalysis_NUAcorrectionGFW(
     string FileName = "input_AnalysisResults.txt") {
 
   auto hs_stack = new THStack("Run_by_Run_NUA_correction", "");
