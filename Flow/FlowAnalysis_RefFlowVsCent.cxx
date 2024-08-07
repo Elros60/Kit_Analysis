@@ -149,7 +149,7 @@ void FlowAnalysis_RefFlowVsCent(std::string FileName = "input_data.txt") {
   }
 
   // Save outputs
-  TFile f("AnalysisResults_RefFlowVsCent.root", "RECREATE");
+  TFile f("FlowAnalysisResults_RefFlowVsCent.root", "RECREATE");
   TList *l = new TList();
   l->Add(hist_c22REF);
   l->Add(hist_c24REF);

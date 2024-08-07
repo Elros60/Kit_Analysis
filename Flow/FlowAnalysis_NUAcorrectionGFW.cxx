@@ -87,7 +87,7 @@ void FlowAnalysis_NUAcorrectionGFW(
 
   ls->Add(c);
 
-  TFile fout("AnalysisResults_NUAcorrections.root", "RECREATE");
+  TFile fout("FlowAnalysisResults_NUAcorrections.root", "RECREATE");
   ls->Write("RunByRun_histograms", TObject::kSingleKey);
   fout.Close();
 }

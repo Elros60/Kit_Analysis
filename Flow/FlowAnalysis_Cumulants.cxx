@@ -59,14 +59,16 @@ double *CreateBinsFromAxis(TAxis *axis);
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
 void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax);
 
-void FlowAnalysis_Cumulants(std::string FileName = "AnalysisResults.root") {
+void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
+                            std::string dimuonCut = "pairRapidityForward",
+                            std::string FileName = "AnalysisResults.root") {
 
   // Load data from AnalysisResults.root
   TFile *Input_File = TFile::Open(FileName.c_str());
   THashList *list_hist =
       (THashList *)Input_File->Get("analysis-same-event-pairing/output");
   TList *sublist = (TList *)list_hist->FindObject(
-      "PairsMuonSEPM_MuonLow2023_pairRapidityForward");
+      Form("PairsMuonSEPM_%s_%s", muonCut.c_str(), dimuonCut.c_str()));
 
   // Get TProfiles of correlations
   TProfile3D *tp_Corr2Ref =
@@ -99,7 +101,7 @@ void FlowAnalysis_Cumulants(std::string FileName = "AnalysisResults.root") {
 
   // Define projected profiles w.r.t above defined variables' ranges
   TList *l_refflow = new TList();
-  TFile f("AnalysisResults_Flow.root", "RECREATE");
+  TFile f("FlowAnalysisResults_Cumulants.root", "RECREATE");
   TProfile *tp_Corr2Ref_cent = tp_Corr2Ref->Project3DProfile("xz")->ProfileX();
   TProfile *tp_Corr4Ref_cent = tp_Corr4Ref->Project3DProfile("xz")->ProfileX();
 
@@ -160,9 +162,9 @@ void FlowAnalysis_Cumulants(std::string FileName = "AnalysisResults.root") {
   // Define variables' range for analysis
   double Bin_pt_mass[9] = {1., 2., 3., 4., 5., 6., 9., 12., 20.};
   double cent_min = 10.0;
-  double cent_max = 50.0;
-  double mass_min = 2.5;
-  double mass_max = 4.5;
+  double cent_max = 60.0;
+  double mass_min = 2.5; // same as initial setup
+  double mass_max = 4.5; // same as initial setup
   int iBin_cent_min = centAxis->FindBin(cent_min);
   int iBin_cent_max = centAxis->FindBin(cent_max);
   int iBin_mass_min = massAxis->FindBin(mass_min);
@@ -299,6 +301,7 @@ void FlowAnalysis_Cumulants(std::string FileName = "AnalysisResults.root") {
       hist_vd24->SetBinContent(j + 1, isnan(vd24) || isinf(vd24) ? 0 : vd24);
       hist_vd24->SetBinError(j + 1, isnan(vd24e) || isinf(vd24e) ? 0 : vd24e);
     }
+
     runFitting(hist_mass_proj, l_diff, Bin_pt_mass[i], Bin_pt_mass[i + 1]);
     l_diff->Add(hist_mass_proj);
     l_diff->Add(hist_d22);
@@ -331,8 +334,8 @@ void CreateBins(double *axis, double min, double max, int Nbins) {
 void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax) {
 
   // Setting up RooFit
-  // hs->Smooth();
-  RooRealVar m("m", "m_{#mu#mu}", 2.5, 4.5, "GeV/c2");
+  cout << "Start processing Pt range: " << ptmin << " " << ptmax << endl;
+  RooRealVar m("m", "m_{#mu#mu}", 2.6, 4.5, "GeV/c2");
   RooDataHist dh("dh", "dh", m, Import(*hs));
   RooPlot *frame =
       m.frame(Name("mFrame"), Title(Form("m_{#mu#mu} signal fit (%d < pT < %d)",
@@ -341,36 +344,38 @@ void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax) {
 
   // Setting up fit model
   // Signal model: double-sided crytalball
-  RooRealVar m0("m0", "m0", 3.097, 3.05, 3.12);
-  RooRealVar sigma("sigma", "sigma", 0.1, 0.05, 0.6);
-  RooRealVar alphaL("alphaL", "alphaL", 10.0, 5.0, 30.0);
-  RooRealVar alphaR("alphaR", "alphaR", 10.0, 5.0, 30.0);
-  RooRealVar nL("nL", "nL", 2.0, 1.0, 10.0);
-  RooRealVar nR("nR", "nR", 2.0, 1.0, 10.0);
+  RooRealVar m0("m0", "m0", 3.097, 3.09, 3.1);
+  RooRealVar sigma("sigma", "sigma", 0.06, 0.001, 0.12);
+  RooRealVar alphaL("alphaL", "alphaL", 5.0, 3.0, 10.0);
+  RooRealVar alphaR("alphaR", "alphaR", 5.0, 3.0, 10.0);
+  RooRealVar nL("nL", "nL", 0.05, 0.0, 1.0);
+  RooRealVar nR("nR", "nR", 0.05, 0.0, 1.0);
   RooCrystalBall sig("Signal", "CB2", m, m0, sigma, alphaL, nL, alphaR, nR);
   // Background model: VWG
-  RooRealVar A("A", "A", -0.1, -2.5, 2.5);
-  RooRealVar B("B", "B", -0.1, -2.5, 2.5);
-  RooRealVar C("C", "C", 0.1, -2.5, 2.5);
+  RooRealVar A("A", "A", -0.1, -2.0, 2.0);
+  RooRealVar B("B", "B", 0.1, -5.5, 5.5);
+  RooRealVar C("C", "C", -0.1, -1.5, 1.5);
   RooFormulaVar sigma_VWG("sigma_VWG", "sigma_VWG", "B+C*((m-A)/A)",
                           RooArgList(m, A, B, C));
 
   RooGenericPdf bkg("Bkg", "VWG", "exp(-(m-A)*(m-A)/(2.*sigma_VWG*sigma_VWG))",
                     RooArgSet(m, A, sigma_VWG));
   // Construct a combined signal+background model
-  RooRealVar nsig("nsig", "#signal events", 200, 0., 1000000);
-  RooRealVar nbkg("nbkg", "#background events", 2000, 0., 1000000);
+  RooRealVar nsig("nsig", "#signal events", 500, 0., 10000000);
+  RooRealVar nbkg("nbkg", "#background events", 10000, 0., 10000000);
   RooAddPdf model("model", "CB2+VWG", {sig, bkg}, {nsig, nbkg});
 
   // Do fitting
-  RooFitResult *fit_result = model.fitTo(dh, Save(kTRUE));
+  // RooFitResult *fit_result = model.fitTo(dh, Save(kTRUE));
+  model.fitTo(dh, Minimizer("Minuit2", "migrad"), Strategy(0), Hesse(kFALSE));
   model.plotOn(frame, LineColor(kBlue), Name("model"));
   model.plotOn(frame, Components(sig), LineColor(kRed), Name("Signal"));
   model.plotOn(frame, Components(bkg), LineStyle(ELineStyle::kDashed),
                LineColor(kBlue), Name("Bkg"));
   double chi2 = frame->chiSquare("model", "data");
   TString chi2text = TString::Format("#chi^{2}/ndf = %f ", chi2);
-  model.paramOn(frame, Label(chi2text), Layout(0.63, 0.9, 0.9), Format("NE"));
+  model.paramOn(frame, Label(chi2text), Layout(0.63, 0.9, 0.9),
+                Format("NE", FixedPrecision(5)));
   // Saving plot
   TCanvas *c = new TCanvas(Form("Fitted_%s", hs->GetName()));
   c->cd();

@@ -366,7 +366,7 @@ void FlowAnalysis_ResolutionSPEP(int NbinCent = 20) {
   hs1_diff->GetXaxis()->SetTitle("Centrality FT0C %");
   hs1_diff->GetYaxis()->SetTitle("#Delta{R_{2}(SP)}");
 
-  TFile f("histos.root", "RECREATE");
+  TFile f("FlowAnalysisResults_ResolutionSPEP.root", "RECREATE");
   TList *l1 = new TList();
   TList *l2 = new TList();
   for (int i = 0; i < 9; i++) {
