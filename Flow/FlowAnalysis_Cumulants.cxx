@@ -95,9 +95,11 @@ void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
   double *Bin_pt = CreateBinsFromAxis(ptAxis);
   double *Bin_cent = CreateBinsFromAxis(centAxis);
 
-  ///////////////////////////////////
-  /// Analysis for Reference Flow ///
-  ///////////////////////////////////
+  ///////////////////////////////////////
+  ///                                 ///
+  ///   Analysis for Reference Flow   ///
+  ///                                 ///
+  ///////////////////////////////////////
 
   // Define projected profiles w.r.t above defined variables' ranges
   TList *l_refflow = new TList();
@@ -155,9 +157,11 @@ void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
   l_refflow->Add(hist_v24ref);
   l_refflow->Write("ReferenceFlow", TObject::kSingleKey);
 
-  /////////////////////////////////////////////
-  /// Analysis for Differential Flow of POI ///
-  /////////////////////////////////////////////
+  /////////////////////////////////////////////////
+  ///                                           ///
+  ///   Analysis for Differential Flow of POI   ///
+  ///                                           ///
+  /////////////////////////////////////////////////
 
   // Define variables' range for analysis
   double Bin_pt_mass[9] = {1., 2., 3., 4., 5., 6., 9., 12., 20.};
@@ -302,7 +306,10 @@ void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
       hist_vd24->SetBinError(j + 1, isnan(vd24e) || isinf(vd24e) ? 0 : vd24e);
     }
 
+    // Do fitting
     runFitting(hist_mass_proj, l_diff, Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+
+    // Save results
     l_diff->Add(hist_mass_proj);
     l_diff->Add(hist_d22);
     l_diff->Add(hist_d24);
@@ -343,7 +350,7 @@ void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax) {
   dh.plotOn(frame, DataError(RooAbsData::Poisson), Name("data"));
 
   // Setting up fit model
-  // Signal model: double-sided crytalball
+  /// Signal model: double-sided crytalball
   RooRealVar m0("m0", "m0", 3.097, 3.09, 3.1);
   RooRealVar sigma("sigma", "sigma", 0.06, 0.001, 0.12);
   RooRealVar alphaL("alphaL", "alphaL", 5.0, 3.0, 10.0);
@@ -351,7 +358,7 @@ void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax) {
   RooRealVar nL("nL", "nL", 0.05, 0.0, 1.0);
   RooRealVar nR("nR", "nR", 0.05, 0.0, 1.0);
   RooCrystalBall sig("Signal", "CB2", m, m0, sigma, alphaL, nL, alphaR, nR);
-  // Background model: VWG
+  /// Background model: VWG
   RooRealVar A("A", "A", -0.1, -2.0, 2.0);
   RooRealVar B("B", "B", 0.1, -5.5, 5.5);
   RooRealVar C("C", "C", -0.1, -1.5, 1.5);
@@ -360,7 +367,7 @@ void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax) {
 
   RooGenericPdf bkg("Bkg", "VWG", "exp(-(m-A)*(m-A)/(2.*sigma_VWG*sigma_VWG))",
                     RooArgSet(m, A, sigma_VWG));
-  // Construct a combined signal+background model
+  /// Construct a combined signal+background model
   RooRealVar nsig("nsig", "#signal events", 500, 0., 10000000);
   RooRealVar nbkg("nbkg", "#background events", 10000, 0., 10000000);
   RooAddPdf model("model", "CB2+VWG", {sig, bkg}, {nsig, nbkg});
