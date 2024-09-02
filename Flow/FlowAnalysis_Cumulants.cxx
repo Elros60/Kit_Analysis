@@ -40,6 +40,7 @@
 
 #include <RooAbsData.h>
 #include <RooAddPdf.h>
+#include <RooChebychev.h>
 #include <RooCrystalBall.h>
 #include <RooDataHist.h>
 #include <RooDataSet.h>
@@ -48,6 +49,7 @@
 #include <RooGaussian.h>
 #include <RooGenericPdf.h>
 #include <RooPlot.h>
+#include <RooPolynomial.h>
 #include <RooRealVar.h>
 
 #include "Framework/Logger.h"
@@ -57,7 +59,8 @@ using namespace RooFit;
 
 double *CreateBinsFromAxis(TAxis *axis);
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
-void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax);
+void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax, double massmin,
+                double massmax);
 
 void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
                             std::string dimuonCut = "pairRapidityForward",
@@ -164,48 +167,52 @@ void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
   /////////////////////////////////////////////////
 
   // Define variables' range for analysis
-  double Bin_pt_mass[9] = {1., 2., 3., 4., 5., 6., 9., 12., 20.};
-  double cent_min = 10.0;
-  double cent_max = 60.0;
-  double mass_min = 2.5; // same as initial setup
-  double mass_max = 4.5; // same as initial setup
+  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  double cent_min = 10.0; // 20
+  double cent_max = 50.0; // 50
+  double mass_min = 2.3;  // same as initial setup
+  double mass_max = 3.9;  // same as initial setup
   int iBin_cent_min = centAxis->FindBin(cent_min);
   int iBin_cent_max = centAxis->FindBin(cent_max);
   int iBin_mass_min = massAxis->FindBin(mass_min);
   int iBin_mass_max = massAxis->FindBin(mass_max);
 
-  for (int i = 0; i < 8; i++) {
-    TList *l_diff = new TList();
+  for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
 
+    TList *l_diff = new TList();
     int iBin_pt_min = ptAxis->FindBin(Bin_pt_mass[i]);
     int iBin_pt_max = ptAxis->FindBin(Bin_pt_mass[i + 1]);
     // Copy original profiles for projections
     TProfile3D *tp_Corr2Ref_cp = dynamic_cast<TProfile3D *>(
-        tp_Corr2Ref->Clone(Form("Mass_Pt_centrFT0C_Corr2REF_Copy_%d_%d",
-                                int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1]))));
+        tp_Corr2Ref->Clone(Form("Mass_Pt_centrFT0C_Corr2REF_Copy_%g_%g",
+                                Bin_pt_mass[i], Bin_pt_mass[i + 1])));
     TProfile3D *tp_Corr4Ref_cp = dynamic_cast<TProfile3D *>(
-        tp_Corr4Ref->Clone(Form("Mass_Pt_centrFT0C_Corr4REF_Copy_%d_%d",
-                                int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1]))));
+        tp_Corr4Ref->Clone(Form("Mass_Pt_centrFT0C_Corr4REF_Copy_%g_%g",
+                                Bin_pt_mass[i], Bin_pt_mass[i + 1])));
     TProfile3D *tp_Corr2Poi_cp = dynamic_cast<TProfile3D *>(
-        tp_Corr2Poi->Clone(Form("Mass_Pt_centrFT0C_Corr2POI_Copy_%d_%d",
-                                int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1]))));
+        tp_Corr2Poi->Clone(Form("Mass_Pt_centrFT0C_Corr2POI_Copy_%g_%g",
+                                Bin_pt_mass[i], Bin_pt_mass[i + 1])));
     TProfile3D *tp_Corr4Poi_cp = dynamic_cast<TProfile3D *>(
-        tp_Corr4Poi->Clone(Form("Mass_Pt_centrFT0C_Corr4POI_Copy_%d_%d",
-                                int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1]))));
+        tp_Corr4Poi->Clone(Form("Mass_Pt_centrFT0C_Corr4POI_Copy_%g_%g",
+                                Bin_pt_mass[i], Bin_pt_mass[i + 1])));
     THnSparse *hist_mass_cp = dynamic_cast<THnSparse *>(
-        hist_mass->Clone(Form("Mass_Pt_Rapidity_centrFT0C_Copy_%d_%d",
-                              int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1]))));
+        hist_mass->Clone(Form("Mass_Pt_Rapidity_centrFT0C_Copy_%g_%g",
+                              Bin_pt_mass[i], Bin_pt_mass[i + 1])));
 
     // Set axes' ranges for mass-differential study
+    tp_Corr2Ref_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
     tp_Corr2Ref_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
     tp_Corr2Ref_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
 
+    tp_Corr4Ref_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
     tp_Corr4Ref_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
     tp_Corr4Ref_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
 
+    tp_Corr2Poi_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
     tp_Corr2Poi_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
     tp_Corr2Poi_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
 
+    tp_Corr4Poi_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
     tp_Corr4Poi_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
     tp_Corr4Poi_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
 
@@ -228,33 +235,29 @@ void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
     double *Bin_mass_new = CreateBinsFromAxis(hist_mass_proj->GetXaxis());
     int NBins_mass_new = hist_mass_proj->GetXaxis()->GetNbins();
     TH1D *hist_d22 = new TH1D(
-        Form("d22_%d_%d", int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1])),
-        Form("d^{J/#psi}_{2}{2}_%d_%d", int(Bin_pt_mass[i]),
-             int(Bin_pt_mass[i + 1])),
+        Form("d22_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("d^{J/#psi}_{2}{2}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_d22->GetXaxis()->SetTitle("mass (GeV/c2)");
     hist_d22->GetYaxis()->SetTitle("d^{J/#psi}_{2}{2}");
 
     TH1D *hist_d24 = new TH1D(
-        Form("d24_%d_%d", int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1])),
-        Form("d^{J/#psi}_{2}{4}_%d_%d", int(Bin_pt_mass[i]),
-             int(Bin_pt_mass[i + 1])),
+        Form("d24_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("d^{J/#psi}_{2}{4}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_d24->GetXaxis()->SetTitle("mass (GeV/c2)");
     hist_d24->GetYaxis()->SetTitle("d^{J/#psi}_{2}{4}");
 
     TH1D *hist_vd22 = new TH1D(
-        Form("vd22_%d_%d", int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1])),
-        Form("v'^{J/#psi}_{2}{2}_%d_%d", int(Bin_pt_mass[i]),
-             int(Bin_pt_mass[i + 1])),
+        Form("vd22_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("v'^{J/#psi}_{2}{2}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_vd22->GetXaxis()->SetTitle("mass (GeV/c2)");
     hist_vd22->GetYaxis()->SetTitle("v'^{J/#psi}_{2}{2}");
 
     TH1D *hist_vd24 = new TH1D(
-        Form("vd24_%d_%d", int(Bin_pt_mass[i]), int(Bin_pt_mass[i + 1])),
-        Form("v'^{J/#psi}_{2}{4}_%d_%d", int(Bin_pt_mass[i]),
-             int(Bin_pt_mass[i + 1])),
+        Form("vd24_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("v'^{J/#psi}_{2}{4}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_vd24->GetXaxis()->SetTitle("mass (GeV/c2)");
     hist_vd24->GetYaxis()->SetTitle("v'^{J/#psi}_{2}{4}");
@@ -307,7 +310,8 @@ void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
     }
 
     // Do fitting
-    runFitting(hist_mass_proj, l_diff, Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+    runFitting(hist_mass_proj, l_diff, Bin_pt_mass[i], Bin_pt_mass[i + 1],
+               mass_min, mass_max);
 
     // Save results
     l_diff->Add(hist_mass_proj);
@@ -315,9 +319,9 @@ void FlowAnalysis_Cumulants(std::string muonCut = "muonLowPt210SigmaPDCA",
     l_diff->Add(hist_d24);
     l_diff->Add(hist_vd22);
     l_diff->Add(hist_vd24);
-    l_diff->Write(Form("DifferentialFlow_%d_%d", int(Bin_pt_mass[i]),
-                       int(Bin_pt_mass[i + 1])),
-                  TObject::kSingleKey);
+    l_diff->Write(
+        Form("DifferentialFlow_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        TObject::kSingleKey);
   }
 
   f.Close();
@@ -338,39 +342,62 @@ void CreateBins(double *axis, double min, double max, int Nbins) {
   axis[Nbins] = max;
 }
 
-void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax) {
+void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax, double massmin,
+                double massmax) {
 
   // Setting up RooFit
   cout << "Start processing Pt range: " << ptmin << " " << ptmax << endl;
-  RooRealVar m("m", "m_{#mu#mu}", 2.6, 4.5, "GeV/c2");
+  RooRealVar m("m", "m_{#mu#mu}", massmin, massmax, "GeV/c2");
   RooDataHist dh("dh", "dh", m, Import(*hs));
-  RooPlot *frame =
-      m.frame(Name("mFrame"), Title(Form("m_{#mu#mu} signal fit (%d < pT < %d)",
-                                         int(ptmin), int(ptmax))));
+  RooPlot *frame = m.frame(
+      Name("mFrame"),
+      Title(Form("m_{#mu#mu} signal fit (%g < pT < %g)", ptmin, ptmax)));
   dh.plotOn(frame, DataError(RooAbsData::Poisson), Name("data"));
 
   // Setting up fit model
   /// Signal model: double-sided crytalball
   RooRealVar m0("m0", "m0", 3.097, 3.09, 3.1);
-  RooRealVar sigma("sigma", "sigma", 0.06, 0.001, 0.12);
-  RooRealVar alphaL("alphaL", "alphaL", 5.0, 3.0, 10.0);
-  RooRealVar alphaR("alphaR", "alphaR", 5.0, 3.0, 10.0);
-  RooRealVar nL("nL", "nL", 0.05, 0.0, 1.0);
-  RooRealVar nR("nR", "nR", 0.05, 0.0, 1.0);
+  RooRealVar sigma("sigma", "sigma", 0.09, 0.05, 0.13);
+  RooRealVar alphaL("alphaL", "alphaL", 0.993, 0.1, 3.0);
+  RooRealVar alphaR("alphaR", "alphaR", 2.182, 0.1, 3.0);
+  RooRealVar nL("nL", "nL", 2.9075, 1.0, 7.0);
+  RooRealVar nR("nR", "nR", 3.122, 2.0, 7.0);
+  // Fixing tail parameters
+  alphaL.setConstant(kTRUE);
+  alphaR.setConstant(kTRUE);
+  nL.setConstant(kTRUE);
+  nR.setConstant(kTRUE);
   RooCrystalBall sig("Signal", "CB2", m, m0, sigma, alphaL, nL, alphaR, nR);
+
   /// Background model: VWG
+  /*
   RooRealVar A("A", "A", -0.1, -2.0, 2.0);
-  RooRealVar B("B", "B", 0.1, -5.5, 5.5);
-  RooRealVar C("C", "C", -0.1, -1.5, 1.5);
+  RooRealVar B("B", "B", 0.1, -7.5, 7.5);
+  RooRealVar C("C", "C", -0.1, -2.5, 2.5);
   RooFormulaVar sigma_VWG("sigma_VWG", "sigma_VWG", "B+C*((m-A)/A)",
                           RooArgList(m, A, B, C));
-
   RooGenericPdf bkg("Bkg", "VWG", "exp(-(m-A)*(m-A)/(2.*sigma_VWG*sigma_VWG))",
                     RooArgSet(m, A, sigma_VWG));
+  */
+
+  /// Background model: Pol3
+  /*
+  RooRealVar A("A", "A", 0.1, -20.0, 20.0);
+  RooRealVar B("B", "B", -0.1, -20.0, 20.0);
+  RooRealVar C("C", "C", 0.1, -20.0, 20.0);
+  RooPolynomial bkg("Bkg", "Pol3", m, RooArgList(A, B, C));
+  */
+
+  /// Background model: Chebychev
+  RooRealVar A("A", "A", -0.0001, -5.0, 5.0);
+  RooRealVar B("B", "B", 0.0, -5.0, 5.0);
+  RooRealVar C("C", "C", 0.0, -5.0, 5.0);
+  RooChebychev bkg("Bkg", "Chebychev", m, RooArgList(A, B, C));
+
   /// Construct a combined signal+background model
-  RooRealVar nsig("nsig", "#signal events", 500, 0., 10000000);
-  RooRealVar nbkg("nbkg", "#background events", 10000, 0., 10000000);
-  RooAddPdf model("model", "CB2+VWG", {sig, bkg}, {nsig, nbkg});
+  RooRealVar nsig("nsig", "#signal events", 500, 0., 100000000);
+  RooRealVar nbkg("nbkg", "#background events", 10000, 0., 100000000);
+  RooAddPdf model("model", "model", {sig, bkg}, {nsig, nbkg});
 
   // Do fitting
   // RooFitResult *fit_result = model.fitTo(dh, Save(kTRUE));
@@ -380,9 +407,11 @@ void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax) {
   model.plotOn(frame, Components(bkg), LineStyle(ELineStyle::kDashed),
                LineColor(kBlue), Name("Bkg"));
   double chi2 = frame->chiSquare("model", "data");
-  TString chi2text = TString::Format("#chi^{2}/ndf = %f ", chi2);
-  model.paramOn(frame, Label(chi2text), Layout(0.63, 0.9, 0.9),
-                Format("NE", FixedPrecision(5)));
+  double SNR = nsig.getValV() / nbkg.getValV();
+  string chi2text = Form("#chi^{2}/ndf = %f ", chi2);
+  string SNRtext = Form("S/B = %f ", SNR);
+  model.paramOn(frame, Label(Form("%s\n%s", chi2text.c_str(), SNRtext.c_str())),
+                Layout(0.63, 0.9, 0.9), Format("NE", FixedPrecision(5)));
   // Saving plot
   TCanvas *c = new TCanvas(Form("Fitted_%s", hs->GetName()));
   c->cd();
