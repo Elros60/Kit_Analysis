@@ -53,6 +53,7 @@
 #include <RooHist.h>
 #include <RooPlot.h>
 #include <RooPolynomial.h>
+#include <RooPowerSum.h>
 #include <RooRealVar.h>
 #include <RooWorkspace.h>
 
@@ -61,7 +62,7 @@
 using namespace std;
 using namespace RooFit;
 
-enum ModelType { CB2 = 0, Chebychev, VWG, POL, PolExp, Exp2 };
+enum ModelType { CB2 = 0, Chebychev, VWG, POL, Exp2, PolExp };
 
 double *CreateBinsFromAxis(TAxis *axis);
 void CreateBins(double *axis, double min, double max, int Nbins = 10);
@@ -70,9 +71,9 @@ void runFitting(TH1D *hs, TList *ls, double chi2max, int flag_sig, int flag_bkg,
                 double ptmin, double ptmax, double massmin, double massmax);
 
 void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
+                            std::string FileName = "AnalysisResults.root",
                             std::string muonCut = "muonLowPt210SigmaPDCA",
-                            std::string dimuonCut = "pairRapidityForward",
-                            std::string FileName = "AnalysisResults.root") {
+                            std::string dimuonCut = "pairRapidityForward") {
 
   // Load data from AnalysisResults.root
   TFile *Input_File = TFile::Open(FileName.c_str());
@@ -178,7 +179,7 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
   double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
   double cent_min = 10.0; // 20
   double cent_max = 50.0; // 50
-  double mass_min = 2.4;  // same as initial setup
+  double mass_min = 2.3;  // same as initial setup
   double mass_max = 4.2;  // same as initial setup
   int iBin_cent_min = centAxis->FindBin(cent_min);
   int iBin_cent_max = centAxis->FindBin(cent_max);
@@ -370,15 +371,9 @@ void CreateModel(RooWorkspace &w, RooRealVar x, ModelType flag) {
     RooRealVar a0("a0", "a0", 0.1, -1.0, 5.0);
     RooRealVar a1("a1", "a1", 0.2, 0.0, 3.0);
     RooRealVar a2("a2", "a2", 0.1, -1.0, 1.0);
-    // RooRealVar a3("a3", "a3", 0.0, -1.0, 1.0);
     a1.setConstant(kTRUE);
     a2.setConstant(kTRUE);
-    // a3.setConstant(kTRUE);
-    /*
-    RooFormulaVar sigma_VWG("sigma_VWG", "sigma_VWG",
-                            "a1+a2*((m-a0)/a0)+a3*((m-a0)/a0)*((m-a0)/a0)",
-                            RooArgList(x, a0, a1, a2, a3));
-    */
+
     RooFormulaVar sigma_VWG("sigma_VWG", "sigma_VWG", "a1+a2*((m-a0)/a0)",
                             RooArgList(x, a0, a1, a2));
     RooGenericPdf model = RooGenericPdf(
@@ -404,6 +399,39 @@ void CreateModel(RooWorkspace &w, RooRealVar x, ModelType flag) {
     a7.setConstant(kTRUE);
     RooArgList param_bkg = RooArgList(a0, a1, a2, a3, a4, a5, a6, a7);
     RooPolynomial model = RooPolynomial("Bkg", "Pol", x, param_bkg);
+    w.import(model);
+  }
+  if (flag == PolExp) {
+    RooRealVar a0("a0", "a0", 1.0, -20.0, 500.0);
+    RooRealVar a1("a1", "a1", 1.0, -10.0, 10.0);
+    RooRealVar a2("a2", "a2", -1.0, -10.0, 10.0);
+    RooRealVar a3("a3", "a3", 0.0, -10.0, 10.0);
+    RooRealVar a4("a4", "a4", 0.0, -10.0, 10.0);
+    RooRealVar a5("a5", "a5", 0.0, -10.0, 10.0);
+    a2.setConstant(kTRUE);
+    a3.setConstant(kTRUE);
+    a4.setConstant(kTRUE);
+    a5.setConstant(kTRUE);
+    RooGenericPdf model = RooGenericPdf(
+        "Bkg", "PolExp", "(a0+a1*m+a3*m*m+a4*m*m*m+a5*m*m*m*m)*exp(a2*m)",
+        RooArgSet(x, a0, a1, a2, a3, a4, a5));
+    w.import(model);
+  }
+  if (flag == Exp2) {
+    RooRealVar a0("a0", "a0", 0.0, -10.0, 10.0);
+    RooRealVar a1("a1", "a1", -0.1, -5.0, 5.0);
+    RooRealVar a2("a2", "a2", 0.1, -5.0, 5.0);
+    RooRealVar a3("a3", "a3", 0.0, -10.0, 10.0);
+    RooRealVar a4("a4", "a4", -0.2, -5.0, 5.0);
+    RooRealVar a5("a5", "a5", 0.2, -5.0, 5.0);
+    a1.setConstant(kTRUE);
+    a2.setConstant(kTRUE);
+    a3.setConstant(kTRUE);
+    a4.setConstant(kTRUE);
+    a5.setConstant(kTRUE);
+    RooGenericPdf model =
+        RooGenericPdf("Bkg", "Exp2", "a0*exp(a1*(m-a2))+a3*exp(a4*(m-a5))",
+                      RooArgSet(x, a0, a1, a2, a3, a4, a5));
     w.import(model);
   }
   if (flag == Chebychev) {
@@ -455,25 +483,28 @@ void runFitting(TH1D *hs, TList *ls, double chi2max, int flag_sig, int flag_bkg,
 
   // Do fitting
   /// Iterative fitting
-  int start = 0;
-  for (int i = start; i < param_bkg.getSize(); i++) {
+  RooArgList param_bkg_const =
+      RooArgList(*param_bkg.selectByAttrib("Constant", kTRUE));
+
+  for (int i = 0; i <= param_bkg_const.getSize(); i++) {
     model.fitTo(dh, Hesse(0));
     RooAbsReal *chi2var = model.createChi2(dh, DataError(RooAbsData::Poisson));
     int nfree =
         model.getParameters(dh)->selectByAttrib("Constant", kFALSE)->getSize();
     double chi2ndf = chi2var->getVal() / (dh.numEntries() - nfree);
-    if (chi2ndf > chi2max && i != param_bkg.getSize() - 1) {
-      static_cast<RooRealVar *>(param_bkg.at(i + 1))->setConstant(kFALSE);
+    if (chi2ndf > chi2max && i != param_bkg_const.getSize()) {
+      static_cast<RooRealVar *>(param_bkg_const.at(i))->setConstant(kFALSE);
     } else {
       break;
     }
   }
 
   // Plotting
-  model.plotOn(frame, LineColor(kBlue), Name("model"));
-  model.plotOn(frame, Components(*sig), LineColor(kRed), Name("Signal"));
+  model.plotOn(frame, LineColor(kBlue), LineWidth(5.0), Name("model"));
+  model.plotOn(frame, Components(*sig), LineColor(kRed), LineWidth(5.0),
+               Name("Signal"));
   model.plotOn(frame, Components(*bkg), LineStyle(ELineStyle::kDashed),
-               LineColor(kBlue), Name("Bkg"));
+               LineColor(kBlue), LineWidth(5.0), Name("Bkg"));
 
   int nfree =
       model.getParameters(dh)->selectByAttrib("Constant", kFALSE)->getSize();
@@ -486,8 +517,12 @@ void runFitting(TH1D *hs, TList *ls, double chi2max, int flag_sig, int flag_bkg,
       model.getParameters(dh)->selectByName("mean")->getRealValue("mean");
   RooRealVar m_3sigma("m3sig", "m_{#mu#mu}", mean_fitted - 3. * sigma_fitted,
                       mean_fitted + 3. * sigma_fitted, "GeV/c2");
-  double nsig_3sigma = sig->createIntegral(m_3sigma, m)->getVal();
-  double nbkg_3sigma = bkg->createIntegral(m_3sigma, m)->getVal();
+  m.setRange("3sigma", mean_fitted - 3. * sigma_fitted,
+             mean_fitted + 3. * sigma_fitted);
+  double nsig_3sigma =
+      nsig.getVal() * sig->createIntegral(m, m, "3sigma")->getVal();
+  double nbkg_3sigma =
+      nbkg.getVal() * bkg->createIntegral(m, m, "3sigma")->getVal();
   double SNR = nsig_3sigma / nbkg_3sigma;
   string SNRtext = Form("(S/B)_{3#sigma} = %f ", SNR);
   model.paramOn(frame, Label(Form("%s\n%s", chi2text.c_str(), SNRtext.c_str())),
