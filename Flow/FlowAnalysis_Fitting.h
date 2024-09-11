@@ -31,18 +31,17 @@ enum ModelType { CB2 = 0, Chebychev, VWG, POL, Exp2, PolExp };
 
 class FlowAnalysis_Fitting {
 public:
-  FlowAnalysis_Fitting() : mWS("w", "workspace") {};
   void init();
   void setModel(int flag_sig, int flag_bkg);
   void setChi2Max(double chi2) { mchi2max = chi2; };
   void runFitting(TH1D *hs, TList *ls, double ptmin, double ptmax,
                   double massmin, double massmax);
+  void Print();
 
 private:
-  void CreateModel(RooRealVar x, int flag);
-  int mflag_sig{};
-  int mflag_bkg{};
-  double mchi2max{};
-  RooWorkspace mWS{};
+  void CreateModel(RooWorkspace &w, RooRealVar x, int flag);
+  int mflag_sig{0};
+  int mflag_bkg{0};
+  double mchi2max{1.};
 };
 #endif

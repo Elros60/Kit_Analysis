@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 
-#include "/Users/cz263673/alice/Kit_Analysis/Flow/FlowAnalysis_Fitting.h"
+#include "FlowAnalysis_Fitting.h"
 
 #include "Framework/Logger.h"
 
@@ -64,6 +64,7 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
   fitter.init();
   fitter.setModel(flag_sig, flag_bkg);
   fitter.setChi2Max(chi2max);
+  fitter.Print();
 
   // Get TProfiles of correlations
   TProfile3D *tp_Corr2Ref =
@@ -174,6 +175,7 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
     TList *l_diff = new TList();
     int iBin_pt_min = ptAxis->FindBin(Bin_pt_mass[i]);
     int iBin_pt_max = ptAxis->FindBin(Bin_pt_mass[i + 1]);
+
     // Copy original profiles for projections
     TProfile3D *tp_Corr2Ref_cp = dynamic_cast<TProfile3D *>(
         tp_Corr2Ref->Clone(Form("Mass_Pt_centrFT0C_Corr2REF_Copy_%g_%g",

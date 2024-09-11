@@ -14,7 +14,8 @@ void FlowAnalysis_Fitting::setModel(int flag_sig, int flag_bkg) {
 }
 
 //______________________________________________________________________________
-void FlowAnalysis_Fitting::CreateModel(RooRealVar x, int flag) {
+void FlowAnalysis_Fitting::CreateModel(RooWorkspace &w, RooRealVar x,
+                                       int flag) {
   if (flag == CB2) {
     RooRealVar m0("mean", "mean", 3.097, 3.09, 3.1);
     RooRealVar sigma("sigma", "sigma", 0.08, 0.05, 0.12);
@@ -28,7 +29,7 @@ void FlowAnalysis_Fitting::CreateModel(RooRealVar x, int flag) {
     nR.setConstant(kTRUE);
     RooCrystalBall model =
         RooCrystalBall("Signal", "CB2", x, m0, sigma, alphaL, nL, alphaR, nR);
-    mWS.import(model);
+    w.import(model);
   }
   if (flag == VWG) {
     RooRealVar a0("a0", "a0", 0.1, -1.0, 5.0);
@@ -42,7 +43,7 @@ void FlowAnalysis_Fitting::CreateModel(RooRealVar x, int flag) {
     RooGenericPdf model = RooGenericPdf(
         "Bkg", "VWG", "exp(-(m-a0)*(m-a0)/(2.*sigma_VWG*sigma_VWG))",
         RooArgSet(x, a0, sigma_VWG));
-    mWS.import(model);
+    w.import(model);
   }
   if (flag == POL) {
     RooRealVar a0("a0", "a0", -0.2, -10.0, 10.0);
@@ -62,7 +63,7 @@ void FlowAnalysis_Fitting::CreateModel(RooRealVar x, int flag) {
     a7.setConstant(kTRUE);
     RooArgList param_bkg = RooArgList(a0, a1, a2, a3, a4, a5, a6, a7);
     RooPolynomial model = RooPolynomial("Bkg", "Pol", x, param_bkg);
-    mWS.import(model);
+    w.import(model);
   }
   if (flag == PolExp) {
     RooRealVar a0("a0", "a0", 1.0, -20.0, 500.0);
@@ -78,7 +79,7 @@ void FlowAnalysis_Fitting::CreateModel(RooRealVar x, int flag) {
     RooGenericPdf model = RooGenericPdf(
         "Bkg", "PolExp", "(a0+a1*m+a3*m*m+a4*m*m*m+a5*m*m*m*m)*exp(a2*m)",
         RooArgSet(x, a0, a1, a2, a3, a4, a5));
-    mWS.import(model);
+    w.import(model);
   }
   if (flag == Exp2) {
     RooRealVar a0("a0", "a0", 0.0, -10.0, 10.0);
@@ -95,7 +96,7 @@ void FlowAnalysis_Fitting::CreateModel(RooRealVar x, int flag) {
     RooGenericPdf model =
         RooGenericPdf("Bkg", "Exp2", "a0*exp(a1*(m-a2))+a3*exp(a4*(m-a5))",
                       RooArgSet(x, a0, a1, a2, a3, a4, a5));
-    mWS.import(model);
+    w.import(model);
   }
   if (flag == Chebychev) {
     RooRealVar a0("a0", "a0", 0.0, -5.0, 5.0);
@@ -115,7 +116,7 @@ void FlowAnalysis_Fitting::CreateModel(RooRealVar x, int flag) {
     a7.setConstant(kTRUE);
     RooArgList param_bkg = RooArgList(a0, a1, a2, a3, a4, a5, a6, a7);
     RooChebychev model = RooChebychev("Bkg", "Chebychev", x, param_bkg);
-    mWS.import(model);
+    w.import(model);
   }
 }
 
@@ -134,8 +135,9 @@ void FlowAnalysis_Fitting::runFitting(TH1D *hs, TList *ls, double ptmin,
   dh.plotOn(frame, DataError(RooAbsData::Poisson), Name("data"));
 
   // Setting up fit model
-  CreateModel(m, ModelType(mflag_sig)); // Create model for signal
-  CreateModel(m, ModelType(mflag_bkg)); // Create model for background
+  RooWorkspace mWS("w", "workspace");
+  CreateModel(mWS, m, ModelType(mflag_sig)); // Create model for signal
+  CreateModel(mWS, m, ModelType(mflag_bkg)); // Create model for background
   auto sig = mWS.pdf("Signal");
   auto bkg = mWS.pdf("Bkg");
   RooArgList param_bkg = RooArgList(*(bkg->getParameters(m)));
@@ -218,4 +220,12 @@ void FlowAnalysis_Fitting::runFitting(TH1D *hs, TList *ls, double ptmin,
   c_pull->cd();
   frame_pull->Draw();
   ls->Add(c_pull);
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Fitting::Print() {
+  cout << "Info for fitter: " << endl;
+  cout << "Signal model flag: " << mflag_sig << endl;
+  cout << "Background model flag: " << mflag_bkg << endl;
+  cout << "Chi2 threshold: " << mchi2max << endl;
 }
