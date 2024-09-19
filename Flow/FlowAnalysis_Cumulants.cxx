@@ -39,7 +39,6 @@
 #include <vector>
 
 #include "FlowAnalysis_Fitting.h"
-
 #include "Framework/Logger.h"
 
 using namespace std;
@@ -151,6 +150,7 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
   l_refflow->Add(hist_c24ref);
   l_refflow->Add(hist_v22ref);
   l_refflow->Add(hist_v24ref);
+  f.cd();
   l_refflow->Write("ReferenceFlow", TObject::kSingleKey);
 
   /////////////////////////////////////////////////
@@ -165,16 +165,10 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
   double cent_max = 50.0; // 50
   double mass_min = 2.3;  // same as initial setup
   double mass_max = 4.2;  // same as initial setup
-  int iBin_cent_min = centAxis->FindBin(cent_min);
-  int iBin_cent_max = centAxis->FindBin(cent_max);
-  int iBin_mass_min = massAxis->FindBin(mass_min);
-  int iBin_mass_max = massAxis->FindBin(mass_max);
 
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
 
     TList *l_diff = new TList();
-    int iBin_pt_min = ptAxis->FindBin(Bin_pt_mass[i]);
-    int iBin_pt_max = ptAxis->FindBin(Bin_pt_mass[i + 1]);
 
     // Copy original profiles for projections
     TProfile3D *tp_Corr2Ref_cp = dynamic_cast<TProfile3D *>(
@@ -194,25 +188,29 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
                               Bin_pt_mass[i], Bin_pt_mass[i + 1])));
 
     // Set axes' ranges for mass-differential study
-    tp_Corr2Ref_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
-    tp_Corr2Ref_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
-    tp_Corr2Ref_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
+    tp_Corr2Ref_cp->GetXaxis()->SetRangeUser(mass_min, mass_max);
+    tp_Corr2Ref_cp->GetYaxis()->SetRangeUser(Bin_pt_mass[i],
+                                             Bin_pt_mass[i + 1]);
+    tp_Corr2Ref_cp->GetZaxis()->SetRangeUser(cent_min, cent_max);
 
-    tp_Corr4Ref_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
-    tp_Corr4Ref_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
-    tp_Corr4Ref_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
+    tp_Corr4Ref_cp->GetXaxis()->SetRangeUser(mass_min, mass_max);
+    tp_Corr4Ref_cp->GetYaxis()->SetRangeUser(Bin_pt_mass[i],
+                                             Bin_pt_mass[i + 1]);
+    tp_Corr4Ref_cp->GetZaxis()->SetRangeUser(cent_min, cent_max);
 
-    tp_Corr2Poi_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
-    tp_Corr2Poi_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
-    tp_Corr2Poi_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
+    tp_Corr2Poi_cp->GetXaxis()->SetRangeUser(mass_min, mass_max);
+    tp_Corr2Poi_cp->GetYaxis()->SetRangeUser(Bin_pt_mass[i],
+                                             Bin_pt_mass[i + 1]);
+    tp_Corr2Poi_cp->GetZaxis()->SetRangeUser(cent_min, cent_max);
 
-    tp_Corr4Poi_cp->GetXaxis()->SetRange(iBin_mass_min, iBin_mass_max);
-    tp_Corr4Poi_cp->GetYaxis()->SetRange(iBin_pt_min, iBin_pt_max);
-    tp_Corr4Poi_cp->GetZaxis()->SetRange(iBin_cent_min, iBin_cent_max);
+    tp_Corr4Poi_cp->GetXaxis()->SetRangeUser(mass_min, mass_max);
+    tp_Corr4Poi_cp->GetYaxis()->SetRangeUser(Bin_pt_mass[i],
+                                             Bin_pt_mass[i + 1]);
+    tp_Corr4Poi_cp->GetZaxis()->SetRangeUser(cent_min, cent_max);
 
-    hist_mass_cp->GetAxis(0)->SetRange(iBin_mass_min, iBin_mass_max);
-    hist_mass_cp->GetAxis(1)->SetRange(iBin_pt_min, iBin_pt_max);
-    hist_mass_cp->GetAxis(3)->SetRange(iBin_cent_min, iBin_cent_max);
+    hist_mass_cp->GetAxis(0)->SetRangeUser(mass_min, mass_max);
+    hist_mass_cp->GetAxis(1)->SetRangeUser(Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+    hist_mass_cp->GetAxis(3)->SetRangeUser(cent_min, cent_max);
 
     // Define projected profiles w.r.t above defined variables' ranges
     TProfile *tp_Corr2Ref_mass =
@@ -230,31 +228,31 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
     int NBins_mass_new = hist_mass_proj->GetXaxis()->GetNbins();
     TH1D *hist_d22 = new TH1D(
         Form("d22_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-        Form("d^{J/#psi}_{2}{2}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("d^{#mu#mu}_{2}{2}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_d22->GetXaxis()->SetTitle("mass (GeV/c2)");
-    hist_d22->GetYaxis()->SetTitle("d^{J/#psi}_{2}{2}");
+    hist_d22->GetYaxis()->SetTitle("d^{#mu#mu}_{2}{2}");
 
     TH1D *hist_d24 = new TH1D(
         Form("d24_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-        Form("d^{J/#psi}_{2}{4}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("d^{#mu#mu}_{2}{4}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_d24->GetXaxis()->SetTitle("mass (GeV/c2)");
-    hist_d24->GetYaxis()->SetTitle("d^{J/#psi}_{2}{4}");
+    hist_d24->GetYaxis()->SetTitle("d^{#mu#mu}_{2}{4}");
 
     TH1D *hist_vd22 = new TH1D(
         Form("vd22_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-        Form("v'^{J/#psi}_{2}{2}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("v'^{#mu#mu}_{2}{2}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_vd22->GetXaxis()->SetTitle("mass (GeV/c2)");
-    hist_vd22->GetYaxis()->SetTitle("v'^{J/#psi}_{2}{2}");
+    hist_vd22->GetYaxis()->SetTitle("v'^{#mu#mu}_{2}{2}");
 
     TH1D *hist_vd24 = new TH1D(
         Form("vd24_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-        Form("v'^{J/#psi}_{2}{4}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("v'^{#mu#mu}_{2}{4}_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         NBins_mass_new, Bin_mass_new);
     hist_vd24->GetXaxis()->SetTitle("mass (GeV/c2)");
-    hist_vd24->GetYaxis()->SetTitle("v'^{J/#psi}_{2}{4}");
+    hist_vd24->GetYaxis()->SetTitle("v'^{#mu#mu}_{2}{4}");
 
     // Evaluation of differential flow as function of invariant mass
     for (int j = 0; j < NBins_mass_new; j++) {
@@ -308,17 +306,18 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg, double chi2max,
                       Bin_pt_mass[i + 1], mass_min, mass_max);
 
     // Save results
-    l_diff->Add(hist_mass_proj);
     l_diff->Add(hist_d22);
     l_diff->Add(hist_d24);
     l_diff->Add(hist_vd22);
     l_diff->Add(hist_vd24);
+    f.cd();
     l_diff->Write(
         Form("DifferentialFlow_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         TObject::kSingleKey);
   }
 
   f.Close();
+  Input_File->Close();
 }
 
 double *CreateBinsFromAxis(TAxis *axis) {
