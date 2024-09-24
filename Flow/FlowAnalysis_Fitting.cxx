@@ -6,6 +6,11 @@ double FlowAnalysis_Fitting::centmin = 0.;
 double FlowAnalysis_Fitting::centmax = 0.;
 int FlowAnalysis_Fitting::mflag_sig = 0.;
 int FlowAnalysis_Fitting::mflag_bkg = 0.;
+int FlowAnalysis_Fitting::mflag_bkg_v2 = 0.;
+int FlowAnalysis_Fitting::norder = 2;
+int FlowAnalysis_Fitting::nhar = 2;
+int FlowAnalysis_Fitting::mode = 0;
+string FlowAnalysis_Fitting::mode_string[2] = {"Std", "Sys"};
 
 //______________________________________________________________________________
 void FlowAnalysis_Fitting::init() {
@@ -21,6 +26,11 @@ void FlowAnalysis_Fitting::setModel(int flag_sig, int flag_bkg) {
 }
 
 //______________________________________________________________________________
+void FlowAnalysis_Fitting::setModelV2(int flag_bkg_v2) {
+  FlowAnalysis_Fitting::mflag_bkg_v2 = flag_bkg_v2;
+}
+
+//______________________________________________________________________________
 void FlowAnalysis_Fitting::setMassRange(double mass_min, double mass_max) {
   FlowAnalysis_Fitting::massmax = mass_max;
   FlowAnalysis_Fitting::massmin = mass_min;
@@ -30,6 +40,16 @@ void FlowAnalysis_Fitting::setMassRange(double mass_min, double mass_max) {
 void FlowAnalysis_Fitting::setCentRange(double cent_min, double cent_max) {
   FlowAnalysis_Fitting::centmax = cent_max;
   FlowAnalysis_Fitting::centmin = cent_min;
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Fitting::setOrder(int order) {
+  FlowAnalysis_Fitting::norder = order;
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Fitting::setHarmonic(int har) {
+  FlowAnalysis_Fitting::nhar = har;
 }
 
 //______________________________________________________________________________
@@ -60,7 +80,7 @@ double FlowAnalysis_Fitting::DoubleSidedCB(double *x, double *par) {
 }
 
 //______________________________________________________________________________
-double FlowAnalysis_Fitting::Cheby(double *x, double *par) {
+double FlowAnalysis_Fitting::Cheby7(double *x, double *par) {
   double t =
       -1. + 2. * (x[0] - FlowAnalysis_Fitting::massmin) /
                 (FlowAnalysis_Fitting::massmax - FlowAnalysis_Fitting::massmin);
@@ -74,6 +94,18 @@ double FlowAnalysis_Fitting::Cheby(double *x, double *par) {
   double T7 = 2. * t * T6 - T5;
   return (T0 + par[0] * T1 + par[1] * T2 + par[2] * T3 + par[3] * T4 +
           par[4] * T5 + par[5] * T6 + par[6] * T7);
+}
+
+//______________________________________________________________________________
+double FlowAnalysis_Fitting::Cheby3(double *x, double *par) {
+  double t =
+      -1. + 2. * (x[0] - FlowAnalysis_Fitting::massmin) /
+                (FlowAnalysis_Fitting::massmax - FlowAnalysis_Fitting::massmin);
+  double T0 = 1;
+  double T1 = t;
+  double T2 = 2. * pow(t, 2.) - 1.;
+  double T3 = 4. * pow(t, 3.) - 3. * t;
+  return (T0 + par[0] * T1 + par[1] * T2 + par[2] * T3);
 }
 
 //______________________________________________________________________________
@@ -109,7 +141,7 @@ double FlowAnalysis_Fitting::FittedSignal(double *x, double *par) {
 double FlowAnalysis_Fitting::FittedBkg(double *x, double *par) {
   double value = 0.;
   if (FlowAnalysis_Fitting::mflag_bkg == Chebychev) {
-    value = FlowAnalysis_Fitting::Cheby(x, &par[2]);
+    value = FlowAnalysis_Fitting::Cheby7(x, &par[2]);
   }
   if (FlowAnalysis_Fitting::mflag_bkg == PolExp) {
     value = FlowAnalysis_Fitting::DoubleExp(x, &par[2]);
@@ -205,7 +237,7 @@ void FlowAnalysis_Fitting::CreateModel(TF1 *&model, int flag) {
     model->SetParName(5, "a5");        // a5
   }
   if (flag == Chebychev) {
-    model = new TF1("Chebychev", FlowAnalysis_Fitting::Cheby,
+    model = new TF1("Chebychev", FlowAnalysis_Fitting::Cheby7,
                     FlowAnalysis_Fitting::massmin,
                     FlowAnalysis_Fitting::massmax, 7);
     model->SetParameter(0, 0.0);     // a0
@@ -233,14 +265,16 @@ void FlowAnalysis_Fitting::CreateModel(TF1 *&model, int flag) {
 }
 
 //______________________________________________________________________________
-vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
-                                                TList *ls, double ptmin,
-                                                double ptmax) {
+vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
+                                                TH1D *hs_v2_input, TList *ls,
+                                                double ptmin, double ptmax) {
   vector<double> results;
   // Fitting for dimuon invariant mass + v2 signal
   cout << ">>>>>>>>>>>>>> Start processing Pt range: " << ptmin << " " << ptmax
        << endl;
-
+  // Make copies for input histograms for safety
+  TH1D *hs = dynamic_cast<TH1D *>(hs_input->Clone());
+  TH1D *hs_v2 = dynamic_cast<TH1D *>(hs_v2_input->Clone());
   //////////////////////////////////////////////////////////////////////////////
   ///      INVARIANT MASS FIT
   //////////////////////////////////////////////////////////////////////////////
@@ -348,8 +382,23 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
   gStyle->SetOptFit(1111);
   gStyle->SetOptTitle(0);
   gROOT->ForceStyle();
-  TCanvas *c = new TCanvas(Form("Fitted_Mass_%g_%g", ptmin, ptmax),
-                           Form("Fitted_Mass_%g_%g", ptmin, ptmax));
+  TCanvas *c = new TCanvas(
+      Form(
+          "Fitted_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%d_%d_%d",
+          FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
+          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder, ptmin,
+          ptmax, FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
+          FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
+          FlowAnalysis_Fitting::mflag_sig, FlowAnalysis_Fitting::mflag_bkg,
+          FlowAnalysis_Fitting::mflag_bkg_v2),
+      Form(
+          "Fitted_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%d_%d_%d",
+          FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
+          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder, ptmin,
+          ptmax, FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
+          FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
+          FlowAnalysis_Fitting::mflag_sig, FlowAnalysis_Fitting::mflag_bkg,
+          FlowAnalysis_Fitting::mflag_bkg_v2));
   c->cd();
   hs->SetMarkerStyle(20);
   hs->SetMarkerSize(0.8);
@@ -380,6 +429,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
                                          mean_fitted + 3. * sigma_fitted);
   double B_3sigma = bkg_fitted->Integral(mean_fitted - 3. * sigma_fitted,
                                          mean_fitted + 3. * sigma_fitted);
+
   TPaveStats *sb = (TPaveStats *)gPad->GetPrimitive("stats");
   sb->SetName("J/#psi invariant mass fit");
   sb->SetX1NDC(0.7);
@@ -393,7 +443,6 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
   gPad->ModifiedUpdate();
 
   TLatex *text_info = new TLatex();
-  // text_info->SetTextAlign();
   text_info->SetTextSize(0.04);
   text_info->SetTextFont(42);
   text_info->DrawLatexNDC(
@@ -425,8 +474,18 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
   // Constructing combined v2 fit function
   auto fct_v2 = [alpha](double *x, double *par) {
     double val_alpha = alpha->Eval(x[0]);
-    return (par[0] * val_alpha +
-            (1 - val_alpha) * (par[1] + par[2] * x[0] + par[3] * x[0] * x[0]));
+    double value = 0.;
+    if (FlowAnalysis_Fitting::mflag_bkg_v2 == 0) {
+      // Using Pol2
+      value = (par[0] * val_alpha + (1 - val_alpha) * (par[1] + par[2] * x[0] +
+                                                       par[3] * x[0] * x[0]));
+    }
+    if (FlowAnalysis_Fitting::mflag_bkg_v2 == 1) {
+      // Using Chebychev
+      value = (par[0] * val_alpha +
+               (1 - val_alpha) * FlowAnalysis_Fitting::Cheby3(x, &par[1]));
+    }
+    return value;
   };
   TF1 *model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
                           FlowAnalysis_Fitting::massmax, 4);
@@ -461,23 +520,37 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
   v2bkg_fitted->SetParameter(0, model_v2->GetParameter(1));
   v2bkg_fitted->SetParameter(1, model_v2->GetParameter(2));
   v2bkg_fitted->SetParameter(2, model_v2->GetParameter(3));
-
   // Do plotting
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111);
   gStyle->SetOptTitle(0);
   gROOT->ForceStyle();
-  TCanvas *c_v2 = new TCanvas(Form("Fitted_V2_%g_%g", ptmin, ptmax),
-                              Form("Fitted_V2_%g_%g", ptmin, ptmax));
-
+  TCanvas *c_v2 = new TCanvas(
+      Form(
+          "Fitted_%s_v%d%d_%g_%g_%g_%g_%g_%g_%d_%d_%d",
+          FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
+          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder, ptmin,
+          ptmax, FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
+          FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
+          FlowAnalysis_Fitting::mflag_sig, FlowAnalysis_Fitting::mflag_bkg,
+          FlowAnalysis_Fitting::mflag_bkg_v2),
+      Form(
+          "Fitted_%s_v%d%d_%g_%g_%g_%g_%g_%g_%d_%d_%d",
+          FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
+          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder, ptmin,
+          ptmax, FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
+          FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
+          FlowAnalysis_Fitting::mflag_sig, FlowAnalysis_Fitting::mflag_bkg,
+          FlowAnalysis_Fitting::mflag_bkg_v2));
   c_v2->cd();
   hs_v2->SetMarkerStyle(20);
   hs_v2->SetMarkerSize(0.8);
-  hs_v2->SetTitle(Form("J/#psi #it{v}_{2}: %g - %g GeV/c, %g - %g %%", ptmin,
-                       ptmax, FlowAnalysis_Fitting::centmin,
+  hs_v2->SetTitle(Form("J/#psi #it{v}_{2}{%d}: %g - %g GeV/c, %g - %g %%",
+                       FlowAnalysis_Fitting::norder, ptmin, ptmax,
+                       FlowAnalysis_Fitting::centmin,
                        FlowAnalysis_Fitting::centmax));
   hs_v2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
-  hs_v2->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}{SP}");
+  hs_v2->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}");
   hs_v2->Draw("HIST EP");
   gPad->ModifiedUpdate();
   model_v2->SetLineWidth(5.0);
@@ -489,7 +562,6 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
   v2bkg_fitted->SetLineStyle(kDashed);
   v2bkg_fitted->Draw("same");
   gPad->ModifiedUpdate();
-
   TPaveStats *sb_v2 = (TPaveStats *)gPad->GetPrimitive("stats");
   sb_v2->SetName("J/#psi v2 fit");
   sb_v2->SetX1NDC(0.7);
@@ -499,24 +571,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs, TH1D *hs_v2,
   hs_v2->SetStats(0);
   sb_v2->Draw();
   gPad->ModifiedUpdate();
-
-  /*
-  TLatex *text_infov2 = new TLatex();
-  // text_info->SetTextAlign();
-  text_infov2->SetTextSize(0.04);
-  text_infov2->SetTextFont(42);
-  text_infov2->DrawLatexNDC(
-      .18, .82, "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} = 5.36 TeV");
-  gPad->ModifiedUpdate();
-  text_infov2->DrawLatexNDC(.18, .77,
-                            "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < 4");
-  gPad->ModifiedUpdate();
-  text_infov2->DrawLatexNDC(.18, .72,
-                            Form("%g < #it{p}_{T} < %g GeV/c", ptmin, ptmax));
-  gPad->ModifiedUpdate();
-  */
   ls->Add(c_v2);
-
   cout << endl;
   cout << endl;
   results.emplace_back(model_v2->GetParameter(0));

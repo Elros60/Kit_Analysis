@@ -23,17 +23,22 @@
 using namespace std;
 using namespace ROOT::Math;
 
-enum ModelType { CB2 = 0, Chebychev, VWG, Exp2, PolExp };
+// CB2 functions will be parametrised with 2 sets of tails: MC and data
+enum ModelType { CB2 = 0, CB2Bis, NA60, Chebychev, VWG, Exp2, PolExp };
 
 class FlowAnalysis_Fitting {
 public:
   void init();
   void setModel(int flag_sig, int flag_bkg);
+  void setModelV2(int flag_bkg_v2);
   void setChi2Max(double chi2) { mchi2max = chi2; };
   void setMassRange(double mass_min, double mass_max);
   void setCentRange(double cent_min, double cent_max);
-  vector<double> runFitting(TH1D *hs, TH1D *hs_v2, TList *ls, double ptmin,
-                            double ptmax);
+  void setHarmonic(int har);
+  void setMode(int mode_flag) { mode = mode_flag; };
+  void setOrder(int order);
+  vector<double> runFitting(TH1D *hs_input, TH1D *hs_v2_input, TList *ls,
+                            double ptmin, double ptmax);
   void Print();
 
 private:
@@ -41,7 +46,8 @@ private:
   static double DoubleSidedCB2(double x, double mu, double width, double a1,
                                double p1, double a2, double p2);
   static double DoubleSidedCB(double *x, double *par);
-  static double Cheby(double *x, double *par);
+  static double Cheby7(double *x, double *par);
+  static double Cheby3(double *x, double *par);
   static double VariableWidthGauss(double *x, double *par);
   static double DoubleExp(double *x, double *par);
   static double PolyExp(double *x, double *par);
@@ -54,6 +60,11 @@ private:
   static double centmax;
   static int mflag_sig;
   static int mflag_bkg;
+  static int mflag_bkg_v2;
+  static int norder;
+  static int nhar;
+  static int mode;
+  static string mode_string[2];
 
   double mchi2max{1.};
 };

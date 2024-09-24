@@ -57,8 +57,10 @@ void LoadData(std::string FileName, THnSparse *&hs_V2, TH2F *&hs_R2SPAB,
               std::string dimuonCut);
 
 //______________________________________________________________________________
-void FlowAnalysis_ScalarProduct(int flag_sig, int flag_bkg, double chi2max,
+void FlowAnalysis_ScalarProduct(int flag_sig, int flag_bkg,
                                 std::string FileName = "AnalysisResults.root",
+                                double cent_min = 10., double cent_max = 50.,
+                                double chi2max = 2., bool sys = false,
                                 std::string muonCut = "muonLowPt210SigmaPDCA",
                                 std::string dimuonCut = "pairRapidityForward") {
 
@@ -67,13 +69,6 @@ void FlowAnalysis_ScalarProduct(int flag_sig, int flag_bkg, double chi2max,
   TH2F *hs_R2SPAB, *hs_R2SPAC, *hs_R2SPBC;
   LoadData(FileName, hs_V2, hs_R2SPAB, hs_R2SPAC, hs_R2SPBC, muonCut,
            dimuonCut);
-
-  // Initialization for fitting
-  FlowAnalysis_Fitting fitter;
-  fitter.init();
-  fitter.setModel(flag_sig, flag_bkg);
-  fitter.setChi2Max(chi2max);
-  fitter.Print();
 
   // Get binning information
   TAxis *massAxis = hs_V2->GetAxis(0);
@@ -86,8 +81,20 @@ void FlowAnalysis_ScalarProduct(int flag_sig, int flag_bkg, double chi2max,
   double *Bin_pt = CreateBinsFromAxis(ptAxis);
   double *Bin_cent = CreateBinsFromAxis(centAxis);
 
+  // Initialize fitter
+  FlowAnalysis_Fitting fitter;
+  fitter.init();
+  fitter.setChi2Max(chi2max);
+
+  // Define variables' range for analysis
+  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  double mass_min = 2.3;
+  double mass_max = 4.3;
+
   // Create output file
-  TFile f("FlowAnalysisResults_ScalarProduct.root", "RECREATE");
+  TFile f(
+      Form("FlowAnalysisResults_ScalarProduct_%g_%g.root", cent_min, cent_max),
+      "RECREATE");
 
   ///////////////////////////////////////////////////
   ///                                             ///
@@ -172,14 +179,6 @@ void FlowAnalysis_ScalarProduct(int flag_sig, int flag_bkg, double chi2max,
   f.cd();
   l_r2->Write("ResolutionFactor", TObject::kSingleKey);
 
-  // Define variables' range for analysis
-  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
-  double cent_min = 10.0; // 20
-  double cent_max = 50.0; // 50
-  double mass_min = 2.3;  // same as initial setup
-  double mass_max = 4.3;  // same as initial setup
-  fitter.setMassRange(mass_min, mass_max);
-  fitter.setCentRange(cent_min, cent_max);
   // Evaluation of resolution factors in sub-bins of given centrality range
   double Bin_cent_r2[5] = {10., 20., 30., 40., 50.};
   double R2SP_sub[4];
@@ -290,33 +289,47 @@ void FlowAnalysis_ScalarProduct(int flag_sig, int flag_bkg, double chi2max,
       delete hs_v2_sp_proj_cp;
     }
 
-    // Do fitting
+    /// Do fitting
+
+    // Configuration for fitting
+    fitter.setModel(flag_sig, flag_bkg);
+    fitter.setMassRange(mass_min, mass_max);
+    fitter.setCentRange(cent_min, cent_max);
+
     // Fit invariant mass + v2
-    vector<double> results_v2 = fitter.runFitting(
-        hs_mass_proj, hist_v2sp, l_diff, Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+    TList *l_diff_fit = new TList();
+    vector<double> results_v2 =
+        fitter.runFitting(hs_mass_proj, hist_v2sp, l_diff_fit, Bin_pt_mass[i],
+                          Bin_pt_mass[i + 1]);
 
     // Fill pT-differential v2 and jpsi yields
     x_v2pt[i] = (Bin_pt_mass[i] + Bin_pt_mass[i + 1]) / 2;
     y_v2pt[i] = results_v2[0];
-    ex_v2pt[i] = 0.;
+    ex_v2pt[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2;
     ey_v2pt[i] = results_v2[1];
 
     x_yield[i] = (Bin_pt_mass[i] + Bin_pt_mass[i + 1]) / 2;
     y_yield[i] = results_v2[2] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
-    ex_yield[i] = 0.;
+    ex_yield[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2;
     ey_yield[i] = results_v2[3] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
 
     // Save results
-    l_diff->Add(hist_v2sp);
+    TList *l_diff_hist = new TList();
+    l_diff_hist->Add(hist_v2sp);
     f.cd();
-    l_diff->Write(
+    l_diff_hist->Write(
         Form("DifferentialFlow_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        TObject::kSingleKey);
+    l_diff_fit->Write(
+        Form("DifferentialFlow_Fit_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         TObject::kSingleKey);
 
     delete hs_mass_proj;
     delete hs_v2_sp_proj;
     delete hist_v2sp;
     delete hs_V2_cp;
+    delete l_diff_hist;
+    delete l_diff_fit;
   }
 
   // Print resolution factors
