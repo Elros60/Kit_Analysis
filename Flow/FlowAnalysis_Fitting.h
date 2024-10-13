@@ -14,6 +14,7 @@
 #include <TLatex.h>
 #include <TList.h>
 #include <TMath.h>
+#include <TPad.h>
 #include <TPaveStats.h>
 #include <TPaveText.h>
 #include <TROOT.h>
@@ -24,21 +25,23 @@ using namespace std;
 using namespace ROOT::Math;
 
 // CB2 functions will be parametrised with 2 sets of tails: MC and data
-enum ModelType { CB2 = 0, CB2Bis, NA60, Chebychev, VWG, Exp2, PolExp };
+enum ModelType { CB2Data = 0, CB2MC, NA60, Chebychev, VWG, Exp2, PolExp };
 
 class FlowAnalysis_Fitting {
 public:
   void init();
   void setModel(int flag_sig, int flag_bkg);
   void setModelV2(int flag_bkg_v2);
-  void setChi2Max(double chi2) { mchi2max = chi2; };
+  void setChi2MaxMass(double chi2) { mchi2max_mass = chi2; };
+  void setChi2MaxV2(double chi2) { mchi2max_v2 = chi2; };
   void setMassRange(double mass_min, double mass_max);
   void setCentRange(double cent_min, double cent_max);
+  void setPtRange(double pt_min, double pt_max);
   void setHarmonic(int har);
   void setMode(int mode_flag) { mode = mode_flag; };
   void setOrder(int order);
-  vector<double> runFitting(TH1D *hs_input, TH1D *hs_v2_input, TList *ls,
-                            double ptmin, double ptmax);
+  TH1D *GetPull(TH1D *hs, TF1 *model, string fit_case);
+  vector<double> runFitting(TH1D *hs_input, TH1D *hs_v2_input, TList *ls);
   void Print();
 
 private:
@@ -46,6 +49,7 @@ private:
   static double DoubleSidedCB2(double x, double mu, double width, double a1,
                                double p1, double a2, double p2);
   static double DoubleSidedCB(double *x, double *par);
+  static double NA60Function(double *x, double *par);
   static double Cheby7(double *x, double *par);
   static double Cheby3(double *x, double *par);
   static double VariableWidthGauss(double *x, double *par);
@@ -58,6 +62,8 @@ private:
   static double massmax;
   static double centmin;
   static double centmax;
+  static double ptmin;
+  static double ptmax;
   static int mflag_sig;
   static int mflag_bkg;
   static int mflag_bkg_v2;
@@ -65,7 +71,10 @@ private:
   static int nhar;
   static int mode;
   static string mode_string[2];
+  static string model_string[7];
+  static string v2bkg_string[2];
 
-  double mchi2max{1.};
+  double mchi2max_mass{1.};
+  double mchi2max_v2{1.};
 };
 #endif

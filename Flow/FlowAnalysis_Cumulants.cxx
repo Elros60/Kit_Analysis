@@ -122,13 +122,13 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
 
   // Create output file
   TFile f(sys ? Form("FlowAnalysisResults_"
-                     "Cumulants_%g_%"
+                     "Cumulants_%s_%g_%"
                      "g_withSys.root",
-                     cent_min, cent_max)
+                     muonCut.c_str(), cent_min, cent_max)
               : Form("FlowAnalysisResults_"
-                     "Cumulants_%g_%"
+                     "Cumulants_%s_%g_%"
                      "g.root",
-                     cent_min, cent_max),
+                     muonCut.c_str(), cent_min, cent_max),
           "RECREATE");
 
   ///////////////////////////////////////
@@ -137,6 +137,7 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
   ///                                 ///
   ///////////////////////////////////////
 
+  LOG(info) << "Processing analysis for reference flow ...";
   // Define projected profiles w.r.t above
   // defined variables' ranges
   TList *l_refflow = new TList();
@@ -195,77 +196,94 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
 
   /////////////////////////////////////////////////
   ///                                           ///
-  ///   Analysis for Differential Flow of POI ///
+  ///   Analysis for Differential Flow of POI   ///
   ///                                           ///
   /////////////////////////////////////////////////
 
+  LOG(info) << "Processing analysis for differential flow ...";
   // Create histogram for pt-differential v2
   TList *l_results = new TList();
-  const int nbCombo = int(size(sig_mass)) * int(size(bkg_mass)) *
-                      int(size(bkg_v2)) * int(size(mass_max_sys));
+  TList *l_results_sys_yield = new TList();
+  TList *l_results_sys_v22 = new TList();
+  TList *l_results_sys_v24 = new TList();
   double x_yield[10], y_yield[10], ex_yield[10], ey_yield[10];
   double x_v22pt[10], y_v22pt[10], ex_v22pt[10], ey_v22pt[10];
   double x_v24pt[10], y_v24pt[10], ex_v24pt[10], ey_v24pt[10];
   double *x_run2_1, *y_run2_1, *ex_run2_1, *ey_run2_1, *eysys_run2_1;
   double *x_run2_2, *y_run2_2, *ex_run2_2, *ey_run2_2, *eysys_run2_2;
 
-  vector<double *> x_sys_yield, y_sys_yield, ey_sys_yield, x_sys_v22, y_sys_v22,
-      ey_sys_v22, x_sys_v24, y_sys_v24, ey_sys_v24;
-
+  // Initialize arrays for each combination for systematics
+  const int nbCombo = int(size(sig_mass)) * int(size(bkg_mass)) *
+                      int(size(bkg_v2)) * int(size(mass_max_sys));
+  vector<double *> y_sys_yield, ey_sys_yield, y_sys_v22, ey_sys_v22, y_sys_v24,
+      ey_sys_v24;
+  double *bins_sys = new double[nbCombo + 1];
+  for (int i = 0; i < nbCombo + 1; i++) {
+    bins_sys[i] = i;
+  }
+  vector<TH1D *> hist_sys_yield, hist_sys_v22, hist_sys_v24;
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
-    x_sys_yield.emplace_back(new double[nbCombo]);
     y_sys_yield.emplace_back(new double[nbCombo]);
     ey_sys_yield.emplace_back(new double[nbCombo]);
 
-    x_sys_v22.emplace_back(new double[nbCombo]);
     y_sys_v22.emplace_back(new double[nbCombo]);
     ey_sys_v22.emplace_back(new double[nbCombo]);
 
-    x_sys_v24.emplace_back(new double[nbCombo]);
     y_sys_v24.emplace_back(new double[nbCombo]);
     ey_sys_v24.emplace_back(new double[nbCombo]);
+
+    hist_sys_yield.emplace_back(new TH1D(Form("hist_sys_yield_%d", i),
+                                         Form("hist_sys_yield_%d", i), nbCombo,
+                                         bins_sys));
+    hist_sys_v22.emplace_back(new TH1D(Form("hist_sys_v22_%d", i),
+                                       Form("hist_sys_v22_%d", i), nbCombo,
+                                       bins_sys));
+    hist_sys_v24.emplace_back(new TH1D(Form("hist_sys_v24_%d", i),
+                                       Form("hist_sys_v24_%d", i), nbCombo,
+                                       bins_sys));
   }
 
+  // Load Run2 data for comparaison
   LoadDataRun2(x_run2_1, y_run2_1, ex_run2_1, ey_run2_1, eysys_run2_1, 1);
   LoadDataRun2(x_run2_2, y_run2_2, ex_run2_2, ey_run2_2, eysys_run2_2, 2);
 
-  TGraphMultiErrors *graph_v2pt_run2_1 =
-      new TGraphMultiErrors("v2_pt_run2_1", "", 10, x_run2_1, y_run2_1,
-                            ex_run2_1, ex_run2_1, ey_run2_1, ey_run2_1);
-  graph_v2pt_run2_1->AddYError(10, eysys_run2_1, eysys_run2_1);
-  graph_v2pt_run2_1->SetTitle("#sqrt{#it{s}_{NN}} = 5.02 TeV, 10-30%");
-  graph_v2pt_run2_1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-  graph_v2pt_run2_1->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
+  TGraphMultiErrors *graph_v2pt_run2_10_30 = new TGraphMultiErrors(
+      "graph_v2_pt_run2_10_30", "", 10, x_run2_1, y_run2_1, ex_run2_1,
+      ex_run2_1, ey_run2_1, ey_run2_1);
+  graph_v2pt_run2_10_30->AddYError(10, eysys_run2_1, eysys_run2_1);
+  graph_v2pt_run2_10_30->SetTitle("#sqrt{#it{s}_{NN}} = 5.02 TeV, 10-30%");
+  graph_v2pt_run2_10_30->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  graph_v2pt_run2_10_30->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
 
-  TGraphMultiErrors *graph_v2pt_run2_2 =
-      new TGraphMultiErrors("v2_pt_run2_2", "", 10, x_run2_2, y_run2_2,
-                            ex_run2_2, ex_run2_2, ey_run2_2, ey_run2_2);
-  graph_v2pt_run2_2->AddYError(10, eysys_run2_2, eysys_run2_2);
-  graph_v2pt_run2_2->SetTitle("#sqrt{#it{s}_{NN}} = 5.02 TeV, 30-50%");
-  graph_v2pt_run2_2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-  graph_v2pt_run2_2->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
+  TGraphMultiErrors *graph_v2pt_run2_30_50 = new TGraphMultiErrors(
+      "graph_v2_pt_run2_30_50", "", 10, x_run2_2, y_run2_2, ex_run2_2,
+      ex_run2_2, ey_run2_2, ey_run2_2);
+  graph_v2pt_run2_30_50->AddYError(10, eysys_run2_2, eysys_run2_2);
+  graph_v2pt_run2_30_50->SetTitle("#sqrt{#it{s}_{NN}} = 5.02 TeV, 30-50%");
+  graph_v2pt_run2_30_50->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  graph_v2pt_run2_30_50->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
 
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
     // Get mass and v2 to fit
-    TH1D *hist_mass_proj = dynamic_cast<TH1D *>(
-        GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
-                cent_min, cent_max, hist_mass));
+    TH1D *hist_mass_proj = GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                                   mass_max, cent_min, cent_max, hist_mass);
 
     vector<TProfile *> results_profile = GetProfiles(
         Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
         cent_max, tp_Corr2Ref, tp_Corr4Ref, tp_Corr2Poi, tp_Corr4Poi);
-    TProfile *tp_Corr2Ref_mass = dynamic_cast<TProfile *>(results_profile[0]);
-    TProfile *tp_Corr4Ref_mass = dynamic_cast<TProfile *>(results_profile[1]);
-    TProfile *tp_Corr2Poi_mass = dynamic_cast<TProfile *>(results_profile[2]);
-    TProfile *tp_Corr4Poi_mass = dynamic_cast<TProfile *>(results_profile[3]);
+    TProfile *tp_Corr2Ref_mass = results_profile[0];
+    TProfile *tp_Corr4Ref_mass = results_profile[1];
+    TProfile *tp_Corr2Poi_mass = results_profile[2];
+    TProfile *tp_Corr4Poi_mass = results_profile[3];
 
     vector<TH1D *> results =
         GetVD2(Bin_pt_mass[i], Bin_pt_mass[i + 1], tp_Corr2Ref_mass,
                tp_Corr4Ref_mass, tp_Corr2Poi_mass, tp_Corr4Poi_mass);
-    TH1D *hist_d22 = dynamic_cast<TH1D *>(results[0]);
-    TH1D *hist_d24 = dynamic_cast<TH1D *>(results[1]);
-    TH1D *hist_vd22 = dynamic_cast<TH1D *>(results[2]);
-    TH1D *hist_vd24 = dynamic_cast<TH1D *>(results[3]);
+    TH1D *hist_d22 = results[0];
+    TH1D *hist_d24 = results[1];
+    TH1D *hist_vd22 = results[2];
+    TH1D *hist_vd24 = results[3];
+
     /// Do fitting
     // Configuration for fitting
     fitter.setModel(flag_sig, flag_bkg);
@@ -275,6 +293,7 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
     fitter.setOrder(2);
     fitter.setMode(0);
     TList *l_diff_fit2 = new TList();
+    LOG(info) << "Processing fitting for v2{2} ...";
     vector<double> results_v22 =
         fitter.runFitting(hist_mass_proj, hist_vd22, l_diff_fit2,
                           Bin_pt_mass[i], Bin_pt_mass[i + 1]);
@@ -282,107 +301,10 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
     fitter.setOrder(4);
     fitter.setMode(0);
     TList *l_diff_fit4 = new TList();
+    LOG(info) << "Processing fitting for v2{4} ...";
     vector<double> results_v24 =
         fitter.runFitting(hist_mass_proj, hist_vd24, l_diff_fit4,
                           Bin_pt_mass[i], Bin_pt_mass[i + 1]);
-
-    // Run fittings for systematics
-    if (sys) {
-      int index_sys = 0;
-      for (int i1 = 0; i1 < int(size(mass_max_sys)); i1++) {
-        for (int i2 = 0; i2 < int(size(sig_mass)); i2++) {
-          for (int i3 = 0; i3 < int(size(bkg_mass)); i3++) {
-            for (int i4 = 0; i4 < int(size(bkg_v2)); i4++) {
-              // Get mass and v2 to fit
-              TH1D *hist_mass_proj_sys = dynamic_cast<TH1D *>(
-                  GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
-                          mass_max_sys[i1], cent_min, cent_max, hist_mass));
-
-              vector<TProfile *> results_profile_sys = GetProfiles(
-                  Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
-                  mass_max_sys[i1], cent_min, cent_max, tp_Corr2Ref,
-                  tp_Corr4Ref, tp_Corr2Poi, tp_Corr4Poi);
-              TProfile *tp_Corr2Ref_mass_sys =
-                  dynamic_cast<TProfile *>(results_profile_sys[0]);
-              TProfile *tp_Corr4Ref_mass_sys =
-                  dynamic_cast<TProfile *>(results_profile_sys[1]);
-              TProfile *tp_Corr2Poi_mass_sys =
-                  dynamic_cast<TProfile *>(results_profile_sys[2]);
-              TProfile *tp_Corr4Poi_mass_sys =
-                  dynamic_cast<TProfile *>(results_profile_sys[3]);
-
-              vector<TH1D *> results_sys =
-                  GetVD2(Bin_pt_mass[i], Bin_pt_mass[i + 1],
-                         tp_Corr2Ref_mass_sys, tp_Corr4Ref_mass_sys,
-                         tp_Corr2Poi_mass_sys, tp_Corr4Poi_mass_sys);
-              TH1D *hist_d22 = dynamic_cast<TH1D *>(results[0]);
-              TH1D *hist_d24 = dynamic_cast<TH1D *>(results[1]);
-              TH1D *hist_vd22 = dynamic_cast<TH1D *>(results[2]);
-              TH1D *hist_vd24 = dynamic_cast<TH1D *>(results[3]);
-
-              LOG(info) << Form(
-                  "{%s,%s}+{%s}+[%g-%g]", sig_enum[sig_mass[i2]].c_str(),
-                  sig_enum[bkg_mass[i3]].c_str(), bkg_v2_enum[i4].c_str(),
-                  mass_min_sys[i1], mass_max_sys[i1]);
-
-              // Do evaluation for v22
-              fitter.setOrder(2);
-              fitter.setMassRange(mass_min_sys[i1], mass_max_sys[i1]);
-              fitter.setModel(sig_mass[i2], bkg_mass[i3]);
-              fitter.setModelV2(bkg_v2[i4]);
-              fitter.setMode(1);
-              TList *l_diff_sys2 = new TList();
-              vector<double> results_sys_v22 =
-                  fitter.runFitting(hist_mass_proj_sys, hist_vd22, l_diff_sys2,
-                                    Bin_pt_mass[i], Bin_pt_mass[i + 1]);
-
-              // Do evaluation for v24
-              fitter.setOrder(4);
-              fitter.setMassRange(mass_min_sys[i1], mass_max_sys[i1]);
-              fitter.setModel(sig_mass[i2], bkg_mass[i3]);
-              fitter.setModelV2(bkg_v2[i4]);
-              fitter.setMode(1);
-              TList *l_diff_sys4 = new TList();
-              vector<double> results_sys_v24 =
-                  fitter.runFitting(hist_mass_proj_sys, hist_vd24, l_diff_sys4,
-                                    Bin_pt_mass[i], Bin_pt_mass[i + 1]);
-
-              // Fill pT-differential v2 and jpsi
-              // yields
-              x_sys_yield[i][index_sys] = index_sys;
-              x_sys_v22[i][index_sys] = index_sys;
-              x_sys_v24[i][index_sys] = index_sys;
-
-              y_sys_yield[i][index_sys] =
-                  results_sys_v22[2] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
-              y_sys_v22[i][index_sys] = results_sys_v22[0];
-              y_sys_v24[i][index_sys] = results_sys_v24[0];
-
-              ey_sys_yield[i][index_sys] =
-                  results_sys_v22[3] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
-              ey_sys_v22[i][index_sys] = results_sys_v22[1];
-              ey_sys_v24[i][index_sys] = results_sys_v24[1];
-
-              f.cd();
-              l_diff_sys2->Write(Form("FitSys_Combo%d_Fit2_%g_%"
-                                      "g",
-                                      index_sys, Bin_pt_mass[i],
-                                      Bin_pt_mass[i + 1]),
-                                 TObject::kSingleKey);
-              l_diff_sys4->Write(Form("FitSys_Combo%d_Fit4_%g_%"
-                                      "g",
-                                      index_sys, Bin_pt_mass[i],
-                                      Bin_pt_mass[i + 1]),
-                                 TObject::kSingleKey);
-
-              index_sys++;
-              delete l_diff_sys2;
-              delete l_diff_sys4;
-            }
-          }
-        }
-      }
-    }
 
     // Fill pT-differential v2 and jpsi yields
     x_v22pt[i] = (Bin_pt_mass[i] + Bin_pt_mass[i + 1]) / 2;
@@ -416,15 +338,150 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
     l_diff_fit4->Write(
         Form("DifferentialFlow_Fit4_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         TObject::kSingleKey);
+
     delete l_diff_hist;
     delete l_diff_fit2;
     delete l_diff_fit4;
+
+    delete hist_mass_proj;
+    delete tp_Corr2Ref_mass;
+    delete tp_Corr4Ref_mass;
+    delete tp_Corr2Poi_mass;
+    delete tp_Corr4Poi_mass;
+    delete hist_d22;
+    delete hist_d24;
+    delete hist_vd22;
+    delete hist_vd24;
+
+    // Run fittings for systematics
+    if (sys) {
+      LOG(info) << "Processing systematics from fitting ...";
+      int index_sys = 0;
+      for (int i1 = 0; i1 < int(size(mass_max_sys)); i1++) {
+        for (int i2 = 0; i2 < int(size(sig_mass)); i2++) {
+          for (int i3 = 0; i3 < int(size(bkg_mass)); i3++) {
+            for (int i4 = 0; i4 < int(size(bkg_v2)); i4++) {
+              // Get mass and v2 to fit
+              TH1D *hist_mass_proj_sys =
+                  GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
+                          mass_max_sys[i1], cent_min, cent_max, hist_mass);
+
+              vector<TProfile *> results_profile_sys = GetProfiles(
+                  Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
+                  mass_max_sys[i1], cent_min, cent_max, tp_Corr2Ref,
+                  tp_Corr4Ref, tp_Corr2Poi, tp_Corr4Poi);
+
+              TProfile *tp_Corr2Ref_mass_sys = results_profile_sys[0];
+              TProfile *tp_Corr4Ref_mass_sys = results_profile_sys[1];
+              TProfile *tp_Corr2Poi_mass_sys = results_profile_sys[2];
+              TProfile *tp_Corr4Poi_mass_sys = results_profile_sys[3];
+
+              vector<TH1D *> results_sys =
+                  GetVD2(Bin_pt_mass[i], Bin_pt_mass[i + 1],
+                         tp_Corr2Ref_mass_sys, tp_Corr4Ref_mass_sys,
+                         tp_Corr2Poi_mass_sys, tp_Corr4Poi_mass_sys);
+              TH1D *hist_d22_sys = results_sys[0];
+              TH1D *hist_d24_sys = results_sys[1];
+              TH1D *hist_vd22_sys = results_sys[2];
+              TH1D *hist_vd24_sys = results_sys[3];
+
+              TString combo =
+                  Form("{%s;%s}{%s}[%g-%g]", sig_enum[sig_mass[i2]].c_str(),
+                       sig_enum[bkg_mass[i3]].c_str(), bkg_v2_enum[i4].c_str(),
+                       mass_min_sys[i1], mass_max_sys[i1]);
+              LOG(info) << Form("Processing combination: {%s,%s}+{%s}+[%g-%g]",
+                                sig_enum[sig_mass[i2]].c_str(),
+                                sig_enum[bkg_mass[i3]].c_str(),
+                                bkg_v2_enum[i4].c_str(), mass_min_sys[i1],
+                                mass_max_sys[i1]);
+
+              // Do evaluation for v22
+              fitter.setOrder(2);
+              fitter.setMassRange(mass_min_sys[i1], mass_max_sys[i1]);
+              fitter.setModel(sig_mass[i2], bkg_mass[i3]);
+              fitter.setModelV2(bkg_v2[i4]);
+              fitter.setMode(1);
+              TList *l_diff_sys2 = new TList();
+              LOG(info) << "Processing fitting(systematic) for v2{2} ...";
+              vector<double> results_sys_v22 = fitter.runFitting(
+                  hist_mass_proj_sys, hist_vd22_sys, l_diff_sys2,
+                  Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+
+              // Do evaluation for v24
+              fitter.setOrder(4);
+              fitter.setMassRange(mass_min_sys[i1], mass_max_sys[i1]);
+              fitter.setModel(sig_mass[i2], bkg_mass[i3]);
+              fitter.setModelV2(bkg_v2[i4]);
+              fitter.setMode(1);
+              TList *l_diff_sys4 = new TList();
+              LOG(info) << "Processing fitting(systematic) for v2{4} ...";
+              vector<double> results_sys_v24 = fitter.runFitting(
+                  hist_mass_proj_sys, hist_vd24_sys, l_diff_sys4,
+                  Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+
+              // Fill pT-differential v2 and jpsi
+              // yields
+              y_sys_yield[i][index_sys] = results_sys_v22[2];
+              y_sys_v22[i][index_sys] = results_sys_v22[0];
+              y_sys_v24[i][index_sys] = results_sys_v24[0];
+
+              ey_sys_yield[i][index_sys] = results_sys_v22[3];
+              ey_sys_v22[i][index_sys] = results_sys_v22[1];
+              ey_sys_v24[i][index_sys] = results_sys_v24[1];
+
+              hist_sys_yield[i]->GetXaxis()->SetBinLabel(index_sys + 1, combo);
+              hist_sys_v22[i]->GetXaxis()->SetBinLabel(index_sys + 1, combo);
+              hist_sys_v24[i]->GetXaxis()->SetBinLabel(index_sys + 1, combo);
+              hist_sys_yield[i]->SetBinContent(index_sys + 1,
+                                               y_sys_yield[i][index_sys]);
+              hist_sys_v22[i]->SetBinContent(index_sys + 1,
+                                             y_sys_v22[i][index_sys]);
+              hist_sys_v24[i]->SetBinContent(index_sys + 1,
+                                             y_sys_v24[i][index_sys]);
+              hist_sys_yield[i]->SetBinError(index_sys + 1,
+                                             ey_sys_yield[i][index_sys]);
+              hist_sys_v22[i]->SetBinError(index_sys + 1,
+                                           ey_sys_v22[i][index_sys]);
+              hist_sys_v24[i]->SetBinError(index_sys + 1,
+                                           ey_sys_v24[i][index_sys]);
+
+              f.cd();
+              l_diff_sys2->Write(Form("FitSys_Combo%d_Fit2_%g_%"
+                                      "g",
+                                      index_sys, Bin_pt_mass[i],
+                                      Bin_pt_mass[i + 1]),
+                                 TObject::kSingleKey);
+              l_diff_sys4->Write(Form("FitSys_Combo%d_Fit4_%g_%"
+                                      "g",
+                                      index_sys, Bin_pt_mass[i],
+                                      Bin_pt_mass[i + 1]),
+                                 TObject::kSingleKey);
+
+              delete l_diff_sys2;
+              delete l_diff_sys4;
+
+              delete hist_mass_proj_sys;
+              delete tp_Corr2Ref_mass_sys;
+              delete tp_Corr4Ref_mass_sys;
+              delete tp_Corr2Poi_mass_sys;
+              delete tp_Corr4Poi_mass_sys;
+              delete hist_d22_sys;
+              delete hist_d24_sys;
+              delete hist_vd22_sys;
+              delete hist_vd24_sys;
+
+              index_sys++;
+            }
+          }
+        }
+      }
+    }
   }
 
   // Compare with Run2 data: 5.02 TeV, 10-30% and
   // 30-50%
   TGraphMultiErrors *graph_v22pt =
-      new TGraphMultiErrors("v22_pt", "", 10, x_v22pt, y_v22pt, ex_v22pt,
+      new TGraphMultiErrors("graph_v22_pt", "", 10, x_v22pt, y_v22pt, ex_v22pt,
                             ex_v22pt, ey_v22pt, ey_v22pt);
   graph_v22pt->SetTitle("#it{v}^{J/#psi}_{2}{2} "
                         "#sqrt{#it{s}_{NN}} = "
@@ -433,7 +490,7 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
   graph_v22pt->GetYaxis()->SetTitle("v^{J/#psi}_{2}{2}}");
 
   TGraphMultiErrors *graph_v24pt =
-      new TGraphMultiErrors("v24_pt", "", 10, x_v24pt, y_v24pt, ex_v24pt,
+      new TGraphMultiErrors("graph_v24_pt", "", 10, x_v24pt, y_v24pt, ex_v24pt,
                             ex_v24pt, ey_v24pt, ey_v24pt);
   graph_v24pt->SetTitle("#it{v}^{J/#psi}_{2}{4} "
                         "#sqrt{#it{s}_{NN}} = "
@@ -442,34 +499,35 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
   graph_v24pt->GetYaxis()->SetTitle("v^{J/#psi}_{2}{4}");
 
   TGraphMultiErrors *graph_yield =
-      new TGraphMultiErrors("yields_pt", "", 10, x_yield, y_yield, ex_yield,
-                            ex_yield, ey_yield, ey_yield);
+      new TGraphMultiErrors("graph_yields_pt", "", 10, x_yield, y_yield,
+                            ex_yield, ex_yield, ey_yield, ey_yield);
   graph_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_yield->GetYaxis()->SetTitle("Raw counts / d#it{p}_{T} (GeV/c)^{-1}");
 
   // Save final results into graphs
+  TCanvas *c_yield = new TCanvas("jpsi_yield_pT", "jpsi_yield_pT");
+  c_yield->cd();
   graph_yield->SetMarkerStyle(20);
   graph_yield->SetMarkerSize(1.);
   graph_yield->SetMarkerColor(kBlue);
   graph_yield->SetLineColor(kBlue);
   graph_yield->SetLineWidth(2);
   graph_yield->SetFillStyle(0);
-  // graph_yield->Draw("A P Z");
-  l_results->Add(graph_yield);
-  /*
+  graph_yield->Draw("A P Z");
   TLatex *text_yield = new TLatex();
   text_yield->SetTextSize(0.04);
   text_yield->SetTextFont(42);
   text_yield->DrawLatexNDC(
-      .3, .82, "ALICE Performance, Pb-Pb
-  #sqrt{#it{s}_{NN}} = 5.36 TeV");
+      .3, .82, "ALICE Performance, Pb-Pb #sqrt{#it{s } _{NN } } = 5.36 TeV ");
   gPad->ModifiedUpdate();
   text_yield->DrawLatexNDC(.3, .77,
-                           "J/#psi#rightarrow#mu^{+}#mu^{-},
-  2.5 < y < 4"); gPad->ModifiedUpdate();
-  */
+                           "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < 4");
+  gPad->ModifiedUpdate();
+  l_results->Add(c_yield);
 
-  auto mg_2vs4 = new TMultiGraph("v2_pt_2vs4", "");
+  TCanvas *c_pt = new TCanvas("v2_pT", "v2_pT");
+  c_pt->cd();
+  auto mg_run2 = new TMultiGraph("graph_v2_pt_run2", "");
   graph_v22pt->SetMarkerStyle(20);
   graph_v22pt->SetMarkerSize(1.);
   graph_v22pt->SetMarkerColor(kBlue);
@@ -482,106 +540,70 @@ void FlowAnalysis_Cumulants(int flag_sig, int flag_bkg,
   graph_v24pt->SetLineColor(kRed);
   graph_v24pt->SetLineWidth(2);
   graph_v24pt->SetFillStyle(0);
-  mg_2vs4->Add(graph_v22pt);
-  mg_2vs4->Add(graph_v24pt);
-  // mg_2vs4->Draw("A P Z ; Z ; 5 s=0.5");
-  l_results->Add(graph_v22pt);
-  l_results->Add(graph_v24pt);
-  l_results->Add(mg_2vs4);
-  /*
-  TLatex *text_pt_2vs4 = new TLatex();
-  text_pt_2vs4->SetTextSize(0.04);
-  text_pt_2vs4->SetTextFont(42);
-  text_pt_2vs4->DrawLatexNDC(
-      .18, .82, "ALICE Performance, Pb-Pb
-  #sqrt{#it{s}_{NN}} = 5.36 TeV");
-  gPad->ModifiedUpdate();
-  text_pt_2vs4->DrawLatexNDC(.18, .77,
-                             "J/#psi#rightarrow#mu^{+}#mu^{-},
-  2.5 < y < 4"); gPad->ModifiedUpdate();
-  */
-
-  auto mg_run2 = new TMultiGraph("v2_pt_run2", "");
-  graph_v2pt_run2_1->SetMarkerStyle(20);
-  graph_v2pt_run2_1->SetMarkerSize(1.);
-  graph_v2pt_run2_1->SetMarkerColor(kOrange);
-  graph_v2pt_run2_1->SetLineColor(kOrange);
-  graph_v2pt_run2_1->SetLineWidth(2);
-  graph_v2pt_run2_1->SetFillStyle(0);
-  graph_v2pt_run2_2->SetMarkerStyle(20);
-  graph_v2pt_run2_2->SetMarkerSize(1.);
-  graph_v2pt_run2_2->SetMarkerColor(kBlack);
-  graph_v2pt_run2_2->SetLineColor(kBlack);
-  graph_v2pt_run2_2->SetLineWidth(2);
-  graph_v2pt_run2_2->SetFillStyle(0);
+  graph_v2pt_run2_10_30->SetMarkerStyle(20);
+  graph_v2pt_run2_10_30->SetMarkerSize(1.);
+  graph_v2pt_run2_10_30->SetMarkerColor(kOrange);
+  graph_v2pt_run2_10_30->SetLineColor(kOrange);
+  graph_v2pt_run2_10_30->SetLineWidth(2);
+  graph_v2pt_run2_10_30->SetFillStyle(0);
+  graph_v2pt_run2_30_50->SetMarkerStyle(20);
+  graph_v2pt_run2_30_50->SetMarkerSize(1.);
+  graph_v2pt_run2_30_50->SetMarkerColor(kGreen);
+  graph_v2pt_run2_30_50->SetLineColor(kGreen);
+  graph_v2pt_run2_30_50->SetLineWidth(2);
+  graph_v2pt_run2_30_50->SetFillStyle(0);
   mg_run2->Add(graph_v22pt);
   mg_run2->Add(graph_v24pt);
-  mg_run2->Add(graph_v2pt_run2_1);
-  mg_run2->Add(graph_v2pt_run2_2);
-  // mg_run2->Draw("A P Z ; Z ; 5 s=0.5");
-  l_results->Add(mg_run2);
-
-  /*
-  TLatex *text_pt_run2 = new TLatex();
-  text_pt_run2->SetTextSize(0.04);
-  text_pt_run2->SetTextFont(42);
-  text_pt_run2->DrawLatexNDC(
-      .18, .82, "ALICE Performance, Pb-Pb
-  #sqrt{#it{s}_{NN}} = 5.36 TeV");
+  mg_run2->Add(graph_v2pt_run2_10_30);
+  mg_run2->Add(graph_v2pt_run2_30_50);
+  mg_run2->Draw("A P Z ; Z ; 5 s=0.5");
+  gPad->BuildLegend();
+  TLatex *text_pt = new TLatex();
+  text_pt->SetTextSize(0.04);
+  text_pt->SetTextFont(42);
+  text_pt->DrawLatexNDC(
+      .18, .82, "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} = 5.36 TeV");
   gPad->ModifiedUpdate();
-  text_pt_run2->DrawLatexNDC(.18, .77,
-                             "J/#psi#rightarrow#mu^{+}#mu^{-},
-  2.5 < y < 4"); gPad->ModifiedUpdate();
-  */
+  text_pt->DrawLatexNDC(.18, .77,
+                        "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < 4");
+  gPad->ModifiedUpdate();
+  l_results->Add(c_pt);
+
+  // Saving plots for systematics
   if (sys) {
-    vector<TGraphMultiErrors *> graph_sys_yield;
-    vector<TGraphMultiErrors *> graph_sys_v22;
-    vector<TGraphMultiErrors *> graph_sys_v24;
     for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
-      graph_sys_yield.emplace_back(new TGraphMultiErrors(
-          Form("sys_yield_%d", i), "", nbCombo, x_sys_yield[i], y_sys_yield[i],
-          nullptr, nullptr, ey_sys_yield[i], ey_sys_yield[i]));
-      graph_sys_v22.emplace_back(new TGraphMultiErrors(
-          Form("sys_v22_%d", i), "", nbCombo, x_sys_v22[i], y_sys_v22[i],
-          nullptr, nullptr, ey_sys_v22[i], ey_sys_v22[i]));
-      graph_sys_v24.emplace_back(new TGraphMultiErrors(
-          Form("sys_v24_%d", i), "", nbCombo, x_sys_v24[i], y_sys_v24[i],
-          nullptr, nullptr, ey_sys_v24[i], ey_sys_v24[i]));
-    }
+      hist_sys_yield[i]->SetMarkerStyle(20);
+      hist_sys_yield[i]->SetMarkerSize(1.);
+      hist_sys_yield[i]->SetMarkerColor(kBlue);
+      hist_sys_yield[i]->SetLineColor(kBlue);
+      hist_sys_yield[i]->SetLineWidth(2);
+      hist_sys_yield[i]->SetFillStyle(0);
 
-    for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
-      graph_sys_v22[i]->SetMarkerStyle(20);
-      graph_sys_v22[i]->SetMarkerSize(1.);
-      graph_sys_v22[i]->SetMarkerColor(kBlue);
-      graph_sys_v22[i]->SetLineColor(kBlue);
-      graph_sys_v22[i]->SetLineWidth(2);
-      graph_sys_v22[i]->SetFillStyle(0);
+      hist_sys_v22[i]->SetMarkerStyle(20);
+      hist_sys_v22[i]->SetMarkerSize(1.);
+      hist_sys_v22[i]->SetMarkerColor(kBlue);
+      hist_sys_v22[i]->SetLineColor(kBlue);
+      hist_sys_v22[i]->SetLineWidth(2);
+      hist_sys_v22[i]->SetFillStyle(0);
 
-      graph_sys_v24[i]->SetMarkerStyle(20);
-      graph_sys_v24[i]->SetMarkerSize(1.);
-      graph_sys_v24[i]->SetMarkerColor(kBlue);
-      graph_sys_v24[i]->SetLineColor(kBlue);
-      graph_sys_v24[i]->SetLineWidth(2);
-      graph_sys_v24[i]->SetFillStyle(0);
+      hist_sys_v24[i]->SetMarkerStyle(20);
+      hist_sys_v24[i]->SetMarkerSize(1.);
+      hist_sys_v24[i]->SetMarkerColor(kBlue);
+      hist_sys_v24[i]->SetLineColor(kBlue);
+      hist_sys_v24[i]->SetLineWidth(2);
+      hist_sys_v24[i]->SetFillStyle(0);
 
-      graph_sys_yield[i]->SetMarkerStyle(20);
-      graph_sys_yield[i]->SetMarkerSize(1.);
-      graph_sys_yield[i]->SetMarkerColor(kBlue);
-      graph_sys_yield[i]->SetLineColor(kBlue);
-      graph_sys_yield[i]->SetLineWidth(2);
-      graph_sys_yield[i]->SetFillStyle(0);
-
-      l_results->Add(graph_sys_v22[i]);
-      l_results->Add(graph_sys_v24[i]);
-      l_results->Add(graph_sys_yield[i]);
+      l_results_sys_yield->Add(hist_sys_yield[i]);
+      l_results_sys_v22->Add(hist_sys_v22[i]);
+      l_results_sys_v24->Add(hist_sys_v22[i]);
     }
   }
 
   f.cd();
   l_results->Write("FinalResults", TObject::kSingleKey);
-
-  f.Close();
-
+  l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
+  l_results_sys_v22->Write("FitV22Systematics", TObject::kSingleKey);
+  l_results_sys_v24->Write("FitV24Systematics", TObject::kSingleKey);
   f.Close();
   Input_File->Close();
 }
@@ -611,7 +633,13 @@ TH1D *GetMass(double ptmin, double ptmax, double massmin, double massmax,
   hist_mass_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
   hist_mass_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
   hist_mass_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
-  TH1D *hist_mass_proj = hist_mass_cp->Projection(0);
+  TH1D *hist_proj = hist_mass_cp->Projection(0);
+  TH1D *hist_mass_proj = dynamic_cast<TH1D *>(
+      hist_proj->Clone(Form("Proj_%s", hist_proj->GetName())));
+
+  delete hist_mass_cp;
+  delete hist_proj;
+
   return hist_mass_proj;
 }
 
@@ -651,19 +679,48 @@ vector<TProfile *> GetProfiles(double ptmin, double ptmax, double massmin,
 
   // Define projected profiles w.r.t above
   // defined Variables' ranges
+  TProfile2D *tp_Corr2Ref_mass_projyx = tp_Corr2Ref_cp->Project3DProfile("yx");
+  TProfile2D *tp_Corr4Ref_mass_projyx = tp_Corr4Ref_cp->Project3DProfile("yx");
+  TProfile2D *tp_Corr2Poi_mass_projyx = tp_Corr2Poi_cp->Project3DProfile("yx");
+  TProfile2D *tp_Corr4Poi_mass_projyx = tp_Corr4Poi_cp->Project3DProfile("yx");
+
+  TProfile *tp_Corr2Ref_mass_projx = tp_Corr2Ref_mass_projyx->ProfileX();
+  TProfile *tp_Corr4Ref_mass_projx = tp_Corr4Ref_mass_projyx->ProfileX();
+  TProfile *tp_Corr2Poi_mass_projx = tp_Corr2Poi_mass_projyx->ProfileX();
+  TProfile *tp_Corr4Poi_mass_projx = tp_Corr4Poi_mass_projyx->ProfileX();
+
+  delete tp_Corr2Ref_mass_projyx;
+  delete tp_Corr4Ref_mass_projyx;
+  delete tp_Corr2Poi_mass_projyx;
+  delete tp_Corr4Poi_mass_projyx;
+
   TProfile *tp_Corr2Ref_mass =
-      tp_Corr2Ref_cp->Project3DProfile("yx")->ProfileX();
+      dynamic_cast<TProfile *>(tp_Corr2Ref_mass_projx->Clone(
+          Form("Proj_%s", tp_Corr2Ref_mass_projx->GetName())));
   TProfile *tp_Corr4Ref_mass =
-      tp_Corr4Ref_cp->Project3DProfile("yx")->ProfileX();
+      dynamic_cast<TProfile *>(tp_Corr4Ref_mass_projx->Clone(
+          Form("Proj_%s", tp_Corr4Ref_mass_projx->GetName())));
   TProfile *tp_Corr2Poi_mass =
-      tp_Corr2Poi_cp->Project3DProfile("yx")->ProfileX();
+      dynamic_cast<TProfile *>(tp_Corr2Poi_mass_projx->Clone(
+          Form("Proj_%s", tp_Corr2Poi_mass_projx->GetName())));
   TProfile *tp_Corr4Poi_mass =
-      tp_Corr4Poi_cp->Project3DProfile("yx")->ProfileX();
+      dynamic_cast<TProfile *>(tp_Corr4Poi_mass_projx->Clone(
+          Form("Proj_%s", tp_Corr4Poi_mass_projx->GetName())));
+
+  delete tp_Corr2Ref_mass_projx;
+  delete tp_Corr4Ref_mass_projx;
+  delete tp_Corr2Poi_mass_projx;
+  delete tp_Corr4Poi_mass_projx;
+  delete tp_Corr2Ref_cp;
+  delete tp_Corr4Ref_cp;
+  delete tp_Corr2Poi_cp;
+  delete tp_Corr4Poi_cp;
 
   results.emplace_back(tp_Corr2Ref_mass);
   results.emplace_back(tp_Corr4Ref_mass);
   results.emplace_back(tp_Corr2Poi_mass);
   results.emplace_back(tp_Corr4Poi_mass);
+
   return results;
 }
 
