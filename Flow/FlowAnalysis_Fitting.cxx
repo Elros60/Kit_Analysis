@@ -499,9 +499,9 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
 
   // Do fitting for invariant mass
   // Configuration for fitting
-  MinimizerOptions::SetDefaultMinimizer("Minuit2", "Minimize");
-  MinimizerOptions::SetDefaultMaxIterations(10000);
-  MinimizerOptions::SetDefaultTolerance(1.);
+  MinimizerOptions::SetDefaultMinimizer("Minuit", "Minimize");
+  // MinimizerOptions::SetDefaultMaxIterations(10000);
+  // MinimizerOptions::SetDefaultTolerance(1.);
   // MinimizerOptions::SetDefaultErrorDef(0.5);
   // MinimizerOptions::SetDefaultPrecision(1.E-9);
   // MinimizerOptions::SetDefaultPrintLevel(1);
@@ -513,7 +513,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
   double chi2ndf_mass;
   int nfree_bkg = model->GetNumberFreeParameters() - 4;
   for (int i = nfree_bkg - 1; i < nPar_bkg; i++) {
-    auto result = hs->Fit("model", "S Q B 0");
+    auto result = hs->Fit("model", "S Q L B 0");
     int fitStatus = result;
     int bit_improve = int(fitStatus / 1000);
     int bit_minos = int((fitStatus - 1000 * bit_improve) / 100);
