@@ -107,12 +107,12 @@ void FlowAnalysis_ScalarProductEM(int flag_sig, int flag_bkg, int flag_run2,
 
   // Create output file
   TFile f(sys ? Form("FlowAnalysisResults_"
-                     "EventMixing_%s_%g_%"
+                     "ScalarProductEM_%s_%g_%"
                      "g_%dBinPt_withSys.root",
                      muonCut.c_str(), cent_min, cent_max,
                      int(size(Bin_pt_mass)) - 1)
               : Form("FlowAnalysisResults_"
-                     "EventMixing_%s_%g_%"
+                     "ScalarProductEM_%s_%g_%"
                      "g_%dBinPt.root",
                      muonCut.c_str(), cent_min, cent_max,
                      int(size(Bin_pt_mass)) - 1),

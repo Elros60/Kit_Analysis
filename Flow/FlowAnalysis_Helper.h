@@ -72,6 +72,8 @@ public:
                   TH2F *&hs_cosDeltaPhiMEPM2, TH2F *&hs_cosDeltaPhiMEPP2,
                   TH2F *&hs_cosDeltaPhiMEMM2, std::string muonCut,
                   std::string dimuonCut);
+  void LoadDataYieldRun2(double *&x, double *&y, double *&ex, double *&ey,
+                         double *&ey_sys, double *&SNR, int flag);
   TH1D *GetMass(double ptmin, double ptmax, double massmin, double massmax,
                 double centmin, double centmax, THnSparse *hist_V2);
   TH1D *GetV2(double ptmin, double ptmax, double massmin, double massmax,

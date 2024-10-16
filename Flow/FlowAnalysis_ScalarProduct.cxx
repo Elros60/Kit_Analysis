@@ -49,7 +49,7 @@ using namespace std;
 
 //______________________________________________________________________________
 void FlowAnalysis_ScalarProduct(
-    int flag_sig, int flag_bkg, int flag_v2, int flag_run2,
+    int flag_sig, int flag_bkg, int flag_v2, int flag_run2, int flag_run2yield,
     std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
     double mass_max = 4.3, double cent_min = 10., double cent_max = 50.,
     double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
@@ -83,9 +83,9 @@ void FlowAnalysis_ScalarProduct(
   fitter.setCentRange(cent_min, cent_max);
 
   // Define variables' range for analysis
-  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
-  // double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
-  //                           7., 8.,  9., 10., 11., 12., 15., 20.};
+  // double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
+                            7., 8.,  9., 10., 11., 12., 15., 20.};
 
   // Define the pool for systematics: 36
   // combinationss
@@ -252,25 +252,16 @@ void FlowAnalysis_ScalarProduct(
   double *ey_v2pt = new double[int(size(Bin_pt_mass)) - 1];
   double *eysys_v2pt = new double[int(size(Bin_pt_mass)) - 1];
 
-  double x_yield_run2[15] = {0.15, 0.65, 1.5, 2.5,  3.5,  4.5,  5.5, 6.5,
-                             7.5,  8.5,  9.5, 10.5, 11.5, 13.5, 17.5};
-  double ex_yield_run2[15] = {0.15, 0.35, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
-                              0.5,  0.5,  0.5, 0.5, 0.5, 1.5, 2.5};
-  double y_yield_run2[15] = {
-      6584 / 0.3, 38709 / 0.7, 66303, 49791, 30467, 17566,    9805,    5789,
-      3203,       1781,        1023,  638,   457,   509 / 3., 249 / 5.};
-  double ey_yield_run2[15] = {401 / 0.3, 984 / 0.7, 1241, 972,     491,
-                              306,       206,       140,  97,      70,
-                              54,        41,        36,   37 / 3., 24 / 5.};
-  double eysys_yield_run2[15] = {206 / 0.3, 1052 / 0.7, 1748, 1272,    892,
-                                 447,       189,        112,  67,      49,
-                                 21,        13,         14,   23 / 3., 6 / 5.};
-  double SNR_run2[15] = {0.18, 0.14, 0.18, 0.3,  0.44, 0.67, 0.87, 1.19,
-                         1.53, 1.76, 2.01, 2.10, 2.59, 1.92, 2.81};
-
   // Load Run2 data for comparaison
   double *x_run2, *y_run2, *ex_run2, *ey_run2, *eysys_run2;
   helper.LoadDataRun2(x_run2, y_run2, ex_run2, ey_run2, eysys_run2, flag_run2);
+
+  double *x_yield_run2, *ex_yield_run2, *y_yield_run2, *ey_yield_run2,
+      *eysys_yield_run2, *SNR_run2;
+  int nbins_run2yield = 15;
+  helper.LoadDataYieldRun2(x_yield_run2, y_yield_run2, ex_yield_run2,
+                           ey_yield_run2, eysys_yield_run2, SNR_run2,
+                           flag_run2yield);
 
   // Initialize arrays for each trial of systematic study
   const int nbCombo_v2 = int(size(sig_mass)) * int(size(bkg_mass)) *
@@ -447,18 +438,18 @@ void FlowAnalysis_ScalarProduct(
     LOG(info) << Form("R2SP [%g-%g%%] = %g", Bin_cent_r2[i], Bin_cent_r2[i + 1],
                       R2SP_sub[i]);
   }
-  LOG(info) << Form("R2SP [10-50%%] = %g", R2SP);
+  LOG(info) << Form("R2SP [%g-%g%%] = %g", cent_min, cent_max, R2SP);
   for (int i = 0; i < int(size(Bin_cent_r2)) - 1; i++) {
     LOG(info) << Form("1/R2SP [%g-%g%%] = %g", Bin_cent_r2[i],
                       Bin_cent_r2[i + 1], 1. / R2SP_sub[i]);
   }
-  LOG(info) << Form("1/R2SP [10-50%%] = %g", 1. / R2SP);
+  LOG(info) << Form("1/R2SP [%g-%g%%] = %g", cent_min, cent_max, 1. / R2SP);
 
   // Saving plot for J/psi yields SNR as function of pT
   // compared with Run2
-  helper.PlotSNRvsRun2(
-      int(size(Bin_pt_mass)) - 1, Bin_pt_mass, int(size(Bin_pt_mass)) - 1,
-      x_yield, SNR, int(size(x_yield_run2)), x_yield_run2, SNR_run2, l_results);
+  helper.PlotSNRvsRun2(int(size(Bin_pt_mass)) - 1, Bin_pt_mass,
+                       int(size(Bin_pt_mass)) - 1, x_yield, SNR,
+                       nbins_run2yield, x_yield_run2, SNR_run2, l_results);
 
   // Save plots for systematics
   if (sys) {
