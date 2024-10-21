@@ -83,6 +83,8 @@ void FlowAnalysis_ScalarProduct(
   fitter.setCentRange(cent_min, cent_max);
 
   // Define variables' range for analysis
+  // double Bin_pt_mass[12] = {0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 20};
+  // double Bin_pt_mass[13] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 20};
   // double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
   double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
                             7., 8.,  9., 10., 11., 12., 15., 20.};

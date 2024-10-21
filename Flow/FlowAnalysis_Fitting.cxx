@@ -266,7 +266,7 @@ void FlowAnalysis_Fitting::CreateModel(TF1 *&model, int flag) {
     double bin_center =
         (FlowAnalysis_Fitting::ptmin + FlowAnalysis_Fitting::ptmax) / 2;
     if (bin_center >= 0 && bin_center < 2) {
-      model->SetParameter(0, 1.5);      // a0
+      model->SetParameter(0, 2.5);      // a0
       model->SetParLimits(0, -2.5, 5.); // a0
       model->SetParName(0, "a0");       // a0
       model->SetParameter(1, 1.);       // a1
@@ -499,8 +499,8 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
 
   // Do fitting for invariant mass
   // Configuration for fitting
-  MinimizerOptions::SetDefaultMinimizer("Minuit", "Minimize");
-  // MinimizerOptions::SetDefaultMaxIterations(10000);
+  MinimizerOptions::SetDefaultMinimizer("Minuit2");
+  MinimizerOptions::SetDefaultMaxIterations(10000);
   // MinimizerOptions::SetDefaultTolerance(1.);
   // MinimizerOptions::SetDefaultErrorDef(0.5);
   // MinimizerOptions::SetDefaultPrecision(1.E-9);
@@ -513,7 +513,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
   double chi2ndf_mass;
   int nfree_bkg = model->GetNumberFreeParameters() - 4;
   for (int i = nfree_bkg - 1; i < nPar_bkg; i++) {
-    auto result = hs->Fit("model", "S Q L B 0");
+    auto result = hs->Fit("model", "S Q B 0");
     int fitStatus = result;
     int bit_improve = int(fitStatus / 1000);
     int bit_minos = int((fitStatus - 1000 * bit_improve) / 100);
@@ -680,8 +680,8 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
   sb->SetY1NDC(0.88);
   sb->SetY2NDC(0.38);
   TList *sb_list = sb->GetListOfLines();
-  TText *tconst1 = sb->GetLineWith("(N_{J#psi})");
-  TText *tconst2 = sb->GetLineWith("(N_{bkg})");
+  TText *tconst1 = sb->GetLineWith("N_{J#psi}");
+  TText *tconst2 = sb->GetLineWith("N_{bkg}");
   sb_list->Remove(tconst1);
   sb_list->Remove(tconst2);
   sb->AddText(TString::Format("%s = %d #pm %d", "N_{J#psi}",
