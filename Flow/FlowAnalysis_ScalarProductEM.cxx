@@ -48,13 +48,12 @@
 using namespace std;
 
 //______________________________________________________________________________
-void FlowAnalysis_ScalarProductEM(int flag_sig, int flag_bkg, int flag_run2,
-                                  std::string FileName = "AnalysisResults.root",
-                                  double mass_min = 2.3, double mass_max = 4.3,
-                                  double cent_min = 10., double cent_max = 50.,
-                                  double chi2max_mass = 2., bool sys = false,
-                                  std::string muonCut = "muonLowPt210SigmaPDCA",
-                                  std::string dimuonCut = "") {
+void FlowAnalysis_ScalarProductEM(
+    int flag_sig, int flag_bkg, int flag_v2, int flag_run2,
+    std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
+    double mass_max = 4.3, double cent_min = 10., double cent_max = 50.,
+    double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
+    std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
   // Init Helper class
   FlowAnalysis_Helper helper;
 
@@ -62,20 +61,27 @@ void FlowAnalysis_ScalarProductEM(int flag_sig, int flag_bkg, int flag_run2,
   THnSparse *hs_V2SEPM, *hs_V2SEPP, *hs_V2SEMM;
   THnSparse *hs_V2MEPM, *hs_V2MEPP, *hs_V2MEMM;
   TH2F *hs_R2SPAB, *hs_R2SPAC, *hs_R2SPBC;
-  TH3F *hs_u2q2MEPM1, *hs_u2q2MEPP1, *hs_u2q2MEMM1;
-  TH3F *hs_u2q2MEPM2, *hs_u2q2MEPP2, *hs_u2q2MEMM2;
-  TH3F *hs_r2spMEPM1, *hs_r2spMEPP1, *hs_r2spMEMM1;
-  TH3F *hs_r2spMEPM2, *hs_r2spMEPP2, *hs_r2spMEMM2;
-  TH2F *hs_cosDeltaPhiMEPM1, *hs_cosDeltaPhiMEPP1, *hs_cosDeltaPhiMEMM1;
-  TH2F *hs_cosDeltaPhiMEPM2, *hs_cosDeltaPhiMEPP2, *hs_cosDeltaPhiMEMM2;
+  THnSparse *hs_u2q2_cosDeltaPhi_MEPM1, *hs_u2q2_cosDeltaPhi_MEPP1,
+      *hs_u2q2_cosDeltaPhi_MEMM1;
+  THnSparse *hs_u2q2_cosDeltaPhi_MEPM2, *hs_u2q2_cosDeltaPhi_MEPP2,
+      *hs_u2q2_cosDeltaPhi_MEMM2;
+  TH3F *hs_r2spABMEPM1, *hs_r2spABMEPP1, *hs_r2spABMEMM1;
+  TH3F *hs_r2spACMEPM1, *hs_r2spACMEPP1, *hs_r2spACMEMM1;
+  TH3F *hs_r2spBCMEPM1, *hs_r2spBCMEPP1, *hs_r2spBCMEMM1;
+  TH3F *hs_r2spABMEPM2, *hs_r2spABMEPP2, *hs_r2spABMEMM2;
+  TH3F *hs_r2spACMEPM2, *hs_r2spACMEPP2, *hs_r2spACMEMM2;
+  TH3F *hs_r2spBCMEPM2, *hs_r2spBCMEPP2, *hs_r2spBCMEMM2;
+
   helper.LoadDataME(
       FileName, hs_V2SEPM, hs_V2SEPP, hs_V2SEMM, hs_V2MEPM, hs_V2MEPP,
-      hs_V2MEMM, hs_R2SPAB, hs_R2SPAC, hs_R2SPBC, hs_u2q2MEPM1, hs_u2q2MEPP1,
-      hs_u2q2MEMM1, hs_u2q2MEPM2, hs_u2q2MEPP2, hs_u2q2MEMM2, hs_r2spMEPM1,
-      hs_r2spMEPP1, hs_r2spMEMM1, hs_r2spMEPM2, hs_r2spMEPP2, hs_r2spMEMM2,
-      hs_cosDeltaPhiMEPM1, hs_cosDeltaPhiMEPP1, hs_cosDeltaPhiMEMM1,
-      hs_cosDeltaPhiMEPM2, hs_cosDeltaPhiMEPP2, hs_cosDeltaPhiMEMM2, muonCut,
-      dimuonCut);
+      hs_V2MEMM, hs_R2SPAB, hs_R2SPAC, hs_R2SPBC, hs_u2q2_cosDeltaPhi_MEPM1,
+      hs_u2q2_cosDeltaPhi_MEPP1, hs_u2q2_cosDeltaPhi_MEMM1,
+      hs_u2q2_cosDeltaPhi_MEPM2, hs_u2q2_cosDeltaPhi_MEPP2,
+      hs_u2q2_cosDeltaPhi_MEMM2, hs_r2spABMEPM1, hs_r2spABMEPP1, hs_r2spABMEMM1,
+      hs_r2spACMEPM1, hs_r2spACMEPP1, hs_r2spACMEMM1, hs_r2spBCMEPM1,
+      hs_r2spBCMEPP1, hs_r2spBCMEMM1, hs_r2spABMEPM2, hs_r2spABMEPP2,
+      hs_r2spABMEMM2, hs_r2spACMEPM2, hs_r2spACMEPP2, hs_r2spACMEMM2,
+      hs_r2spBCMEPM2, hs_r2spBCMEPP2, hs_r2spBCMEMM2, muonCut, dimuonCut);
 
   // Get general binning information
   TAxis *massAxis = hs_V2SEPM->GetAxis(0);
@@ -88,22 +94,15 @@ void FlowAnalysis_ScalarProductEM(int flag_sig, int flag_bkg, int flag_run2,
   double *Bin_pt = helper.CreateBinsFromAxis(ptAxis);
   double *Bin_cent = helper.CreateBinsFromAxis(centAxis);
 
+  // Initialize fitter
+  FlowAnalysis_Fitting fitter;
+  fitter.init();
+  fitter.setChi2MaxMass(chi2max_mass);
+  fitter.setChi2MaxV2(chi2max_v2);
+  fitter.setCentRange(cent_min, cent_max);
+
   // Define variables' range for analysis
   double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
-  // double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
-  //                           7., 8.,  9., 10., 11., 12., 15., 20.};
-
-  // Define the pool for systematics: 36
-  // combinationss
-  /*
-  double mass_min_sys[3] = {2.2, 2.3, 2.4};
-  double mass_max_sys[3] = {4.2, 4.3, 4.4};
-  string sig_enum[5] = {"CB2(data)", "CB2(MC)", "NA60", "Chebychev", "VWG"};
-  string bkg_v2_enum[2] = {"Pol2", "Chebychev"};
-  int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
-  int bkg_mass[2] = {3, 4};    // Chebychev VWG
-  int bkg_v2[2] = {0, 1};      // Pol2 and Chebychev
-  */
 
   // Create output file
   TFile f(sys ? Form("FlowAnalysisResults_"
@@ -252,10 +251,10 @@ void FlowAnalysis_ScalarProductEM(int flag_sig, int flag_bkg, int flag_run2,
   vector<double> ffactor;
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
     TH1D *hist_rfactor = helper.GetRfactor(
-        Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_min, cent_min,
+        Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
         cent_max, hs_V2MEPM, hs_V2MEPP, hs_V2MEMM);
     double F_value = helper.GetFfactor(
-        Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_min, cent_min,
+        Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
         cent_max, hs_V2SEPP, hs_V2SEMM, hs_V2MEPM, hist_rfactor);
     LOG(info) << Form("F factor for [%g - %g] (Gev/c): %g", Bin_pt_mass[i],
                       Bin_pt_mass[i + 1], F_value);
@@ -270,4 +269,115 @@ void FlowAnalysis_ScalarProductEM(int flag_sig, int flag_bkg, int flag_run2,
     delete hist_rfactor;
     delete l_rfactor;
   }
+
+  for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+    TList *l_SE_ME = new TList();
+    // Same-event profiles: mass
+    TH1D *hs_mass_sepm_proj =
+        helper.GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                       cent_min, cent_max, hs_V2SEPM, "SEPM");
+    TH1D *hs_mass_sepp_proj =
+        helper.GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                       cent_min, cent_max, hs_V2SEPP, "SEPP");
+    TH1D *hs_mass_semm_proj =
+        helper.GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                       cent_min, cent_max, hs_V2SEMM, "SEMM");
+
+    // Same-event profiles: v2
+    TH1D *hs_v2_sepm_proj =
+        helper.GetV2(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                     cent_min, cent_max, hs_V2SEPM, R2SP, "SEPM");
+    TH1D *hs_v2_sepp_proj =
+        helper.GetV2(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                     cent_min, cent_max, hs_V2SEPP, R2SP, "SEPP");
+    TH1D *hs_v2_semm_proj =
+        helper.GetV2(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                     cent_min, cent_max, hs_V2SEMM, R2SP, "SEMM");
+
+    // Mixed-event profiles: mass
+    TH1D *hs_mass_mepm_proj =
+        helper.GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                       cent_min, cent_max, hs_V2MEPM, "MEPM");
+    TH1D *hs_mass_mepp_proj =
+        helper.GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                       cent_min, cent_max, hs_V2MEPP, "MEPP");
+    TH1D *hs_mass_memm_proj =
+        helper.GetMass(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                       cent_min, cent_max, hs_V2MEMM, "MEMM");
+
+    // Mixed-event profiles: v2
+    TH1D *hs_v2_mepm_proj = helper.GetV2EM(
+        Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
+        cent_max, hs_u2q2_cosDeltaPhi_MEPM1, hs_u2q2_cosDeltaPhi_MEPM2,
+        hs_r2spABMEPM1, hs_r2spACMEPM1, hs_r2spBCMEPM1, hs_r2spABMEPM2,
+        hs_r2spACMEPM2, hs_r2spBCMEPM2, "MEPM");
+    TH1D *hs_v2_mepp_proj = helper.GetV2EM(
+        Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
+        cent_max, hs_u2q2_cosDeltaPhi_MEPP1, hs_u2q2_cosDeltaPhi_MEPP2,
+        hs_r2spABMEPP1, hs_r2spACMEPP1, hs_r2spBCMEPP1, hs_r2spABMEPP2,
+        hs_r2spACMEPP2, hs_r2spBCMEPP2, "MEPP");
+    TH1D *hs_v2_memm_proj = helper.GetV2EM(
+        Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
+        cent_max, hs_u2q2_cosDeltaPhi_MEMM1, hs_u2q2_cosDeltaPhi_MEMM2,
+        hs_r2spABMEMM1, hs_r2spACMEMM1, hs_r2spBCMEMM1, hs_r2spABMEMM2,
+        hs_r2spACMEMM2, hs_r2spBCMEMM2, "MEMM");
+
+    // Scale mixed-event spectra with F factor
+    hs_mass_mepm_proj->Scale(ffactor[i]);
+    hs_mass_mepp_proj->Scale(ffactor[i]);
+    hs_mass_memm_proj->Scale(ffactor[i]);
+    hs_v2_mepm_proj->Scale(ffactor[i]);
+    hs_v2_mepp_proj->Scale(ffactor[i]);
+    hs_v2_memm_proj->Scale(ffactor[i]);
+
+    // Save plots for invariant mass
+    helper.PlotSEME("PM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                    mass_max, cent_min, cent_max, hs_mass_sepm_proj,
+                    hs_mass_mepm_proj, l_SE_ME);
+    helper.PlotSEME("PP", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                    mass_max, cent_min, cent_max, hs_mass_sepp_proj,
+                    hs_mass_mepp_proj, l_SE_ME);
+    helper.PlotSEME("MM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                    mass_max, cent_min, cent_max, hs_mass_semm_proj,
+                    hs_mass_memm_proj, l_SE_ME);
+    f.cd();
+    l_SE_ME->Write(Form("Mass_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+                   TObject::kSingleKey);
+    delete l_SE_ME;
+
+    /// Do fitting
+    // Configuration for fitting
+    fitter.setModel(flag_sig, flag_bkg);
+    fitter.setModelV2(flag_v2);
+    fitter.setMassRange(mass_min, mass_max);
+    fitter.setPtRange(Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+    fitter.setOrder(2);
+    fitter.setMode(0); // standard mode, no systematics
+
+    // Fit invariant mass + v2
+    TList *l_diff_fit = new TList();
+    vector<double> results_v2 = fitter.runFittingEM(
+        hs_mass_mepm_proj->Integral(), hs_mass_sepm_proj, hs_mass_mepm_proj,
+        hs_v2_sepm_proj, hs_v2_mepm_proj, l_diff_fit);
+
+    f.cd();
+    l_diff_fit->Write(
+        Form("DifferentialFlow_Fit_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        TObject::kSingleKey);
+
+    delete hs_mass_sepm_proj;
+    delete hs_mass_sepp_proj;
+    delete hs_mass_semm_proj;
+    delete hs_mass_mepm_proj;
+    delete hs_mass_mepp_proj;
+    delete hs_mass_memm_proj;
+    delete hs_v2_sepm_proj;
+    delete hs_v2_sepp_proj;
+    delete hs_v2_semm_proj;
+    delete hs_v2_mepm_proj;
+    delete hs_v2_mepp_proj;
+    delete hs_v2_memm_proj;
+    delete l_diff_fit;
+  }
+  f.Close();
 }

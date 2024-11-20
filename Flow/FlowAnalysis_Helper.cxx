@@ -1,6 +1,17 @@
 #include "FlowAnalysis_Helper.h"
 
 //______________________________________________________________________________
+vector<string> FlowAnalysis_Helper::tokenize(string input_string) {
+  vector<string> output_string;
+  string temp;
+  istringstream ss(input_string);
+  while (getline(ss, temp, '/')) {
+    output_string.push_back(temp);
+  }
+  return output_string;
+}
+
+//______________________________________________________________________________
 double *FlowAnalysis_Helper::CreateBinsFromAxis(TAxis *axis) {
   int Nbins = axis->GetNbins();
   double *Bins = new double[Nbins + 1];
@@ -21,11 +32,12 @@ void FlowAnalysis_Helper::CreateBins(double *axis, double min, double max,
 //______________________________________________________________________________
 TH1D *FlowAnalysis_Helper::GetMass(double ptmin, double ptmax, double massmin,
                                    double massmax, double centmin,
-                                   double centmax, THnSparse *hist_V2) {
+                                   double centmax, THnSparse *hist_V2,
+                                   std::string flag) {
 
   // Copy original profiles for projections
-  THnSparse *hist_V2_cp = dynamic_cast<THnSparse *>(
-      hist_V2->Clone(Form("Mass_Pt_centrFT0C_V2_Copy_%g_%g", ptmin, ptmax)));
+  THnSparse *hist_V2_cp = dynamic_cast<THnSparse *>(hist_V2->Clone(
+      Form("Mass_Pt_centrFT0C_V2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
 
   // Set axes' ranges for mass-differential study
   hist_V2_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
@@ -162,11 +174,12 @@ FlowAnalysis_Helper::GetFfactor(double ptmin, double ptmax, double massmin,
 //______________________________________________________________________________
 TH1D *FlowAnalysis_Helper::GetV2(double ptmin, double ptmax, double massmin,
                                  double massmax, double centmin, double centmax,
-                                 THnSparse *hist_V2, double R2SP) {
+                                 THnSparse *hist_V2, double R2SP,
+                                 std::string flag) {
 
   // Copy original profiles for projections
-  THnSparse *hist_V2_cp = dynamic_cast<THnSparse *>(
-      hist_V2->Clone(Form("Mass_Pt_centrFT0C_V2_Copy_%g_%g", ptmin, ptmax)));
+  THnSparse *hist_V2_cp = dynamic_cast<THnSparse *>(hist_V2->Clone(
+      Form("Mass_Pt_centrFT0C_V2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
 
   // Set axes' ranges for mass-differential study
   hist_V2_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
@@ -179,9 +192,10 @@ TH1D *FlowAnalysis_Helper::GetV2(double ptmin, double ptmax, double massmin,
   // Define histograms
   double *Bin_mass_new = CreateBinsFromAxis(hs_v2_sp_proj->GetXaxis());
   int NBins_mass_new = hs_v2_sp_proj->GetXaxis()->GetNbins();
-  TH1D *hist_v2sp = new TH1D(Form("v2sp_%g_%g", ptmin, ptmax),
-                             Form("v^{#mu#mu}_{2}{SP}_%g_%g", ptmin, ptmax),
-                             NBins_mass_new, Bin_mass_new);
+  TH1D *hist_v2sp =
+      new TH1D(Form("v2sp_%s_%g_%g", flag.c_str(), ptmin, ptmax),
+               Form("v^{#mu#mu}_{2}{SP}_%s_%g_%g", flag.c_str(), ptmin, ptmax),
+               NBins_mass_new, Bin_mass_new);
   hist_v2sp->GetXaxis()->SetTitle("mass (GeV/c2)");
   hist_v2sp->GetYaxis()->SetTitle("v^{#mu#mu}_{2}{SP}");
 
@@ -203,6 +217,199 @@ TH1D *FlowAnalysis_Helper::GetV2(double ptmin, double ptmax, double massmin,
   delete hs_v2_sp_proj;
 
   return hist_v2sp;
+}
+
+//______________________________________________________________________________
+TH1D *FlowAnalysis_Helper::GetV2EM(
+    double ptmin, double ptmax, double massmin, double massmax, double centmin,
+    double centmax, THnSparse *hs_u2q2_cosDeltaPhi_ME1,
+    THnSparse *hs_u2q2_cosDeltaPhi_ME2, TH3F *hs_r2spAB1, TH3F *hs_r2spAC1,
+    TH3F *hs_r2spBC1, TH3F *hs_r2spAB2, TH3F *hs_r2spAC2, TH3F *hs_r2spBC2,
+    std::string flag) {
+
+  // Copy original profiles for projections
+  THnSparse *hs_u2q2_cosDeltaPhi_ME1_cp =
+      dynamic_cast<THnSparse *>(hs_u2q2_cosDeltaPhi_ME1->Clone(
+          Form("Mass_Pt_centrFT0C_u2q2_cosDeltaPhi_1_Copy_%s_%g_%g",
+               flag.c_str(), ptmin, ptmax)));
+  THnSparse *hs_u2q2_cosDeltaPhi_ME2_cp =
+      dynamic_cast<THnSparse *>(hs_u2q2_cosDeltaPhi_ME2->Clone(
+          Form("Mass_Pt_centrFT0C_u2q2_cosDeltaPhi_2_Copy_%s_%g_%g",
+               flag.c_str(), ptmin, ptmax)));
+  TH3F *hs_r2spAB1_cp = dynamic_cast<TH3F *>(hs_r2spAB1->Clone(Form(
+      "Mass_Pt_centrFT0C_R2SPAB_1_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
+  TH3F *hs_r2spAC1_cp = dynamic_cast<TH3F *>(hs_r2spAC1->Clone(Form(
+      "Mass_Pt_centrFT0C_R2SPAC_1_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
+  TH3F *hs_r2spBC1_cp = dynamic_cast<TH3F *>(hs_r2spBC1->Clone(Form(
+      "Mass_Pt_centrFT0C_R2SPBC_1_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
+  TH3F *hs_r2spAB2_cp = dynamic_cast<TH3F *>(hs_r2spAB2->Clone(Form(
+      "Mass_Pt_centrFT0C_R2SPAB_2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
+  TH3F *hs_r2spAC2_cp = dynamic_cast<TH3F *>(hs_r2spAC2->Clone(Form(
+      "Mass_Pt_centrFT0C_R2SPAC_2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
+  TH3F *hs_r2spBC2_cp = dynamic_cast<TH3F *>(hs_r2spBC2->Clone(Form(
+      "Mass_Pt_centrFT0C_R2SPBC_2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
+
+  // Set axes' ranges for mass-differential study
+  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
+  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
+  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(2)->SetRangeUser(centmin, centmax);
+
+  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
+  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
+  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(2)->SetRangeUser(centmin, centmax);
+
+  hs_r2spAB1_cp->GetXaxis()->SetRangeUser(massmin, massmax);
+  hs_r2spAB1_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+  hs_r2spAC1_cp->GetXaxis()->SetRangeUser(massmin, massmax);
+  hs_r2spAC1_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+  hs_r2spBC1_cp->GetXaxis()->SetRangeUser(massmin, massmax);
+  hs_r2spBC1_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+
+  hs_r2spAB2_cp->GetXaxis()->SetRangeUser(massmin, massmax);
+  hs_r2spAB2_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+  hs_r2spAC2_cp->GetXaxis()->SetRangeUser(massmin, massmax);
+  hs_r2spAC2_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+  hs_r2spBC2_cp->GetXaxis()->SetRangeUser(massmin, massmax);
+  hs_r2spBC2_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+
+  // Get u2q2 and cosDeltaPhi
+  TH2D *hs_u2q2_proj1 = hs_u2q2_cosDeltaPhi_ME1_cp->Projection(3, 0);
+  TH2D *hs_u2q2_proj2 = hs_u2q2_cosDeltaPhi_ME2_cp->Projection(3, 0);
+  TH2D *hs_cosDeltaPhi_proj1 = hs_u2q2_cosDeltaPhi_ME1_cp->Projection(4, 0);
+  TH2D *hs_cosDeltaPhi_proj2 = hs_u2q2_cosDeltaPhi_ME2_cp->Projection(4, 0);
+  TH2D *hs_r2spAB_proj1 = dynamic_cast<TH2D *>(hs_r2spAB1_cp->Project3D("zx"));
+  TH2D *hs_r2spAC_proj1 = dynamic_cast<TH2D *>(hs_r2spAC1_cp->Project3D("zx"));
+  TH2D *hs_r2spBC_proj1 = dynamic_cast<TH2D *>(hs_r2spBC1_cp->Project3D("zx"));
+  TH2D *hs_r2spAB_proj2 = dynamic_cast<TH2D *>(hs_r2spAB2_cp->Project3D("zx"));
+  TH2D *hs_r2spAC_proj2 = dynamic_cast<TH2D *>(hs_r2spAC2_cp->Project3D("zx"));
+  TH2D *hs_r2spBC_proj2 = dynamic_cast<TH2D *>(hs_r2spBC2_cp->Project3D("zx"));
+
+  // Define histograms
+  double *Bin_mass_new = CreateBinsFromAxis(hs_u2q2_proj1->GetXaxis());
+  int NBins_mass_new = hs_u2q2_proj1->GetXaxis()->GetNbins();
+  TH1D *hist_v2spme =
+      new TH1D(Form("v2sp_%s_%g_%g", flag.c_str(), ptmin, ptmax),
+               Form("v^{#mu#mu}_{2}{SP}_%s_%g_%g", flag.c_str(), ptmin, ptmax),
+               NBins_mass_new, Bin_mass_new);
+  hist_v2spme->GetXaxis()->SetTitle("mass (GeV/c2)");
+  hist_v2spme->GetYaxis()->SetTitle("v^{#mu#mu}_{2}{SP}");
+
+  // Evaluation of differential flow as function of invariant mass
+  for (int i = 0; i < NBins_mass_new; i++) {
+    TH2D *hs_u2q2_proj1_cp =
+        dynamic_cast<TH2D *>(hs_u2q2_proj1->Clone("u2q2_1_Copy"));
+    hs_u2q2_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                               Bin_mass_new[i + 1]);
+    TH2D *hs_u2q2_proj2_cp =
+        dynamic_cast<TH2D *>(hs_u2q2_proj2->Clone("u2q2_2_Copy"));
+    hs_u2q2_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                               Bin_mass_new[i + 1]);
+
+    TH2D *hs_cosDeltaPhi_proj1_cp =
+        dynamic_cast<TH2D *>(hs_cosDeltaPhi_proj1->Clone("cosDeltaPhi_1_Copy"));
+    hs_cosDeltaPhi_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                      Bin_mass_new[i + 1]);
+    TH2D *hs_cosDeltaPhi_proj2_cp =
+        dynamic_cast<TH2D *>(hs_cosDeltaPhi_proj2->Clone("cosDeltaPhi_2_Copy"));
+    hs_cosDeltaPhi_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                      Bin_mass_new[i + 1]);
+
+    TH2D *hs_r2spAB_proj1_cp =
+        dynamic_cast<TH2D *>(hs_r2spAB_proj1->Clone("r2spAB_1_Copy"));
+    hs_r2spAB_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                 Bin_mass_new[i + 1]);
+    TH2D *hs_r2spAC_proj1_cp =
+        dynamic_cast<TH2D *>(hs_r2spAC_proj1->Clone("r2spAC_1_Copy"));
+    hs_r2spAC_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                 Bin_mass_new[i + 1]);
+    TH2D *hs_r2spBC_proj1_cp =
+        dynamic_cast<TH2D *>(hs_r2spBC_proj1->Clone("r2spBC_1_Copy"));
+    hs_r2spBC_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                 Bin_mass_new[i + 1]);
+
+    TH2D *hs_r2spAB_proj2_cp =
+        dynamic_cast<TH2D *>(hs_r2spAB_proj2->Clone("r2spAB_2_Copy"));
+    hs_r2spAB_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                 Bin_mass_new[i + 1]);
+    TH2D *hs_r2spAC_proj2_cp =
+        dynamic_cast<TH2D *>(hs_r2spAC_proj2->Clone("r2spAC_2_Copy"));
+    hs_r2spAC_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                 Bin_mass_new[i + 1]);
+    TH2D *hs_r2spBC_proj2_cp =
+        dynamic_cast<TH2D *>(hs_r2spBC_proj2->Clone("r2spBC_2_Copy"));
+    hs_r2spBC_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+                                                 Bin_mass_new[i + 1]);
+
+    double u2q2_1 = hs_u2q2_proj1_cp->GetMean(2);
+    double u2q2e_1 = hs_u2q2_proj1_cp->GetMean(12);
+    double u2q2_2 = hs_u2q2_proj2_cp->GetMean(2);
+    double u2q2e_2 = hs_u2q2_proj2_cp->GetMean(12);
+
+    double cosDeltaPhi_1 = hs_cosDeltaPhi_proj1_cp->GetMean(2);
+    double cosDeltaPhie_1 = hs_cosDeltaPhi_proj1_cp->GetMean(12);
+    double cosDeltaPhi_2 = hs_cosDeltaPhi_proj2_cp->GetMean(2);
+    double cosDeltaPhie_2 = hs_cosDeltaPhi_proj2_cp->GetMean(12);
+
+    double r2spAB_1 = hs_r2spAB_proj1_cp->GetMean(2);
+    double r2spAC_1 = hs_r2spAC_proj1_cp->GetMean(2);
+    double r2spBC_1 = hs_r2spBC_proj1_cp->GetMean(2);
+
+    double r2spAB_2 = hs_r2spAB_proj2_cp->GetMean(2);
+    double r2spAC_2 = hs_r2spAC_proj2_cp->GetMean(2);
+    double r2spBC_2 = hs_r2spBC_proj2_cp->GetMean(2);
+
+    double r2sp_1 = r2spBC_1 != 0 ? r2spAB_1 * r2spAC_1 / r2spBC_1 : 0.0;
+    r2sp_1 = r2sp_1 > 0 ? TMath::Sqrt(r2sp_1) : 0.0;
+    double r2sp_2 = r2spBC_2 != 0 ? r2spAB_2 * r2spAC_2 / r2spBC_2 : 0.0;
+    r2sp_2 = r2sp_2 > 0 ? TMath::Sqrt(r2sp_2) : 0.0;
+    double v2 =
+        r2sp_1 == 0 || r2sp_2 == 0
+            ? 0.0
+            : u2q2_1 / r2sp_1 * cosDeltaPhi_1 + u2q2_2 / r2sp_2 * cosDeltaPhi_2;
+    double v2e =
+        r2sp_1 == 0 || r2sp_2 == 0
+            ? 0.0
+            : TMath::Sqrt(
+                  pow(cosDeltaPhi_1, 2.) * pow(u2q2e_1, 2.) / pow(r2sp_1, 2.) +
+                  pow(cosDeltaPhie_1, 2.) * pow(u2q2_1, 2.) / pow(r2sp_1, 2.) +
+                  pow(cosDeltaPhi_2, 2.) * pow(u2q2e_2, 2.) / pow(r2sp_2, 2.) +
+                  pow(cosDeltaPhie_2, 2.) * pow(u2q2_2, 2.) / pow(r2sp_2, 2.));
+
+    hist_v2spme->SetBinContent(i + 1, v2);
+    hist_v2spme->SetBinError(i + 1, v2e);
+
+    delete hs_u2q2_proj1_cp;
+    delete hs_u2q2_proj2_cp;
+    delete hs_cosDeltaPhi_proj1_cp;
+    delete hs_cosDeltaPhi_proj2_cp;
+    delete hs_r2spAB_proj1_cp;
+    delete hs_r2spAB_proj2_cp;
+    delete hs_r2spAC_proj1_cp;
+    delete hs_r2spAC_proj2_cp;
+    delete hs_r2spBC_proj1_cp;
+    delete hs_r2spBC_proj2_cp;
+  }
+
+  delete hs_u2q2_cosDeltaPhi_ME1_cp;
+  delete hs_u2q2_cosDeltaPhi_ME2_cp;
+  delete hs_r2spAB1_cp;
+  delete hs_r2spAB2_cp;
+  delete hs_r2spAC1_cp;
+  delete hs_r2spAC2_cp;
+  delete hs_r2spBC1_cp;
+  delete hs_r2spBC2_cp;
+  delete hs_u2q2_proj1;
+  delete hs_u2q2_proj2;
+  delete hs_cosDeltaPhi_proj1;
+  delete hs_cosDeltaPhi_proj2;
+  delete hs_r2spAB_proj1;
+  delete hs_r2spAB_proj2;
+  delete hs_r2spAC_proj1;
+  delete hs_r2spAC_proj2;
+  delete hs_r2spBC_proj1;
+  delete hs_r2spBC_proj2;
+
+  return hist_v2spme;
 }
 
 //______________________________________________________________________________
@@ -772,6 +979,216 @@ void FlowAnalysis_Helper::PlotFinalResults(
 }
 
 //______________________________________________________________________________
+void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
+                                   double massmin, double massmax,
+                                   double centmin, double centmax,
+                                   TH1D *hist_SE, TH1D *hist_ME, TList *ls) {
+  TCanvas *c_SEME =
+      new TCanvas(Form("hist_Mass_%s_%g_%g_%g_%g_%g_%g", flag.c_str(), ptmin,
+                       ptmax, massmin, massmax, centmin, centmax),
+                  Form("hist_Mass_%s_%g_%g_%g_%g_%g_%g", flag.c_str(), ptmin,
+                       ptmax, massmin, massmax, centmin, centmax));
+  c_SEME->cd();
+
+  hist_SE->SetStats(0);
+  hist_SE->SetTitle(Form("Mass spectra with event-mixing: %s", flag.c_str()));
+  hist_SE->SetMarkerStyle(20);
+  hist_SE->SetMarkerSize(0.8);
+  hist_SE->SetMarkerColor(kBlue);
+  hist_SE->GetYaxis()->SetTitle("Counts");
+  hist_SE->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hist_SE->Draw("HIST EP");
+
+  hist_ME->SetStats(0);
+  hist_ME->SetTitle("");
+  hist_ME->SetMarkerStyle(20);
+  hist_ME->SetMarkerSize(0.8);
+  hist_ME->SetMarkerColor(kRed);
+  hist_ME->GetYaxis()->SetTitle("Counts");
+  hist_ME->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hist_ME->Draw("HIST EP same");
+  gPad->BuildLegend();
+  ls->Add(c_SEME);
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Helper::LoadReso(std::string FileName, TH2F *&hs_R2SPAB,
+                                   TH2F *&hs_R2SPAC, TH2F *&hs_R2SPBC) {
+  // Load input data for analysis
+  filesystem::path filePath = FileName;
+  THashList *list_hist_r2;
+  TList *sublist_r2;
+  if (filePath.extension() == ".root") {
+    // Load data from AnalysisResults.root
+    TFile *Input_File = TFile::Open(FileName.c_str());
+    list_hist_r2 =
+        (THashList *)Input_File->Get("analysis-event-selection/output");
+    sublist_r2 = (TList *)list_hist_r2->FindObject("Event_AfterCuts");
+
+    // Get histograms of correlations and resolution factors
+    hs_R2SPAB = (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0A_CentFT0C");
+    hs_R2SPAC = (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0C_CentFT0C");
+    hs_R2SPBC = (TH2F *)sublist_r2->FindObject("R2SP_FT0AFT0C_CentFT0C");
+    Input_File->Close();
+  } else {
+    // Load data from a list of AnalysisResults.root
+    fstream InputFiles;
+    InputFiles.open(FileName, ios::in);
+    if (InputFiles.is_open()) {
+      string File;
+      cout << "Start Loading input AnalysisResults in list..." << endl;
+      bool first = true;
+      while (getline(InputFiles, File)) {
+        cout << "Loading input from: " << File << endl;
+        TFile *inFile = TFile::Open(File.c_str());
+        list_hist_r2 =
+            (THashList *)inFile->Get("analysis-event-selection/output");
+        sublist_r2 = (TList *)list_hist_r2->FindObject("Event_AfterCuts");
+
+        if (first) {
+          hs_R2SPAB = (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0A_CentFT0C");
+          hs_R2SPAC = (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0C_CentFT0C");
+          hs_R2SPBC = (TH2F *)sublist_r2->FindObject("R2SP_FT0AFT0C_CentFT0C");
+        } else {
+          hs_R2SPAB->Add(
+              (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0A_CentFT0C"));
+          hs_R2SPAC->Add(
+              (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0C_CentFT0C"));
+          hs_R2SPBC->Add(
+              (TH2F *)sublist_r2->FindObject("R2SP_FT0AFT0C_CentFT0C"));
+        }
+
+        inFile->Close();
+        first = false;
+      }
+      InputFiles.close();
+    }
+  }
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Helper::LoadResoProfile(
+    std::string FileName, TProfile *&tp_R2SPAB, TProfile *&tp_R2SPAC,
+    TProfile *&tp_R2SPBC, TProfile *&tp_R2EPAB, TProfile *&tp_R2EPAC,
+    TProfile *&tp_R2EPBC, TProfile *&tp_R2SPAB_Im, TProfile *&tp_R2SPAC_Im,
+    TProfile *&tp_R2SPBC_Im, TProfile *&tp_R2EPAB_Im, TProfile *&tp_R2EPAC_Im,
+    TProfile *&tp_R2EPBC_Im) {
+  // Load input data for analysis
+  filesystem::path filePath = FileName;
+  THashList *list_hist_r2;
+  TList *sublist_r2;
+  if (filePath.extension() == ".root") {
+    // Load data from AnalysisResults.root
+    TFile *Input_File = TFile::Open(FileName.c_str());
+    list_hist_r2 =
+        (THashList *)Input_File->Get("analysis-event-selection/output");
+    sublist_r2 = (TList *)list_hist_r2->FindObject("Event_AfterCuts");
+
+    // Get histograms of correlations and resolution factors
+    tp_R2SPAB =
+        (TProfile *)sublist_r2->FindObject("Profile_R2SP_TPCFT0A_CentFT0C");
+    tp_R2SPAC =
+        (TProfile *)sublist_r2->FindObject("Profile_R2SP_TPCFT0C_CentFT0C");
+    tp_R2SPBC =
+        (TProfile *)sublist_r2->FindObject("Profile_R2SP_FT0AFT0C_CentFT0C");
+    tp_R2EPAB =
+        (TProfile *)sublist_r2->FindObject("Profile_R2EP_TPCFT0A_CentFT0C");
+    tp_R2EPAC =
+        (TProfile *)sublist_r2->FindObject("Profile_R2EP_TPCFT0C_CentFT0C");
+    tp_R2EPBC =
+        (TProfile *)sublist_r2->FindObject("Profile_R2EP_FT0AFT0C_CentFT0C");
+
+    tp_R2SPAB_Im =
+        (TProfile *)sublist_r2->FindObject("Profile_R2SP_Im_TPCFT0A_CentFT0C");
+    tp_R2SPAC_Im =
+        (TProfile *)sublist_r2->FindObject("Profile_R2SP_Im_TPCFT0C_CentFT0C");
+    tp_R2SPBC_Im =
+        (TProfile *)sublist_r2->FindObject("Profile_R2SP_Im_FT0AFT0C_CentFT0C");
+    tp_R2EPAB_Im =
+        (TProfile *)sublist_r2->FindObject("Profile_R2EP_Im_TPCFT0A_CentFT0C");
+    tp_R2EPAC_Im =
+        (TProfile *)sublist_r2->FindObject("Profile_R2EP_Im_TPCFT0C_CentFT0C");
+    tp_R2EPBC_Im =
+        (TProfile *)sublist_r2->FindObject("Profile_R2EP_Im_FT0AFT0C_CentFT0C");
+    Input_File->Close();
+  } else {
+    // Load data from a list of AnalysisResults.root
+    fstream InputFiles;
+    InputFiles.open(FileName, ios::in);
+    if (InputFiles.is_open()) {
+      string File;
+      cout << "Start Loading input AnalysisResults in list..." << endl;
+      bool first = true;
+      while (getline(InputFiles, File)) {
+        cout << "Loading input from: " << File << endl;
+        TFile *inFile = TFile::Open(File.c_str());
+        list_hist_r2 =
+            (THashList *)inFile->Get("analysis-event-selection/output");
+        sublist_r2 = (TList *)list_hist_r2->FindObject("Event_AfterCuts");
+
+        if (first) {
+          tp_R2SPAB = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_TPCFT0A_CentFT0C");
+          tp_R2SPAC = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_TPCFT0C_CentFT0C");
+          tp_R2SPBC = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_FT0AFT0C_CentFT0C");
+          tp_R2EPAB = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_TPCFT0A_CentFT0C");
+          tp_R2EPAC = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_TPCFT0C_CentFT0C");
+          tp_R2EPBC = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_FT0AFT0C_CentFT0C");
+
+          tp_R2SPAB_Im = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_Im_TPCFT0A_CentFT0C");
+          tp_R2SPAC_Im = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_Im_TPCFT0C_CentFT0C");
+          tp_R2SPBC_Im = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_Im_FT0AFT0C_CentFT0C");
+          tp_R2EPAB_Im = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_Im_TPCFT0A_CentFT0C");
+          tp_R2EPAC_Im = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_Im_TPCFT0C_CentFT0C");
+          tp_R2EPBC_Im = (TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_Im_FT0AFT0C_CentFT0C");
+        } else {
+          tp_R2SPAB->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_TPCFT0A_CentFT0C"));
+          tp_R2SPAC->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_TPCFT0C_CentFT0C"));
+          tp_R2SPBC->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_FT0AFT0C_CentFT0C"));
+          tp_R2EPAB->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_TPCFT0A_CentFT0C"));
+          tp_R2EPAC->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_TPCFT0C_CentFT0C"));
+          tp_R2EPBC->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_FT0AFT0C_CentFT0C"));
+
+          tp_R2SPAB_Im->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_Im_TPCFT0A_CentFT0C"));
+          tp_R2SPAC_Im->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_Im_TPCFT0C_CentFT0C"));
+          tp_R2SPBC_Im->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2SP_Im_FT0AFT0C_CentFT0C"));
+          tp_R2EPAB_Im->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_Im_TPCFT0A_CentFT0C"));
+          tp_R2EPAC_Im->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_Im_TPCFT0C_CentFT0C"));
+          tp_R2EPBC_Im->Add((TProfile *)sublist_r2->FindObject(
+              "Profile_R2EP_Im_FT0AFT0C_CentFT0C"));
+        }
+
+        inFile->Close();
+        first = false;
+      }
+      InputFiles.close();
+    }
+  }
+}
+
+//______________________________________________________________________________
 void FlowAnalysis_Helper::LoadData(std::string FileName, THnSparse *&hs_V2,
                                    TH2F *&hs_R2SPAB, TH2F *&hs_R2SPAC,
                                    TH2F *&hs_R2SPBC, std::string muonCut,
@@ -849,13 +1266,18 @@ void FlowAnalysis_Helper::LoadDataME(
     std::string FileName, THnSparse *&hs_V2SEPM, THnSparse *&hs_V2SEPP,
     THnSparse *&hs_V2SEMM, THnSparse *&hs_V2MEPM, THnSparse *&hs_V2MEPP,
     THnSparse *&hs_V2MEMM, TH2F *&hs_R2SPAB, TH2F *&hs_R2SPAC, TH2F *&hs_R2SPBC,
-    TH3F *&hs_u2q2MEPM1, TH3F *&hs_u2q2MEPP1, TH3F *&hs_u2q2MEMM1,
-    TH3F *&hs_u2q2MEPM2, TH3F *&hs_u2q2MEPP2, TH3F *&hs_u2q2MEMM2,
-    TH3F *&hs_r2spMEPM1, TH3F *&hs_r2spMEPP1, TH3F *&hs_r2spMEMM1,
-    TH3F *&hs_r2spMEPM2, TH3F *&hs_r2spMEPP2, TH3F *&hs_r2spMEMM2,
-    TH2F *&hs_cosDeltaPhiMEPM1, TH2F *&hs_cosDeltaPhiMEPP1,
-    TH2F *&hs_cosDeltaPhiMEMM1, TH2F *&hs_cosDeltaPhiMEPM2,
-    TH2F *&hs_cosDeltaPhiMEPP2, TH2F *&hs_cosDeltaPhiMEMM2, std::string muonCut,
+    THnSparse *&hs_u2q2_cosDeltaPhi_MEPM1,
+    THnSparse *&hs_u2q2_cosDeltaPhi_MEPP1,
+    THnSparse *&hs_u2q2_cosDeltaPhi_MEMM1,
+    THnSparse *&hs_u2q2_cosDeltaPhi_MEPM2,
+    THnSparse *&hs_u2q2_cosDeltaPhi_MEPP2,
+    THnSparse *&hs_u2q2_cosDeltaPhi_MEMM2, TH3F *&hs_r2spABMEPM1,
+    TH3F *&hs_r2spABMEPP1, TH3F *&hs_r2spABMEMM1, TH3F *&hs_r2spACMEPM1,
+    TH3F *&hs_r2spACMEPP1, TH3F *&hs_r2spACMEMM1, TH3F *&hs_r2spBCMEPM1,
+    TH3F *&hs_r2spBCMEPP1, TH3F *&hs_r2spBCMEMM1, TH3F *&hs_r2spABMEPM2,
+    TH3F *&hs_r2spABMEPP2, TH3F *&hs_r2spABMEMM2, TH3F *&hs_r2spACMEPM2,
+    TH3F *&hs_r2spACMEPP2, TH3F *&hs_r2spACMEMM2, TH3F *&hs_r2spBCMEPM2,
+    TH3F *&hs_r2spBCMEPP2, TH3F *&hs_r2spBCMEMM2, std::string muonCut,
     std::string dimuonCut) {
   // Load input data for analysis
   filesystem::path filePath = FileName;
@@ -909,31 +1331,40 @@ void FlowAnalysis_Helper::LoadDataME(
     hs_R2SPAC = (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0C_CentFT0C");
     hs_R2SPBC = (TH2F *)sublist_r2->FindObject("R2SP_FT0AFT0C_CentFT0C");
 
-    hs_u2q2MEPM1 = (TH3F *)sublist_v2mepm->FindObject("U2Q2_CentFT0C_ev1");
-    hs_u2q2MEPM2 = (TH3F *)sublist_v2mepm->FindObject("U2Q2_CentFT0C_ev2");
-    hs_u2q2MEPP1 = (TH3F *)sublist_v2mepp->FindObject("U2Q2_CentFT0C_ev1");
-    hs_u2q2MEPP2 = (TH3F *)sublist_v2mepp->FindObject("U2Q2_CentFT0C_ev2");
-    hs_u2q2MEMM1 = (TH3F *)sublist_v2memm->FindObject("U2Q2_CentFT0C_ev1");
-    hs_u2q2MEMM2 = (TH3F *)sublist_v2memm->FindObject("U2Q2_CentFT0C_ev2");
-    hs_r2spMEPM1 = (TH3F *)sublist_v2mepm->FindObject("R2SP1_CentFT0C");
-    hs_r2spMEPM2 = (TH3F *)sublist_v2mepm->FindObject("R2SP2_CentFT0C");
-    hs_r2spMEPP1 = (TH3F *)sublist_v2mepp->FindObject("R2SP1_CentFT0C");
-    hs_r2spMEPP2 = (TH3F *)sublist_v2mepp->FindObject("R2SP2_CentFT0C");
-    hs_r2spMEMM1 = (TH3F *)sublist_v2memm->FindObject("R2SP1_CentFT0C");
-    hs_r2spMEMM2 = (TH3F *)sublist_v2memm->FindObject("R2SP2_CentFT0C");
+    hs_u2q2_cosDeltaPhi_MEPM1 = (THnSparse *)sublist_v2mepm->FindObject(
+        "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1");
+    hs_u2q2_cosDeltaPhi_MEPM2 = (THnSparse *)sublist_v2mepm->FindObject(
+        "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2");
+    hs_u2q2_cosDeltaPhi_MEPP1 = (THnSparse *)sublist_v2mepp->FindObject(
+        "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1");
+    hs_u2q2_cosDeltaPhi_MEPP2 = (THnSparse *)sublist_v2mepp->FindObject(
+        "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2");
+    hs_u2q2_cosDeltaPhi_MEMM1 = (THnSparse *)sublist_v2memm->FindObject(
+        "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1");
+    hs_u2q2_cosDeltaPhi_MEMM2 = (THnSparse *)sublist_v2memm->FindObject(
+        "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2");
 
-    hs_cosDeltaPhiMEPM1 =
-        (TH2F *)sublist_v2mepm->FindObject("Mass_cos2DeltaPhiMu1");
-    hs_cosDeltaPhiMEPM2 =
-        (TH2F *)sublist_v2mepm->FindObject("Mass_cos2DeltaPhiMu2");
-    hs_cosDeltaPhiMEPP1 =
-        (TH2F *)sublist_v2mepp->FindObject("Mass_cos2DeltaPhiMu1");
-    hs_cosDeltaPhiMEPP2 =
-        (TH2F *)sublist_v2mepp->FindObject("Mass_cos2DeltaPhiMu2");
-    hs_cosDeltaPhiMEMM1 =
-        (TH2F *)sublist_v2memm->FindObject("Mass_cos2DeltaPhiMu1");
-    hs_cosDeltaPhiMEMM2 =
-        (TH2F *)sublist_v2memm->FindObject("Mass_cos2DeltaPhiMu2");
+    hs_r2spABMEPM1 = (TH3F *)sublist_v2mepm->FindObject("R2SPAB1_CentFT0C");
+    hs_r2spABMEPM2 = (TH3F *)sublist_v2mepm->FindObject("R2SPAB2_CentFT0C");
+    hs_r2spABMEPP1 = (TH3F *)sublist_v2mepp->FindObject("R2SPAB1_CentFT0C");
+    hs_r2spABMEPP2 = (TH3F *)sublist_v2mepp->FindObject("R2SPAB2_CentFT0C");
+    hs_r2spABMEMM1 = (TH3F *)sublist_v2memm->FindObject("R2SPAB1_CentFT0C");
+    hs_r2spABMEMM2 = (TH3F *)sublist_v2memm->FindObject("R2SPAB2_CentFT0C");
+
+    hs_r2spACMEPM1 = (TH3F *)sublist_v2mepm->FindObject("R2SPAC1_CentFT0C");
+    hs_r2spACMEPM2 = (TH3F *)sublist_v2mepm->FindObject("R2SPAC2_CentFT0C");
+    hs_r2spACMEPP1 = (TH3F *)sublist_v2mepp->FindObject("R2SPAC1_CentFT0C");
+    hs_r2spACMEPP2 = (TH3F *)sublist_v2mepp->FindObject("R2SPAC2_CentFT0C");
+    hs_r2spACMEMM1 = (TH3F *)sublist_v2memm->FindObject("R2SPAC1_CentFT0C");
+    hs_r2spACMEMM2 = (TH3F *)sublist_v2memm->FindObject("R2SPAC2_CentFT0C");
+
+    hs_r2spBCMEPM1 = (TH3F *)sublist_v2mepm->FindObject("R2SPBC1_CentFT0C");
+    hs_r2spBCMEPM2 = (TH3F *)sublist_v2mepm->FindObject("R2SPBC2_CentFT0C");
+    hs_r2spBCMEPP1 = (TH3F *)sublist_v2mepp->FindObject("R2SPBC1_CentFT0C");
+    hs_r2spBCMEPP2 = (TH3F *)sublist_v2mepp->FindObject("R2SPBC2_CentFT0C");
+    hs_r2spBCMEMM1 = (TH3F *)sublist_v2memm->FindObject("R2SPBC1_CentFT0C");
+    hs_r2spBCMEMM2 = (TH3F *)sublist_v2memm->FindObject("R2SPBC2_CentFT0C");
+
     Input_File->Close();
   } else {
     // Load data from a list of AnalysisResults.root
@@ -946,122 +1377,121 @@ void FlowAnalysis_Helper::LoadDataME(
       while (getline(InputFiles, File)) {
         cout << "Loading input from: " << File << endl;
         TFile *inFile = TFile::Open(File.c_str());
-        cout << "Flag1" << endl;
         list_hist_v2se =
             (THashList *)inFile->Get("analysis-same-event-pairing/output");
-        cout << "Flag1" << endl;
         list_hist_v2me =
             (THashList *)inFile->Get("analysis-event-mixing/output");
-        cout << "Flag1" << endl;
+
         sublist_v2sepm = (TList *)list_hist_v2se->FindObject(
             dimuonCut == "" ? Form("PairsMuonSEPM_%s", muonCut.c_str())
                             : Form("PairsMuonSEPM_%s_%s", muonCut.c_str(),
                                    dimuonCut.c_str()));
-        cout << "Flag1" << endl;
         sublist_v2sepp = (TList *)list_hist_v2se->FindObject(
             dimuonCut == "" ? Form("PairsMuonSEPP_%s", muonCut.c_str())
                             : Form("PairsMuonSEPP_%s_%s", muonCut.c_str(),
                                    dimuonCut.c_str()));
-        cout << "Flag1" << endl;
         sublist_v2semm = (TList *)list_hist_v2se->FindObject(
             dimuonCut == "" ? Form("PairsMuonSEMM_%s", muonCut.c_str())
                             : Form("PairsMuonSEMM_%s_%s", muonCut.c_str(),
                                    dimuonCut.c_str()));
-        cout << "Flag1" << endl;
         sublist_v2mepm = (TList *)list_hist_v2me->FindObject(
             dimuonCut == "" ? Form("PairsMuonMEPM_%s", muonCut.c_str())
                             : Form("PairsMuonMEPM_%s_%s", muonCut.c_str(),
                                    dimuonCut.c_str()));
-        cout << "Flag1" << endl;
         sublist_v2mepp = (TList *)list_hist_v2me->FindObject(
             dimuonCut == "" ? Form("PairsMuonMEPP_%s", muonCut.c_str())
                             : Form("PairsMuonMEPP_%s_%s", muonCut.c_str(),
                                    dimuonCut.c_str()));
-        cout << "Flag1" << endl;
         sublist_v2memm = (TList *)list_hist_v2me->FindObject(
             dimuonCut == "" ? Form("PairsMuonMEMM_%s", muonCut.c_str())
                             : Form("PairsMuonMEMM_%s_%s", muonCut.c_str(),
                                    dimuonCut.c_str()));
-        cout << "Flag1" << endl;
         list_hist_r2 =
             (THashList *)inFile->Get("analysis-event-selection/output");
         sublist_r2 = (TList *)list_hist_r2->FindObject("Event_AfterCuts");
-        cout << "Flag1" << endl;
 
         if (first) {
           hs_V2SEPM =
               (THnSparse *)sublist_v2sepm->FindObject("Mass_Pt_centrFT0C_V2");
-          cout << "Flag1" << endl;
           hs_V2SEPP =
               (THnSparse *)sublist_v2sepp->FindObject("Mass_Pt_centrFT0C_V2");
-          cout << "Flag1" << endl;
           hs_V2SEMM =
               (THnSparse *)sublist_v2semm->FindObject("Mass_Pt_centrFT0C_V2");
-          cout << "Flag1" << endl;
           hs_V2MEPM =
               (THnSparse *)sublist_v2mepm->FindObject("Mass_Pt_centrFT0C_V2");
-          cout << "Flag1" << endl;
           hs_V2MEPP =
               (THnSparse *)sublist_v2mepp->FindObject("Mass_Pt_centrFT0C_V2");
-          cout << "Flag1" << endl;
           hs_V2MEMM =
               (THnSparse *)sublist_v2memm->FindObject("Mass_Pt_centrFT0C_V2");
-          cout << "Flag1" << endl;
 
           hs_R2SPAB = (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0A_CentFT0C");
           hs_R2SPAC = (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0C_CentFT0C");
           hs_R2SPBC = (TH2F *)sublist_r2->FindObject("R2SP_FT0AFT0C_CentFT0C");
-          cout << "Flag1" << endl;
 
-          hs_u2q2MEPM1 =
-              (TH3F *)sublist_v2mepm->FindObject("U2Q2_CentFT0C_ev1");
-          hs_u2q2MEPM2 =
-              (TH3F *)sublist_v2mepm->FindObject("U2Q2_CentFT0C_ev2");
-          hs_u2q2MEPP1 =
-              (TH3F *)sublist_v2mepp->FindObject("U2Q2_CentFT0C_ev1");
-          hs_u2q2MEPP2 =
-              (TH3F *)sublist_v2mepp->FindObject("U2Q2_CentFT0C_ev2");
-          hs_u2q2MEMM1 =
-              (TH3F *)sublist_v2memm->FindObject("U2Q2_CentFT0C_ev1");
-          hs_u2q2MEMM2 =
-              (TH3F *)sublist_v2memm->FindObject("U2Q2_CentFT0C_ev2");
-          cout << "Flag1" << endl;
+          hs_u2q2_cosDeltaPhi_MEPM1 = (THnSparse *)sublist_v2mepm->FindObject(
+              "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1");
+          hs_u2q2_cosDeltaPhi_MEPM2 = (THnSparse *)sublist_v2mepm->FindObject(
+              "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2");
+          hs_u2q2_cosDeltaPhi_MEPP1 = (THnSparse *)sublist_v2mepp->FindObject(
+              "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1");
+          hs_u2q2_cosDeltaPhi_MEPP2 = (THnSparse *)sublist_v2mepp->FindObject(
+              "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2");
+          hs_u2q2_cosDeltaPhi_MEMM1 = (THnSparse *)sublist_v2memm->FindObject(
+              "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1");
+          hs_u2q2_cosDeltaPhi_MEMM2 = (THnSparse *)sublist_v2memm->FindObject(
+              "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2");
 
-          hs_r2spMEPM1 = (TH3F *)sublist_v2mepm->FindObject("R2SP1_CentFT0C");
-          hs_r2spMEPM2 = (TH3F *)sublist_v2mepm->FindObject("R2SP2_CentFT0C");
-          hs_r2spMEPP1 = (TH3F *)sublist_v2mepp->FindObject("R2SP1_CentFT0C");
-          hs_r2spMEPP2 = (TH3F *)sublist_v2mepp->FindObject("R2SP2_CentFT0C");
-          hs_r2spMEMM1 = (TH3F *)sublist_v2memm->FindObject("R2SP1_CentFT0C");
-          hs_r2spMEMM2 = (TH3F *)sublist_v2memm->FindObject("R2SP2_CentFT0C");
-          cout << "Flag1" << endl;
+          hs_r2spABMEPM1 =
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAB1_CentFT0C");
+          hs_r2spABMEPM2 =
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAB2_CentFT0C");
+          hs_r2spABMEPP1 =
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAB1_CentFT0C");
+          hs_r2spABMEPP2 =
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAB2_CentFT0C");
+          hs_r2spABMEMM1 =
+              (TH3F *)sublist_v2memm->FindObject("R2SPAB1_CentFT0C");
+          hs_r2spABMEMM2 =
+              (TH3F *)sublist_v2memm->FindObject("R2SPAB2_CentFT0C");
 
-          hs_cosDeltaPhiMEPM1 =
-              (TH2F *)sublist_v2mepm->FindObject("Mass_cos2DeltaPhiMu1");
-          hs_cosDeltaPhiMEPM2 =
-              (TH2F *)sublist_v2mepm->FindObject("Mass_cos2DeltaPhiMu2");
-          hs_cosDeltaPhiMEPP1 =
-              (TH2F *)sublist_v2mepp->FindObject("Mass_cos2DeltaPhiMu1");
-          hs_cosDeltaPhiMEPP2 =
-              (TH2F *)sublist_v2mepp->FindObject("Mass_cos2DeltaPhiMu2");
-          hs_cosDeltaPhiMEMM1 =
-              (TH2F *)sublist_v2memm->FindObject("Mass_cos2DeltaPhiMu1");
-          hs_cosDeltaPhiMEMM2 =
-              (TH2F *)sublist_v2memm->FindObject("Mass_cos2DeltaPhiMu2");
-          cout << "Flag1" << endl;
+          hs_r2spACMEPM1 =
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAC1_CentFT0C");
+          hs_r2spACMEPM2 =
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAC2_CentFT0C");
+          hs_r2spACMEPP1 =
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAC1_CentFT0C");
+          hs_r2spACMEPP2 =
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAC2_CentFT0C");
+          hs_r2spACMEMM1 =
+              (TH3F *)sublist_v2memm->FindObject("R2SPAC1_CentFT0C");
+          hs_r2spACMEMM2 =
+              (TH3F *)sublist_v2memm->FindObject("R2SPAC2_CentFT0C");
+
+          hs_r2spBCMEPM1 =
+              (TH3F *)sublist_v2mepm->FindObject("R2SPBC1_CentFT0C");
+          hs_r2spBCMEPM2 =
+              (TH3F *)sublist_v2mepm->FindObject("R2SPBC2_CentFT0C");
+          hs_r2spBCMEPP1 =
+              (TH3F *)sublist_v2mepp->FindObject("R2SPBC1_CentFT0C");
+          hs_r2spBCMEPP2 =
+              (TH3F *)sublist_v2mepp->FindObject("R2SPBC2_CentFT0C");
+          hs_r2spBCMEMM1 =
+              (TH3F *)sublist_v2memm->FindObject("R2SPBC1_CentFT0C");
+          hs_r2spBCMEMM2 =
+              (TH3F *)sublist_v2memm->FindObject("R2SPBC2_CentFT0C");
         } else {
           hs_V2SEPM->Add(
               (THnSparse *)sublist_v2sepm->FindObject("Mass_Pt_centrFT0C_V2"));
           hs_V2SEPP->Add(
-              (THnSparse *)sublist_v2sepm->FindObject("Mass_Pt_centrFT0C_V2"));
+              (THnSparse *)sublist_v2sepp->FindObject("Mass_Pt_centrFT0C_V2"));
           hs_V2SEMM->Add(
-              (THnSparse *)sublist_v2sepm->FindObject("Mass_Pt_centrFT0C_V2"));
+              (THnSparse *)sublist_v2semm->FindObject("Mass_Pt_centrFT0C_V2"));
           hs_V2MEPM->Add(
               (THnSparse *)sublist_v2mepm->FindObject("Mass_Pt_centrFT0C_V2"));
           hs_V2MEPP->Add(
               (THnSparse *)sublist_v2mepp->FindObject("Mass_Pt_centrFT0C_V2"));
           hs_V2MEMM->Add(
               (THnSparse *)sublist_v2memm->FindObject("Mass_Pt_centrFT0C_V2"));
-          cout << "Flag1" << endl;
 
           hs_R2SPAB->Add(
               (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0A_CentFT0C"));
@@ -1069,49 +1499,64 @@ void FlowAnalysis_Helper::LoadDataME(
               (TH2F *)sublist_r2->FindObject("R2SP_TPCFT0C_CentFT0C"));
           hs_R2SPBC->Add(
               (TH2F *)sublist_r2->FindObject("R2SP_FT0AFT0C_CentFT0C"));
-          cout << "Flag1" << endl;
 
-          hs_u2q2MEPM1->Add(
-              (TH3F *)sublist_v2mepm->FindObject("U2Q2_CentFT0C_ev1"));
-          hs_u2q2MEPM2->Add(
-              (TH3F *)sublist_v2mepm->FindObject("U2Q2_CentFT0C_ev2"));
-          hs_u2q2MEPP1->Add(
-              (TH3F *)sublist_v2mepp->FindObject("U2Q2_CentFT0C_ev1"));
-          hs_u2q2MEPP2->Add(
-              (TH3F *)sublist_v2mepp->FindObject("U2Q2_CentFT0C_ev2"));
-          hs_u2q2MEMM1->Add(
-              (TH3F *)sublist_v2memm->FindObject("U2Q2_CentFT0C_ev1"));
-          hs_u2q2MEMM2->Add(
-              (TH3F *)sublist_v2memm->FindObject("U2Q2_CentFT0C_ev2"));
-          cout << "Flag1" << endl;
+          hs_u2q2_cosDeltaPhi_MEPM1->Add(
+              (THnSparse *)sublist_v2mepm->FindObject(
+                  "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1"));
+          hs_u2q2_cosDeltaPhi_MEPM2->Add(
+              (THnSparse *)sublist_v2mepm->FindObject(
+                  "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2"));
+          hs_u2q2_cosDeltaPhi_MEPP1->Add(
+              (THnSparse *)sublist_v2mepp->FindObject(
+                  "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1"));
+          hs_u2q2_cosDeltaPhi_MEPP2->Add(
+              (THnSparse *)sublist_v2mepp->FindObject(
+                  "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2"));
+          hs_u2q2_cosDeltaPhi_MEMM1->Add(
+              (THnSparse *)sublist_v2memm->FindObject(
+                  "Mass_Pt_CentFT0C_U2Q2ev1_cos2DeltaPhiMu1"));
+          hs_u2q2_cosDeltaPhi_MEMM2->Add(
+              (THnSparse *)sublist_v2memm->FindObject(
+                  "Mass_Pt_CentFT0C_U2Q2ev2_cos2DeltaPhiMu2"));
 
-          hs_r2spMEPM1->Add(
-              (TH3F *)sublist_v2mepm->FindObject("R2SP1_CentFT0C"));
-          hs_r2spMEPM2->Add(
-              (TH3F *)sublist_v2mepm->FindObject("R2SP2_CentFT0C"));
-          hs_r2spMEPP1->Add(
-              (TH3F *)sublist_v2mepp->FindObject("R2SP1_CentFT0C"));
-          hs_r2spMEPP2->Add(
-              (TH3F *)sublist_v2mepp->FindObject("R2SP2_CentFT0C"));
-          hs_r2spMEMM1->Add(
-              (TH3F *)sublist_v2memm->FindObject("R2SP1_CentFT0C"));
-          hs_r2spMEMM2->Add(
-              (TH3F *)sublist_v2memm->FindObject("R2SP2_CentFT0C"));
-          cout << "Flag1" << endl;
+          hs_r2spABMEPM1->Add(
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAB1_CentFT0C"));
+          hs_r2spABMEPM2->Add(
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAB2_CentFT0C"));
+          hs_r2spABMEPP1->Add(
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAB1_CentFT0C"));
+          hs_r2spABMEPP2->Add(
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAB2_CentFT0C"));
+          hs_r2spABMEMM1->Add(
+              (TH3F *)sublist_v2memm->FindObject("R2SPAB1_CentFT0C"));
+          hs_r2spABMEMM2->Add(
+              (TH3F *)sublist_v2memm->FindObject("R2SPAB2_CentFT0C"));
 
-          hs_cosDeltaPhiMEPM1->Add(
-              (TH2F *)sublist_v2mepm->FindObject("Mass_cos2DeltaPhiMu1"));
-          hs_cosDeltaPhiMEPM2->Add(
-              (TH2F *)sublist_v2mepm->FindObject("Mass_cos2DeltaPhiMu2"));
-          hs_cosDeltaPhiMEPP1->Add(
-              (TH2F *)sublist_v2mepp->FindObject("Mass_cos2DeltaPhiMu1"));
-          hs_cosDeltaPhiMEPP2->Add(
-              (TH2F *)sublist_v2mepp->FindObject("Mass_cos2DeltaPhiMu2"));
-          hs_cosDeltaPhiMEMM1->Add(
-              (TH2F *)sublist_v2memm->FindObject("Mass_cos2DeltaPhiMu1"));
-          hs_cosDeltaPhiMEMM2->Add(
-              (TH2F *)sublist_v2memm->FindObject("Mass_cos2DeltaPhiMu2"));
-          cout << "Flag1" << endl;
+          hs_r2spACMEPM1->Add(
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAC1_CentFT0C"));
+          hs_r2spACMEPM2->Add(
+              (TH3F *)sublist_v2mepm->FindObject("R2SPAC2_CentFT0C"));
+          hs_r2spACMEPP1->Add(
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAC1_CentFT0C"));
+          hs_r2spACMEPP2->Add(
+              (TH3F *)sublist_v2mepp->FindObject("R2SPAC2_CentFT0C"));
+          hs_r2spACMEMM1->Add(
+              (TH3F *)sublist_v2memm->FindObject("R2SPAC1_CentFT0C"));
+          hs_r2spACMEMM2->Add(
+              (TH3F *)sublist_v2memm->FindObject("R2SPAC2_CentFT0C"));
+
+          hs_r2spBCMEPM1->Add(
+              (TH3F *)sublist_v2mepm->FindObject("R2SPBC1_CentFT0C"));
+          hs_r2spBCMEPM2->Add(
+              (TH3F *)sublist_v2mepm->FindObject("R2SPBC2_CentFT0C"));
+          hs_r2spBCMEPP1->Add(
+              (TH3F *)sublist_v2mepp->FindObject("R2SPBC1_CentFT0C"));
+          hs_r2spBCMEPP2->Add(
+              (TH3F *)sublist_v2mepp->FindObject("R2SPBC2_CentFT0C"));
+          hs_r2spBCMEMM1->Add(
+              (TH3F *)sublist_v2memm->FindObject("R2SPBC1_CentFT0C"));
+          hs_r2spBCMEMM2->Add(
+              (TH3F *)sublist_v2memm->FindObject("R2SPBC2_CentFT0C"));
         }
 
         inFile->Close();

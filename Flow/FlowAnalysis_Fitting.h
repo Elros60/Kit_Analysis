@@ -42,6 +42,9 @@ public:
   void setOrder(int order);
   TH1D *GetPull(TH1D *hs, TF1 *model, string fit_case);
   vector<double> runFitting(TH1D *hs_input, TH1D *hs_v2_input, TList *ls);
+  vector<double> runFittingEM(double N_MEPM, TH1D *hs_mse_input,
+                              TH1D *hs_mme_input, TH1D *hs_v2se_input,
+                              TH1D *hs_v2me_input, TList *ls);
   void Print();
 
 private:
@@ -72,7 +75,7 @@ private:
   static int mode;
   static string mode_string[2];
   static string model_string[7];
-  static string v2bkg_string[2];
+  static string v2bkg_string[3];
 
   double mchi2max_mass{1.};
   double mchi2max_v2{1.};

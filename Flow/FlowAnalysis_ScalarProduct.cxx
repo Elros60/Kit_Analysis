@@ -95,8 +95,8 @@ void FlowAnalysis_ScalarProduct(
   double mass_max_sys[3] = {4.2, 4.3, 4.4};
   string sig_enum[5] = {"CB2(data)", "CB2(MC)", "NA60", "Chebychev", "VWG"};
   string bkg_v2_enum[2] = {"Pol2", "Chebychev"};
-  int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
-  int bkg_mass[2] = {3, 4};    // Chebychev VWG
+  int sig_mass[2] = {0, 2};    // CB2(MC,data) NA60
+  int bkg_mass[1] = {3};       // Chebychev VWG
   int bkg_v2[2] = {0, 1};      // Pol2 and Chebychev
 
   // Create output file
