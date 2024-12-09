@@ -57,8 +57,8 @@ void uploadCCDB(std::string FileName,
     TList *slist_ep = (TList *)file->Get("RunByRun_HistogramFromProfile_EP");
 
     LOGP(info, "Storing alignment object on {}/{}", ccdbHost, objectPathSP);
-    for (auto spIt = slist_sp->First(); spIt <= slist_sp->Last(); ++spIt) {
-      TH1D *hist = (TH1D *)spIt;
+    for (auto spIt : *slist_sp) {
+      TH1D *hist = (TH1D *)spIt->Clone();
       hist->Print();
       vector<string> info = tokenize(hist->GetName());
       auto soreor =
@@ -76,12 +76,13 @@ void uploadCCDB(std::string FileName,
       } catch (std::exception const &e) {
         LOG(fatal) << "Failed at CCDB submission!";
       }
+
       delete hist;
     }
 
     LOGP(info, "Storing alignment object on {}/{}", ccdbHost, objectPathEP);
-    for (auto epIt = slist_ep->First(); epIt <= slist_ep->Last(); ++epIt) {
-      TH1D *hist = (TH1D *)epIt;
+    for (auto epIt : *slist_ep) {
+      TH1D *hist = (TH1D *)epIt->Clone();
       hist->Print();
       vector<string> info = tokenize(hist->GetName());
       auto soreor =
@@ -100,6 +101,7 @@ void uploadCCDB(std::string FileName,
       } catch (std::exception const &e) {
         LOG(fatal) << "Failed at CCDB submission!";
       }
+
       delete hist;
     }
   }

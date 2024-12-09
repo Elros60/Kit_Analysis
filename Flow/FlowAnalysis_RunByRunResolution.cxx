@@ -124,6 +124,7 @@ void FlowAnalysis_RunByRunResolution(
                       1. / 4 * (R2SPAB / (R2SPAC * R2SPBC)) * pow(R2SPACe, 2.) +
                       1. / 4 * R2SPAC * R2SPAB / pow(R2SPBC, 3.) *
                           pow(R2SPBCe, 2.));
+        R2SPe = isnan(R2SPe) || isinf(R2SPe) ? 0. : R2SPe;
 
         hist_r2sp->SetBinContent(i + 1, R2SP);
         hist_r2sp->SetBinError(i + 1, R2SPe);
@@ -196,6 +197,7 @@ void FlowAnalysis_RunByRunResolution(
                       1. / 4 * (R2SPAB / (R2SPAC * R2SPBC)) * pow(R2SPACe, 2.) +
                       1. / 4 * R2SPAC * R2SPAB / pow(R2SPBC, 3.) *
                           pow(R2SPBCe, 2.));
+        R2SPe = isnan(R2SPe) || isinf(R2SPe) ? 0. : R2SPe;
 
         double R22EP = R2EPBC != 0 ? R2EPAB * R2EPAC / R2EPBC : 0.0;
         double R2EP = R22EP > 0 ? TMath::Sqrt(R22EP) : 0.0;
@@ -207,11 +209,19 @@ void FlowAnalysis_RunByRunResolution(
                       1. / 4 * (R2EPAB / (R2EPAC * R2EPBC)) * pow(R2EPACe, 2.) +
                       1. / 4 * R2EPAC * R2EPAB / pow(R2EPBC, 3.) *
                           pow(R2EPBCe, 2.));
+        R2EPe = isnan(R2EPe) || isinf(R2EPe) ? 0. : R2EPe;
 
         hist_r2sp_profile->SetBinContent(i + 1, R2SP);
         hist_r2sp_profile->SetBinError(i + 1, R2SPe);
         hist_r2ep_profile->SetBinContent(i + 1, R2EP);
         hist_r2ep_profile->SetBinError(i + 1, R2EPe);
+
+        delete tp_R2SPAB_cp;
+        delete tp_R2SPAC_cp;
+        delete tp_R2SPBC_cp;
+        delete tp_R2EPAB_cp;
+        delete tp_R2EPAC_cp;
+        delete tp_R2EPBC_cp;
       }
 
       ls_run_sp->Add(hist_r2sp_profile);
@@ -220,6 +230,22 @@ void FlowAnalysis_RunByRunResolution(
       hs_stack->Add(hist_r2sp);
       stats.emplace_back(row);
       Nrow++;
+
+      delete hs_R2SPAB;
+      delete hs_R2SPAC;
+      delete hs_R2SPBC;
+      delete tp_R2SPAB;
+      delete tp_R2SPAC;
+      delete tp_R2SPBC;
+      delete tp_R2SPAB_Im;
+      delete tp_R2SPAC_Im;
+      delete tp_R2SPBC_Im;
+      delete tp_R2EPAB;
+      delete tp_R2EPAC;
+      delete tp_R2EPBC;
+      delete tp_R2EPAB_Im;
+      delete tp_R2EPAC_Im;
+      delete tp_R2EPBC_Im;
     }
   }
 
