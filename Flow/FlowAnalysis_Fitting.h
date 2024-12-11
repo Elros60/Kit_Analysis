@@ -42,9 +42,9 @@ public:
   void setOrder(int order);
   TH1D *GetPull(TH1D *hs, TF1 *model, string fit_case);
   vector<double> runFitting(TH1D *hs_input, TH1D *hs_v2_input, TList *ls);
-  vector<double> runFittingEM(double N_MEPM, TH1D *hs_mse_input,
-                              TH1D *hs_mme_input, TH1D *hs_v2se_input,
-                              TH1D *hs_v2me_input, TList *ls);
+  vector<double> runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
+                              TH1D *hs_v2se_input, TH1D *hs_v2me_input,
+                              TList *ls);
   void Print();
 
 private:

@@ -1075,10 +1075,11 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
 }
 
 //______________________________________________________________________________
-vector<double>
-FlowAnalysis_Fitting::runFittingEM(double N_MEPM, TH1D *hs_mse_input,
-                                   TH1D *hs_mme_input, TH1D *hs_v2se_input,
-                                   TH1D *hs_v2me_input, TList *ls) {
+vector<double> FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input,
+                                                  TH1D *hs_mme_input,
+                                                  TH1D *hs_v2se_input,
+                                                  TH1D *hs_v2me_input,
+                                                  TList *ls) {
   vector<double> results;
   // Fitting for dimuon invariant mass + v2 signal
   cout << ">>>>>>>>>>>>>> Start processing Pt range: "
@@ -1357,8 +1358,6 @@ FlowAnalysis_Fitting::runFittingEM(double N_MEPM, TH1D *hs_mse_input,
                                          mean_fitted + 3. * sigma_fitted);
   double B_3sigma = bkg_fitted->Integral(mean_fitted - 3. * sigma_fitted,
                                          mean_fitted + 3. * sigma_fitted);
-  double B_SE = bkg_fitted->Integral(FlowAnalysis_Fitting::massmin,
-                                     FlowAnalysis_Fitting::massmax);
 
   TPaveStats *sb = (TPaveStats *)pad1_yield->GetPrimitive("stats");
   sb->SetName(Form(
@@ -1493,15 +1492,15 @@ FlowAnalysis_Fitting::runFittingEM(double N_MEPM, TH1D *hs_mse_input,
                        FlowAnalysis_Fitting::massmax, 0);
 
   // Constructing combined v2 fit function
+  hs_me->Divide(bkg_fitted);
+  hs_v2me->Divide(hs_me); // v2 = v2_obs / (Nbkg_PM/Nmix_PM)
   hs_v2me->Rebin();
   hs_v2me->Scale(0.5);
-  auto fct_v2 = [alpha, hs_v2me, B_SE, N_MEPM](double *x, double *par) {
+  auto fct_v2 = [alpha, hs_v2me](double *x, double *par) {
     double val_alpha = alpha->Eval(x[0]);
     double value = 0.;
     int idx = hs_v2me->FindBin(x[0]);
-    double v2_num = hs_v2me->GetBinContent(idx);
-    double v2_den = B_SE / N_MEPM;
-    double value_bkg = N_MEPM != 0 ? v2_num / v2_den : 0.0;
+    double value_bkg = hs_v2me->GetBinContent(idx);
     value = (par[0] * val_alpha + (1 - val_alpha) * value_bkg);
     return value;
   };
@@ -1532,7 +1531,7 @@ FlowAnalysis_Fitting::runFittingEM(double N_MEPM, TH1D *hs_mse_input,
   cout << "chi2/ndf: " << chi2ndf_v2 << endl;
 
   // Getting fitted background
-  hs_v2me->Scale(1. / (B_SE / N_MEPM));
+  // hs_v2me->Scale(1. / (B_SE / N_MEPM));
 
   // Do plotting
   gStyle->SetOptStat(0);

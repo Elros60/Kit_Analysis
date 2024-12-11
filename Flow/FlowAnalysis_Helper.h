@@ -84,6 +84,11 @@ public:
       TH3F *&hs_r2spACMEPP2, TH3F *&hs_r2spACMEMM2, TH3F *&hs_r2spBCMEPM2,
       TH3F *&hs_r2spBCMEPP2, TH3F *&hs_r2spBCMEMM2, std::string muonCut,
       std::string dimuonCut);
+  void LoadDataMEProfile(std::string FileName, TProfile3D *&tp_V2SEPM,
+                         TProfile3D *&tp_V2SEPP, TProfile3D *&tp_V2SEMM,
+                         TProfile3D *&tp_V2MEPM, TProfile3D *&tp_V2MEPP,
+                         TProfile3D *&tp_V2MEMM, std::string muonCut,
+                         std::string dimuonCut);
   void LoadDataRun2(double *&x, double *&y, double *&ex, double *&ey,
                     double *&ey_sys, int flag);
   void LoadDataYieldRun2(double *&x, double *&y, double *&ex, double *&ey,
@@ -91,9 +96,15 @@ public:
   TH1D *GetMass(double ptmin, double ptmax, double massmin, double massmax,
                 double centmin, double centmax, THnSparse *hist_V2,
                 std::string flag = "SEPM");
+  TH1D *GetMassProfile(double ptmin, double ptmax, double massmin,
+                       double massmax, double centmin, double centmax,
+                       TProfile3D *tp_V2, std::string flag = "SEPM");
   TH1D *GetV2(double ptmin, double ptmax, double massmin, double massmax,
               double centmin, double centmax, THnSparse *hist_V2, double R2SP,
               std::string flag = "SEPM");
+  TH1D *GetV2Profile(double ptmin, double ptmax, double massmin, double massmax,
+                     double centmin, double centmax, TProfile3D *tp_V2,
+                     std::string flag = "SEPM");
   TH1D *GetV2EM(double ptmin, double ptmax, double massmin, double massmax,
                 double centmin, double centmax,
                 THnSparse *hs_u2q2_cosDeltaPhi_MEPM1,
@@ -103,10 +114,18 @@ public:
   TH1D *GetRfactor(double ptmin, double ptmax, double massmin, double massmax,
                    double centmin, double centmax, THnSparse *hs_V2MEPM,
                    THnSparse *hs_V2MEPP, THnSparse *hs_V2MEMM);
+  TH1D *GetRfactorProfile(double ptmin, double ptmax, double massmin,
+                          double massmax, double centmin, double centmax,
+                          TProfile3D *tp_V2MEPM, TProfile3D *tp_V2MEPP,
+                          TProfile3D *tp_V2MEMM);
   double GetFfactor(double ptmin, double ptmax, double massmin, double massmax,
                     double centmin, double centmax, THnSparse *hs_V2SEPP,
                     THnSparse *hs_V2SEMM, THnSparse *hs_V2MEPM,
                     TH1D *hist_rfactor);
+  double GetFfactorProfile(double ptmin, double ptmax, double massmin,
+                           double massmax, double centmin, double centmax,
+                           TProfile3D *tp_V2SEPP, TProfile3D *tp_V2SEMM,
+                           TProfile3D *tp_V2MEPM, TH1D *hist_rfactor);
   vector<double> GetStats(int size, double *sample, double *sample_error);
   void PlotSNRvsRun2(int size_ptbin, double *pt_bins, int size_run3,
                      double *x_run3, double *snr_run3, int size_run2,
