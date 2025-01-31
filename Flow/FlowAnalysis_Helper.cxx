@@ -1011,13 +1011,13 @@ void FlowAnalysis_Helper::PlotSNRvsRun2(int size_ptbin, double *pt_bins,
 
 //______________________________________________________________________________
 void FlowAnalysis_Helper::PlotFinalResults(
-    int size_ptbin, double *pt_bins, double *x_v2pt, double *y_v2pt,
-    double *ex_v2pt, double *ey_v2pt, double *eysys_v2pt, double *x_run2,
-    double *y_run2, double *ex_run2, double *ey_run2, double *eysys_run2,
-    double *x_yield, double *y_yield, double *ex_yield, double *ey_yield,
-    double *eysys_yield, double *x_yield_run2, double *y_yield_run2,
-    double *ex_yield_run2, double *ey_yield_run2, double *eysys_yield_run2,
-    TList *ls) {
+    int size_ptbin, double cent_min, double cent_max, double *pt_bins,
+    double *x_v2pt, double *y_v2pt, double *ex_v2pt, double *ey_v2pt,
+    double *eysys_v2pt, double *x_run2, double *y_run2, double *ex_run2,
+    double *ey_run2, double *eysys_run2, double *x_yield, double *y_yield,
+    double *ex_yield, double *ey_yield, double *eysys_yield,
+    double *x_yield_run2, double *y_yield_run2, double *ex_yield_run2,
+    double *ey_yield_run2, double *eysys_yield_run2, TList *ls) {
   // Compare with Run2 data: 5.02 TeV
   TCanvas *c_yield = new TCanvas("jpsi_yield_pT", "jpsi_yield_pT");
   TCanvas *c_yield_vsRun2 =
@@ -1027,7 +1027,8 @@ void FlowAnalysis_Helper::PlotFinalResults(
   TGraphMultiErrors *graph_v2pt =
       new TGraphMultiErrors("graph_v2_pt", "", size_ptbin, x_v2pt, y_v2pt,
                             ex_v2pt, ex_v2pt, ey_v2pt, ey_v2pt);
-  graph_v2pt->SetTitle("#sqrt{#it{s}_{NN}} = 5.36 TeV, 10-50%");
+  graph_v2pt->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%%",
+                            int(cent_min), int(cent_max)));
   graph_v2pt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_v2pt->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
   graph_v2pt->AddYError(size_ptbin, eysys_v2pt, eysys_v2pt);
@@ -1036,7 +1037,8 @@ void FlowAnalysis_Helper::PlotFinalResults(
       new TGraphMultiErrors("graph_v2_pt_run2", "", 10, x_run2, y_run2, ex_run2,
                             ex_run2, ey_run2, ey_run2);
   graph_v2pt_run2->AddYError(10, eysys_run2, eysys_run2);
-  graph_v2pt_run2->SetTitle("#sqrt{#it{s}_{NN}} = 5.02 TeV, 10-30%");
+  graph_v2pt_run2->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%%",
+                                 int(cent_min), int(cent_max)));
   graph_v2pt_run2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_v2pt_run2->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
 
@@ -2166,16 +2168,16 @@ void FlowAnalysis_Helper::LoadDataRun2(double *&x, double *&y, double *&ex,
     ey[8] = 0.031;
     ey[9] = 0.035;
 
-    ey[0] = 0.0031529;
-    ey[1] = 0.0038394;
-    ey[2] = 0.0040278;
-    ey[3] = 0.0039357;
-    ey[4] = 0.0033191;
-    ey[5] = 0.003598;
-    ey[6] = 0.0042368;
-    ey[7] = 0.006164;
-    ey[8] = 0.0072915;
-    ey[9] = 0.010211;
+    ey_sys[0] = 0.0031529;
+    ey_sys[1] = 0.0038394;
+    ey_sys[2] = 0.0040278;
+    ey_sys[3] = 0.0039357;
+    ey_sys[4] = 0.0033191;
+    ey_sys[5] = 0.003598;
+    ey_sys[6] = 0.0042368;
+    ey_sys[7] = 0.006164;
+    ey_sys[8] = 0.0072915;
+    ey_sys[9] = 0.010211;
   }
 }
 

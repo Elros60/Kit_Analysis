@@ -1491,30 +1491,50 @@ vector<double> FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input,
   TF1 *alpha = new TF1("alpha", fct_alpha, FlowAnalysis_Fitting::massmin,
                        FlowAnalysis_Fitting::massmax, 0);
 
-  TH1D *hs_v2bkg = FlowAnalysis_Fitting::mode == 0
-                       ? FlowAnalysis_Fitting::GetV2BkgCorrectedStd(
-                             hs_v2me, hs_me, bkg_fitted)
-                       : FlowAnalysis_Fitting::GetV2BkgCorrectedSys(
-                             hs_v2me, hs_me, bkg_fitted, alpha);
+  TH1D *hs_v2bkg =
+      FlowAnalysis_Fitting::GetV2BkgCorrected(hs_v2me, hs_me, bkg_fitted);
 
   hs_v2bkg->Rebin();
   hs_v2bkg->Scale(0.5);
+  hs_v2me->Rebin();
+  hs_v2me->Scale(0.5);
 
-  auto fct_v2 = [alpha, hs_v2bkg](double *x, double *par) {
+  auto fct_v2 = [alpha, hs_v2bkg, hs_v2me](double *x, double *par) {
     double val_fct = 0.0;
     double val_alpha = alpha->Eval(x[0]);
     int idx = hs_v2bkg->FindBin(x[0]);
     double val_bkg = hs_v2bkg->GetBinContent(idx);
-    val_fct = (par[0] * val_alpha + (1. - val_alpha) * val_bkg);
+    double val_v2me = hs_v2me->GetBinContent(idx);
+
+    if (FlowAnalysis_Fitting::mode == 0) {
+      val_fct = (par[0] * val_alpha + (1. - val_alpha) * val_bkg);
+    } else {
+      val_fct = (par[0] * val_alpha +
+                 (1. - val_alpha) * (val_bkg + par[1] * (val_v2me - val_bkg)));
+    }
+
     return val_fct;
   };
 
   // Setup for model
-  TF1 *model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
-                          FlowAnalysis_Fitting::massmax, 1);
-  model_v2->SetParameter(0, 0.01);
-  model_v2->SetParLimits(0, -0.1, 0.5);
-  model_v2->SetParName(0, "v^{J/#psi}_{2}");
+  TF1 *model_v2 =
+      FlowAnalysis_Fitting::mode == 0
+          ? new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                    FlowAnalysis_Fitting::massmax, 1)
+          : new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                    FlowAnalysis_Fitting::massmax, 2);
+  if (FlowAnalysis_Fitting::mode == 0) {
+    model_v2->SetParameter(0, 0.01);
+    model_v2->SetParLimits(0, -0.1, 0.5);
+    model_v2->SetParName(0, "v^{J/#psi}_{2}");
+  } else {
+    model_v2->SetParameter(0, 0.01);
+    model_v2->SetParLimits(0, -0.1, 0.5);
+    model_v2->SetParName(0, "v^{J/#psi}_{2}");
+    model_v2->SetParameter(1, 0.01);
+    model_v2->SetParLimits(1, 0., 1.);
+    model_v2->SetParName(1, "#alpha");
+  }
   hs_v2se->Rebin();
   hs_v2se->Scale(0.5);
 
@@ -1757,8 +1777,8 @@ TH1D *FlowAnalysis_Fitting::GetHistFromTF(TH1D *hs, TF1 *model) {
 }
 
 //______________________________________________________________________________
-TH1D *FlowAnalysis_Fitting::GetV2BkgCorrectedStd(TH1D *hs, TH1D *hs_mepm,
-                                                 TF1 *bkg) {
+TH1D *FlowAnalysis_Fitting::GetV2BkgCorrected(TH1D *hs, TH1D *hs_mepm,
+                                              TF1 *bkg) {
   int Nbins = hs->GetXaxis()->GetNbins();
   double *Bins = new double[Nbins + 1];
   hs->GetXaxis()->GetLowEdge(Bins);
@@ -1784,42 +1804,6 @@ TH1D *FlowAnalysis_Fitting::GetV2BkgCorrectedStd(TH1D *hs, TH1D *hs_mepm,
     double N_bkg = bkg->Eval(hs->GetBinCenter(i + 1));
     double val = hs->GetBinContent(i + 1) * N_mepm / N_bkg;
     double error = hs->GetBinError(i + 1) * N_mepm / N_bkg;
-    hs_v2bkg->SetBinContent(i + 1, val);
-    hs_v2bkg->SetBinError(i + 1, error);
-  }
-  return hs_v2bkg;
-}
-
-//______________________________________________________________________________
-TH1D *FlowAnalysis_Fitting::GetV2BkgCorrectedSys(TH1D *hs, TH1D *hs_mepm,
-                                                 TF1 *bkg, TF1 *alpha) {
-  int Nbins = hs->GetXaxis()->GetNbins();
-  double *Bins = new double[Nbins + 1];
-  hs->GetXaxis()->GetLowEdge(Bins);
-  Bins[Nbins] = hs->GetXaxis()->GetBinUpEdge(Nbins);
-  TH1D *hs_v2bkg = new TH1D(
-      Form(
-          "Hist_V2BkgCorrected_%s_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
-          FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
-          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder,
-          FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
-          FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
-          FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
-          FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_sig]
-              .c_str(),
-          FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg]
-              .c_str(),
-          FlowAnalysis_Fitting::v2bkg_string[FlowAnalysis_Fitting::mflag_bkg_v2]
-              .c_str()),
-      "", Nbins, Bins);
-
-  for (int i = 0; i < Nbins; i++) {
-    double N_mepm = hs_mepm->GetBinContent(i + 1);
-    double N_bkg = bkg->Eval(hs->GetBinCenter(i + 1));
-    double val_alpha = alpha->Eval(hs->GetBinCenter(i + 1));
-    double factor = N_bkg / (N_mepm + val_alpha * (N_bkg - N_mepm));
-    double val = hs->GetBinContent(i + 1) / factor;
-    double error = hs->GetBinError(i + 1) / factor;
     hs_v2bkg->SetBinContent(i + 1, val);
     hs_v2bkg->SetBinError(i + 1, error);
   }
