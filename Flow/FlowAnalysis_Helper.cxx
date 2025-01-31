@@ -351,6 +351,7 @@ double FlowAnalysis_Helper::GetFfactorProfile(
   }
 
   double int_V2MEPM = tp_V2MEPM_cp_proj->Integral("width");
+  double val_ffactor = hist_ffactor->Integral("width") / int_V2MEPM;
 
   delete tp_V2SEPP_cp;
   delete tp_V2SEMM_cp;
@@ -361,8 +362,9 @@ double FlowAnalysis_Helper::GetFfactorProfile(
   delete tp_V2SEPP_cp_proj;
   delete tp_V2SEMM_cp_proj;
   delete tp_V2MEPM_cp_proj;
+  delete hist_ffactor;
 
-  return hist_ffactor->Integral("width") / int_V2MEPM;
+  return val_ffactor;
 }
 
 //______________________________________________________________________________
@@ -431,8 +433,19 @@ TH1D *FlowAnalysis_Helper::GetV2Profile(double ptmin, double ptmax,
   TProfile *tp_V2_cp_projx = tp_V2_cp_projxy->ProfileX(
       Form("Mass_Pt_centrFT0C_V2_%s_Projx_%g_%g_%g_%g_%g_%g", flag.c_str(),
            massmin, massmax, ptmin, ptmax, centmin, centmax));
-  TH1D *hist_v2sp =
-      tp_V2_cp_projx->ProjectionX(Form("Proj_%s", tp_V2_cp_projx->GetName()));
+
+  double *Bin_mass_new = CreateBinsFromAxis(tp_V2_cp_projx->GetXaxis());
+  int NBins_mass_new = tp_V2_cp_projx->GetXaxis()->GetNbins();
+  TH1D *hist_v2sp = new TH1D(Form("Proj_%s", tp_V2_cp_projx->GetName()),
+                             Form("Proj_%s", tp_V2_cp_projx->GetName()),
+                             NBins_mass_new, Bin_mass_new);
+  hist_v2sp->GetXaxis()->SetTitle("mass (GeV/c2)");
+  hist_v2sp->GetYaxis()->SetTitle("v^{#mu#mu}_{2}{SP}");
+
+  for (int i = 0; i < NBins_mass_new; i++) {
+    hist_v2sp->SetBinContent(i + 1, tp_V2_cp_projx->GetBinContent(i + 1));
+    hist_v2sp->SetBinError(i + 1, tp_V2_cp_projx->GetBinError(i + 1));
+  }
 
   delete tp_V2_cp;
   delete tp_V2_cp_projxy;
