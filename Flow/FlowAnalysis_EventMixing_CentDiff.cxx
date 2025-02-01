@@ -49,7 +49,7 @@ using namespace std;
 
 //______________________________________________________________________________
 void FlowAnalysis_EventMixing_CentDiff(
-    int flag_sig, int flag_bkg, int flag_v2, int flag_run2, int flag_run2yield,
+    int flag_sig, int flag_bkg, int flag_v2, int flag_run2,
     std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
     double mass_max = 4.3, double pt_min = 0., double pt_max = 5.,
     double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
@@ -83,7 +83,7 @@ void FlowAnalysis_EventMixing_CentDiff(
   fitter.setPtRange(pt_min, pt_max);
 
   // Define variables' range for analysis
-  double Bin_cent_mass[9] = {0, 10, 20, 30, 40, 50, 60, 70, 80};
+  double Bin_cent_mass[8] = {0, 10, 20, 30, 40, 50, 60, 90};
 
   // Define the pool for systematics: 36
   // combinations
@@ -155,14 +155,8 @@ void FlowAnalysis_EventMixing_CentDiff(
 
   // Load Run2 data for comparaison
   double *x_run2, *y_run2, *ex_run2, *ey_run2, *eysys_run2;
-  helper.LoadDataRun2(x_run2, y_run2, ex_run2, ey_run2, eysys_run2, flag_run2);
-
-  double *x_yield_run2, *ex_yield_run2, *y_yield_run2, *ey_yield_run2,
-      *eysys_yield_run2, *SNR_run2;
-  int nbins_run2yield = 15;
-  helper.LoadDataYieldRun2(x_yield_run2, y_yield_run2, ex_yield_run2,
-                           ey_yield_run2, eysys_yield_run2, SNR_run2,
-                           flag_run2yield);
+  helper.LoadDataRun2Cent(x_run2, y_run2, ex_run2, ey_run2, eysys_run2,
+                          flag_run2);
 
   // Initialize arrays for each trial of systematic study
   const int nbCombo_v2 = int(size(sig_mass)) * int(size(bkg_mass)) *
@@ -264,8 +258,9 @@ void FlowAnalysis_EventMixing_CentDiff(
                     Bin_cent_mass[i + 1], hs_mass_semm_proj, hs_mass_memm_proj,
                     l_SE_ME);
     f.cd();
-    l_SE_ME->Write(Form("Mass_SEME_%g_%g", pt_min, pt_max),
-                   TObject::kSingleKey);
+    l_SE_ME->Write(
+        Form("Mass_SEME_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
+        TObject::kSingleKey);
     delete l_SE_ME;
 
     TList *l_SE_ME_V2 = new TList();
@@ -444,59 +439,57 @@ void FlowAnalysis_EventMixing_CentDiff(
       }
     }
   }
-  /*
+
 // Save plots for systematics
 if (sys) {
   TList *l_results_sys_yield = new TList();
   TList *l_results_sys_v2 = new TList();
   vector<TCanvas *> c_sys_yield;
   vector<TCanvas *> c_sys_v2;
-  for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+  for (int i = 0; i < int(size(Bin_cent_mass)) - 1; i++) {
     c_sys_yield.emplace_back(new TCanvas(
-        Form("Sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-        Form("Sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
+        Form("Sys_yield_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
+        Form("Sys_yield_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1])));
     c_sys_v2.emplace_back(new TCanvas(
-        Form("Sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-        Form("Sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
+        Form("Sys_v2_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
+        Form("Sys_v2_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1])));
   }
-  for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+  for (int i = 0; i < int(size(Bin_cent_mass)) - 1; i++) {
     vector<double> stats_yield =
         helper.GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
     vector<double> stats_v2 =
         helper.GetStats(nbCombo_v2, y_sys_v2[i], ey_sys_v2[i]);
 
     // Fill pT-differential v2 and jpsi yields
-    y_v2pt[i] = stats_v2[0];
-    ey_v2pt[i] = stats_v2[1];
-    eysys_v2pt[i] = stats_v2[2];
+    y_v2cent[i] = stats_v2[0];
+    ey_v2cent[i] = stats_v2[1];
+    eysys_v2cent[i] = stats_v2[2];
 
-    y_yield[i] = stats_yield[0] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
-    ey_yield[i] = stats_yield[1] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
-    eysys_yield[i] = stats_yield[2] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
+    y_yield[i] = stats_yield[0] / (Bin_cent_mass[i + 1] - Bin_cent_mass[i]);
+    ey_yield[i] = stats_yield[1] / (Bin_cent_mass[i + 1] - Bin_cent_mass[i]);
+    eysys_yield[i] = stats_yield[2] / (Bin_cent_mass[i + 1] - Bin_cent_mass[i]);
 
     // Saving results for systematics
     helper.PlotSystematics(i, c_sys_yield[i], c_sys_v2[i], hist_sys_yield[i],
                            hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
-                           chi2_yield[i], chi2_v2[i], nbCombo_yield,
-                           nbCombo_v2, stats_yield, stats_v2, Bin_pt_mass,
-                           l_results_sys_yield, l_results_sys_v2);
+                           chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2,
+                           stats_yield, stats_v2, Bin_cent_mass,
+                           l_results_sys_yield, l_results_sys_v2, "cent");
   }
   f.cd();
   l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
   l_results_sys_v2->Write("FitV2Systematics", TObject::kSingleKey);
 
   // Saving final results
-  helper.PlotFinalResults(
-      int(size(Bin_pt_mass)) - 1, cent_min, cent_max, Bin_pt_mass, x_v2pt,
-      y_v2pt, ex_v2pt, ey_v2pt, eysys_v2pt, x_run2, y_run2, ex_run2, ey_run2,
-      eysys_run2, x_yield, y_yield, ex_yield, ey_yield, eysys_yield,
-      x_yield_run2, y_yield_run2, ex_yield_run2, ey_yield_run2,
-      eysys_yield_run2, l_results);
+  helper.PlotFinalResultsCent(int(size(Bin_cent_mass)) - 1, pt_min, pt_max,
+                              Bin_cent_mass, x_v2cent, y_v2cent, ex_v2cent,
+                              ey_v2cent, eysys_v2cent, x_run2, y_run2, ex_run2,
+                              ey_run2, eysys_run2, x_yield, y_yield, ex_yield,
+                              ey_yield, eysys_yield, l_results);
 }
 f.cd();
 l_results->SetOwner();
 l_results->Write("FinalResults", TObject::kSingleKey);
 delete l_results;
-*/
-  f.Close();
+f.Close();
 }

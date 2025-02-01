@@ -91,6 +91,8 @@ public:
                          std::string dimuonCut);
   void LoadDataRun2(double *&x, double *&y, double *&ex, double *&ey,
                     double *&ey_sys, int flag);
+  void LoadDataRun2Cent(double *&x, double *&y, double *&ex, double *&ey,
+                        double *&ey_sys, int flag);
   void LoadDataYieldRun2(double *&x, double *&y, double *&ex, double *&ey,
                          double *&ey_sys, double *&SNR, int flag);
   TH1D *GetMass(double ptmin, double ptmax, double massmin, double massmax,
@@ -136,7 +138,8 @@ public:
                        double *chi2_yield, double *chi2_v2, int nbCombo_yield,
                        int nbCombo_v2, vector<double> stats_yield,
                        vector<double> stats_v2, double *pt_bins,
-                       TList *ls_sys_yield, TList *ls_sys_v2);
+                       TList *ls_sys_yield, TList *ls_sys_v2,
+                       std::string flag = "pt");
   void PlotFinalResults(int size_ptbin, double cent_min, double cent_max,
                         double *pt_bins, double *x_v2pt, double *y_v2pt,
                         double *ex_v2pt, double *ey_v2pt, double *eysys_v2pt,
@@ -147,6 +150,14 @@ public:
                         double *y_yield_run2, double *ex_yield_run2,
                         double *ey_yield_run2, double *eysys_yield_run2,
                         TList *ls);
+  void PlotFinalResultsCent(int size_centbin, double pt_min, double pt_max,
+                            double *cent_bins, double *x_v2cent,
+                            double *y_v2cent, double *ex_v2cent,
+                            double *ey_v2cent, double *eysys_v2cent,
+                            double *x_run2, double *y_run2, double *ex_run2,
+                            double *ey_run2, double *eysys_run2,
+                            double *x_yield, double *y_yield, double *ex_yield,
+                            double *ey_yield, double *eysys_yield, TList *ls);
   void PlotSEME(std::string flag, double ptmin, double ptmax, double massmin,
                 double massmax, double centmin, double centmax, TH1D *hist_SE,
                 TH1D *hist_ME, TList *ls);

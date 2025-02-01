@@ -675,7 +675,7 @@ void FlowAnalysis_Helper::PlotSystematics(
     TH1D *hist_sys_v2, double *bins_sys_yield, double *bins_sys_v2,
     double *chi2_yield, double *chi2_v2, int nbCombo_yield, int nbCombo_v2,
     vector<double> stats_yield, vector<double> stats_v2, double *pt_bins,
-    TList *ls_sys_yield, TList *ls_sys_v2) {
+    TList *ls_sys_yield, TList *ls_sys_v2, std::string flag) {
 
   // Plotting for yields systematics
   c_sys_yield->cd();
@@ -746,13 +746,23 @@ void FlowAnalysis_Helper::PlotSystematics(
   text_sys_yield->SetTextSize(0.05);
   text_sys_yield->SetTextFont(42);
   text_sys_yield->SetTextColor(kBlue);
-  text_sys_yield->DrawLatexNDC(
-      .12, .85,
-      Form("N_{J/#psi} [%g-%g] GeV/c = %g #pm %g[%g%%] (stat) #pm %g[%g%%] "
-           "(sys)",
-           pt_bins[index], pt_bins[index + 1], stats_yield[0], stats_yield[1],
-           100. * stats_yield[1] / stats_yield[0], stats_yield[2],
-           100. * stats_yield[2] / stats_yield[0]));
+  if (flag == "pt") {
+    text_sys_yield->DrawLatexNDC(
+        .12, .85,
+        Form("N_{J/#psi} [%g-%g] GeV/c = %g #pm %g[%g%%] (stat) #pm %g[%g%%] "
+             "(sys)",
+             pt_bins[index], pt_bins[index + 1], stats_yield[0], stats_yield[1],
+             100. * stats_yield[1] / stats_yield[0], stats_yield[2],
+             100. * stats_yield[2] / stats_yield[0]));
+  } else {
+    text_sys_yield->DrawLatexNDC(
+        .12, .85,
+        Form("N_{J/#psi} [%g-%g] (%%) = %g #pm %g[%g%%] (stat) #pm %g[%g%%] "
+             "(sys)",
+             pt_bins[index], pt_bins[index + 1], stats_yield[0], stats_yield[1],
+             100. * stats_yield[1] / stats_yield[0], stats_yield[2],
+             100. * stats_yield[2] / stats_yield[0]));
+  }
   pad_sys_yield->ModifiedUpdate();
   c_sys_yield->cd();
   TPad *pad_sys_yield_chi =
@@ -858,13 +868,23 @@ void FlowAnalysis_Helper::PlotSystematics(
   text_sys_v2->SetTextSize(0.05);
   text_sys_v2->SetTextFont(42);
   text_sys_v2->SetTextColor(kBlue);
-  text_sys_v2->DrawLatexNDC(
-      .12, .85,
-      Form("N_{J/#psi} [%g-%g] GeV/c = %g #pm %g[%g%%] (stat) #pm %g[%g%%] "
-           "(sys)",
-           pt_bins[index], pt_bins[index + 1], stats_v2[0], stats_v2[1],
-           100. * stats_v2[1] / stats_v2[0], stats_v2[2],
-           100. * stats_v2[2] / stats_v2[0]));
+  if (flag == "pt") {
+    text_sys_v2->DrawLatexNDC(
+        .12, .85,
+        Form("N_{J/#psi} [%g-%g] GeV/c = %g #pm %g[%g%%] (stat) #pm %g[%g%%] "
+             "(sys)",
+             pt_bins[index], pt_bins[index + 1], stats_v2[0], stats_v2[1],
+             100. * stats_v2[1] / stats_v2[0], stats_v2[2],
+             100. * stats_v2[2] / stats_v2[0]));
+  } else {
+    text_sys_v2->DrawLatexNDC(
+        .12, .85,
+        Form("N_{J/#psi} [%g-%g] (%%) = %g #pm %g[%g%%] (stat) #pm %g[%g%%] "
+             "(sys)",
+             pt_bins[index], pt_bins[index + 1], stats_v2[0], stats_v2[1],
+             100. * stats_v2[1] / stats_v2[0], stats_v2[2],
+             100. * stats_v2[2] / stats_v2[0]));
+  }
   pad_sys_v2->ModifiedUpdate();
   c_sys_v2->cd();
   TPad *pad_sys_v2_chi =
@@ -1213,6 +1233,119 @@ void FlowAnalysis_Helper::PlotFinalResults(
   lv2_pt->Draw("same");
   pad_pt_final->ModifiedUpdate();
   ls->Add(c_pt);
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Helper::PlotFinalResultsCent(
+    int size_centbin, double pt_min, double pt_max, double *cent_bins,
+    double *x_v2cent, double *y_v2cent, double *ex_v2cent, double *ey_v2cent,
+    double *eysys_v2cent, double *x_run2, double *y_run2, double *ex_run2,
+    double *ey_run2, double *eysys_run2, double *x_yield, double *y_yield,
+    double *ex_yield, double *ey_yield, double *eysys_yield, TList *ls) {
+  // Compare with Run2 data: 5.02 TeV
+  TCanvas *c_yield = new TCanvas("jpsi_yield_cent", "jpsi_yield_cent");
+  TCanvas *c_cent = new TCanvas("v2_cent", "v2_cent");
+
+  TGraphMultiErrors *graph_v2cent =
+      new TGraphMultiErrors("graph_v2_pt", "", size_centbin, x_v2cent, y_v2cent,
+                            ex_v2cent, ex_v2cent, ey_v2cent, ey_v2cent);
+  graph_v2cent->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d GeV/c",
+                              int(pt_min), int(pt_max)));
+  graph_v2cent->GetXaxis()->SetTitle("Centrality (%)");
+  graph_v2cent->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
+  graph_v2cent->AddYError(size_centbin, eysys_v2cent, eysys_v2cent);
+
+  TGraphMultiErrors *graph_v2cent_run2 =
+      new TGraphMultiErrors("graph_v2_cent_run2", "", 7, x_run2, y_run2,
+                            ex_run2, ex_run2, ey_run2, ey_run2);
+  graph_v2cent_run2->AddYError(7, eysys_run2, eysys_run2);
+  graph_v2cent_run2->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d GeV/c",
+                                   int(pt_min), int(pt_max)));
+  graph_v2cent_run2->GetXaxis()->SetTitle("Centrality (%)");
+  graph_v2cent_run2->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
+
+  TGraphMultiErrors *graph_yield =
+      new TGraphMultiErrors("graph_yields_cent", "Run3", size_centbin, x_yield,
+                            y_yield, ex_yield, ex_yield, ey_yield, ey_yield);
+  graph_yield->GetXaxis()->SetTitle("Centrality (%)");
+  graph_yield->GetYaxis()->SetTitle("dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
+  graph_yield->AddYError(size_centbin, eysys_yield, eysys_yield);
+
+  // Save final results
+  // Saving plot for J/psi yields as function of centrality
+  c_yield->cd();
+  TPad *pad_yield_final =
+      new TPad("pad_yield_final", "pad_yield_final", 0, 0, 1, 1);
+  pad_yield_final->Draw();
+  pad_yield_final->cd();
+  graph_yield->SetMarkerStyle(20);
+  graph_yield->SetMarkerSize(1.);
+  graph_yield->SetMarkerColor(kBlue);
+  graph_yield->SetLineColor(kBlue);
+  graph_yield->SetLineWidth(2);
+  graph_yield->SetFillStyle(0);
+  graph_yield->GetXaxis()->SetLimits(cent_bins[0], cent_bins[size_centbin]);
+  graph_yield->Draw("A P Z ; Z ; 5 s=0.5");
+  TLatex *text_yield = new TLatex();
+  text_yield->SetTextSize(0.04);
+  text_yield->SetTextFont(42);
+  text_yield->DrawLatexNDC(.3, .82,
+                           "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
+                           "= 5.36 TeV");
+  pad_yield_final->ModifiedUpdate();
+  text_yield->DrawLatexNDC(.3, .77,
+                           "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
+                           "4");
+  pad_yield_final->ModifiedUpdate();
+  ls->Add(c_yield);
+
+  // Saving plot for J/psi v2 as function of centrality and
+  // compared with Run2
+  c_cent->cd();
+  TPad *pad_cent_final =
+      new TPad("pad_cent_final", "pad_cent_final", 0, 0, 1, 1);
+  pad_cent_final->Draw();
+  pad_cent_final->cd();
+  auto mg = new TMultiGraph();
+  graph_v2cent->SetMarkerStyle(20);
+  graph_v2cent->SetMarkerSize(1.);
+  graph_v2cent->SetMarkerColor(kBlue);
+  graph_v2cent->SetLineColor(kBlue);
+  graph_v2cent->SetLineWidth(2);
+  graph_v2cent->SetFillStyle(0);
+  graph_v2cent_run2->SetMarkerStyle(20);
+  graph_v2cent_run2->SetMarkerSize(1.);
+  graph_v2cent_run2->SetMarkerColor(kRed);
+  graph_v2cent_run2->SetLineColor(kRed);
+  graph_v2cent_run2->SetLineWidth(2);
+  graph_v2cent_run2->SetFillStyle(0);
+  mg->Add(graph_v2cent);
+  mg->Add(graph_v2cent_run2);
+  mg->GetXaxis()->SetLimits(cent_bins[0], cent_bins[size_centbin]);
+  mg->Draw("A P Z ; Z ; 5 s=0.5");
+  pad_cent_final->BuildLegend();
+  TLatex *text_cent = new TLatex();
+  text_cent->SetTextSize(0.04);
+  text_cent->SetTextFont(42);
+  text_cent->DrawLatexNDC(.18, .82,
+                          "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
+                          "= 5.36 TeV");
+  pad_cent_final->ModifiedUpdate();
+  text_cent->DrawLatexNDC(.18, .77,
+                          "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
+                          "4");
+  text_cent->DrawLatexNDC(.18, .72,
+                          Form("%g < #it{p}_{T} < %g GeV/c", pt_min, pt_max));
+  pad_cent_final->ModifiedUpdate();
+  TF1 *lv2_cent =
+      new TF1("lv2_cent", "[0]", cent_bins[0], cent_bins[size_centbin]);
+  lv2_cent->SetParameter(0, 0.);
+  lv2_cent->SetLineColor(18);
+  lv2_cent->SetLineWidth(3);
+  lv2_cent->SetLineStyle(9);
+  lv2_cent->Draw("same");
+  pad_cent_final->ModifiedUpdate();
+  ls->Add(c_cent);
 }
 
 //______________________________________________________________________________
@@ -2178,6 +2311,101 @@ void FlowAnalysis_Helper::LoadDataRun2(double *&x, double *&y, double *&ex,
     ey_sys[7] = 0.006164;
     ey_sys[8] = 0.0072915;
     ey_sys[9] = 0.010211;
+  }
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Helper::LoadDataRun2Cent(double *&x, double *&y, double *&ex,
+                                           double *&ey, double *&ey_sys,
+                                           int flag) {
+  x = new double[7];
+  y = new double[7];
+  ex = new double[7];
+  ey = new double[7];
+  ey_sys = new double[7];
+
+  if (flag == 0) {
+    // 0-5 GeV/c
+    x[0] = 5.;
+    x[1] = 15.;
+    x[2] = 25.;
+    x[3] = 35.;
+    x[4] = 45.;
+    x[5] = 55.;
+    x[6] = 75.;
+
+    y[0] = 0.036;
+    y[1] = 0.05;
+    y[2] = 0.056;
+    y[3] = 0.055;
+    y[4] = 0.031;
+    y[5] = 0.065;
+    y[6] = 0.045;
+
+    ex[0] = 5.;
+    ex[1] = 5.;
+    ex[2] = 5.;
+    ex[3] = 5.;
+    ex[4] = 5.;
+    ex[5] = 5.;
+    ex[6] = 15.;
+
+    ey[0] = 0.0093;
+    ey[1] = 0.0081;
+    ey[2] = 0.0084;
+    ey[3] = 0.0099;
+    ey[4] = 0.011;
+    ey[5] = 0.014;
+    ey[6] = 0.019;
+
+    ey_sys[0] = 0.0031087;
+    ey_sys[1] = 0.0044159;
+    ey_sys[2] = 0.0057615;
+    ey_sys[3] = 0.0053348;
+    ey_sys[4] = 0.0065608;
+    ey_sys[5] = 0.0065192;
+    ey_sys[6] = 0.0082189;
+  } else {
+    // 5-20 GeV/c
+    x[0] = 5.;
+    x[1] = 15.;
+    x[2] = 25.;
+    x[3] = 35.;
+    x[4] = 45.;
+    x[5] = 55.;
+    x[6] = 75.;
+
+    y[0] = 0.04;
+    y[1] = 0.064;
+    y[2] = 0.105;
+    y[3] = 0.096;
+    y[4] = 0.092;
+    y[5] = 0.106;
+    y[6] = 0.1;
+
+    ex[0] = 5.;
+    ex[1] = 5.;
+    ex[2] = 5.;
+    ex[3] = 5.;
+    ex[4] = 5.;
+    ex[5] = 5.;
+    ex[6] = 15.;
+
+    ey[0] = 0.02;
+    ey[1] = 0.015;
+    ey[2] = 0.015;
+    ey[3] = 0.016;
+    ey[4] = 0.019;
+    ey[5] = 0.025;
+    ey[6] = 0.036;
+
+    ey_sys[0] = 0.0044385;
+    ey_sys[1] = 0.0044843;
+    ey_sys[2] = 0.0065419;
+    ey_sys[3] = 0.0064786;
+    ey_sys[4] = 0.0083954;
+    ey_sys[5] = 0.0085108;
+    ey_sys[6] = 0.011057;
   }
 }
 
