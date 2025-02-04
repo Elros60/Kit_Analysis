@@ -85,6 +85,50 @@ TH1D *FlowAnalysis_Helper::GetMassProfile(double ptmin, double ptmax,
 }
 
 //______________________________________________________________________________
+TH1D *FlowAnalysis_Helper::GetMeanPt(double ptmin, double ptmax, double massmin,
+                                     double massmax, double centmin,
+                                     double centmax, TProfile3D *tp_V2,
+                                     std::string flag) {
+  // Copy original profiles for projections
+  TProfile3D *tp_V2_cp = dynamic_cast<TProfile3D *>(tp_V2->Clone(
+      Form("Mass_Pt_centrFT0C_V2_%s_Copy_%g_%g_%g_%g_%g_%g", flag.c_str(),
+           massmin, massmax, ptmin, ptmax, centmin, centmax)));
+
+  TH3D *tp_V2_cp_projxyz = tp_V2_cp->ProjectionXYZ(
+      Form("Mass_Pt_centrFT0C_V2_%s_Pxyz_%g_%g_%g_%g_%g_%g", flag.c_str(),
+           massmin, massmax, ptmin, ptmax, centmin, centmax),
+      "B");
+  tp_V2_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
+  tp_V2_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
+  tp_V2_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+
+  TH2D *tp_V2_cp_projxy =
+      dynamic_cast<TH2D *>(tp_V2_cp_projxyz->Project3D("yx"));
+  TProfile *tp_V2_cp_projx = tp_V2_cp_projxy->ProfileX(
+      Form("Mass_Pt_centrFT0C_V2_%s_Projx_%g_%g_%g_%g_%g_%g", flag.c_str(),
+           massmin, massmax, ptmin, ptmax, centmin, centmax));
+
+  double *Bin_mass_new = CreateBinsFromAxis(tp_V2_cp_projx->GetXaxis());
+  int NBins_mass_new = tp_V2_cp_projx->GetXaxis()->GetNbins();
+  TH1D *hist_meanPt = new TH1D(Form("ProjPt_%s", tp_V2_cp_projx->GetName()),
+                               Form("ProjPt_%s", tp_V2_cp_projx->GetName()),
+                               NBins_mass_new, Bin_mass_new);
+  hist_meanPt->GetXaxis()->SetTitle("mass (GeV/c2)");
+  hist_meanPt->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
+
+  for (int i = 0; i < NBins_mass_new; i++) {
+    hist_meanPt->SetBinContent(i + 1, tp_V2_cp_projx->GetBinContent(i + 1));
+    hist_meanPt->SetBinError(i + 1, tp_V2_cp_projx->GetBinError(i + 1));
+  }
+
+  delete tp_V2_cp;
+  delete tp_V2_cp_projxy;
+  delete tp_V2_cp_projx;
+
+  return hist_meanPt;
+}
+
+//______________________________________________________________________________
 TH1D *FlowAnalysis_Helper::GetRfactor(double ptmin, double ptmax,
                                       double massmin, double massmax,
                                       double centmin, double centmax,

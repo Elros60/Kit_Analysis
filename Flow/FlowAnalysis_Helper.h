@@ -101,6 +101,9 @@ public:
   TH1D *GetMassProfile(double ptmin, double ptmax, double massmin,
                        double massmax, double centmin, double centmax,
                        TProfile3D *tp_V2, std::string flag = "SEPM");
+  TH1D *GetMeanPt(double ptmin, double ptmax, double massmin, double massmax,
+                  double centmin, double centmax, TProfile3D *tp_V2,
+                  std::string flag = "SEPM");
   TH1D *GetV2(double ptmin, double ptmax, double massmin, double massmax,
               double centmin, double centmax, THnSparse *hist_V2, double R2SP,
               std::string flag = "SEPM");
