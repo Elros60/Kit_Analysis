@@ -136,13 +136,15 @@ public:
                      double *x_run3, double *snr_run3, int size_run2,
                      double *x_run2, double *snr_run2, TList *ls);
   void PlotSystematics(int index, TCanvas *c_sys_yield, TCanvas *c_sys_v2,
-                       TH1D *hist_sys_yield, TH1D *hist_sys_v2,
+                       TCanvas *c_sys_meanPt, TH1D *hist_sys_yield,
+                       TH1D *hist_sys_v2, TH1D *hist_sys_meanPt,
                        double *bins_sys_yield, double *bins_sys_v2,
-                       double *chi2_yield, double *chi2_v2, int nbCombo_yield,
-                       int nbCombo_v2, vector<double> stats_yield,
-                       vector<double> stats_v2, double *pt_bins,
+                       double *chi2_yield, double *chi2_v2, double *chi2_meanPt,
+                       int nbCombo_yield, int nbCombo_v2,
+                       vector<double> stats_yield, vector<double> stats_v2,
+                       vector<double> stats_meanPt, double *pt_bins,
                        TList *ls_sys_yield, TList *ls_sys_v2,
-                       std::string flag = "pt");
+                       TList *ls_sys_meanPt, std::string flag = "pt");
   void PlotFinalResults(int size_ptbin, double cent_min, double cent_max,
                         double *pt_bins, double *x_v2pt, double *y_v2pt,
                         double *ex_v2pt, double *ey_v2pt, double *eysys_v2pt,

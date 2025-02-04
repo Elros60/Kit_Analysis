@@ -41,12 +41,12 @@ public:
   void setMode(int mode_flag) { mode = mode_flag; };
   void setOrder(int order);
   TH1D *GetPull(TH1D *hs, TF1 *model, string fit_case);
-  TH1D *GetHistFromTF(TH1D *hs, TF1 *model);
+  TH1D *GetHistFromTF(TH1D *hs, TF1 *model, string label);
   TH1D *GetV2BkgCorrected(TH1D *hs, TH1D *hs_mepm, TF1 *bkg);
   vector<double> runFitting(TH1D *hs_input, TH1D *hs_v2_input, TList *ls);
   vector<double> runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
                               TH1D *hs_v2se_input, TH1D *hs_v2me_input,
-                              TList *ls);
+                              TH1D *hs_meanPt_input, TList *ls);
   void Print();
 
 private:
@@ -57,6 +57,9 @@ private:
   static double NA60Function(double *x, double *par);
   static double Cheby7(double *x, double *par);
   static double Cheby3(double *x, double *par);
+  static double Cheby4(double *x, double *par);
+  static double Cheby5(double *x, double *par);
+  static double Cheby6(double *x, double *par);
   static double VariableWidthGauss(double *x, double *par);
   static double DoubleExp(double *x, double *par);
   static double PolyExp(double *x, double *par);

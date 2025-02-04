@@ -175,8 +175,8 @@ void FlowAnalysis_EventMixing(
   const int nbCombo_yield =
       int(size(sig_mass)) * int(size(bkg_mass)) * int(size(mass_max_sys));
 
-  vector<double *> y_sys_yield, ey_sys_yield, y_sys_v2, ey_sys_v2, chi2_yield,
-      chi2_v2;
+  vector<double *> x_sys_pt, ex_sys_pt, y_sys_yield, ey_sys_yield, y_sys_v2,
+      ey_sys_v2, chi2_yield, chi2_v2, chi2_meanPt;
   double *bins_sys_v2 = new double[nbCombo_v2 + 1];
   double *bins_sys_yield = new double[nbCombo_yield + 1];
   for (int i = 0; i < nbCombo_v2 + 1; i++) {
@@ -186,8 +186,11 @@ void FlowAnalysis_EventMixing(
     bins_sys_yield[i] = i;
   }
 
-  vector<TH1D *> hist_sys_yield, hist_sys_v2;
+  vector<TH1D *> hist_sys_yield, hist_sys_v2, hist_sys_meanPt;
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+    x_sys_pt.emplace_back(new double[nbCombo_yield]);
+    ex_sys_pt.emplace_back(new double[nbCombo_yield]);
+
     y_sys_yield.emplace_back(new double[nbCombo_yield]);
     ey_sys_yield.emplace_back(new double[nbCombo_yield]);
 
@@ -196,6 +199,7 @@ void FlowAnalysis_EventMixing(
 
     chi2_yield.emplace_back(new double[nbCombo_yield]);
     chi2_v2.emplace_back(new double[nbCombo_v2]);
+    chi2_meanPt.emplace_back(new double[nbCombo_yield]);
 
     hist_sys_yield.emplace_back(new TH1D(
         Form("hist_sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
@@ -205,6 +209,10 @@ void FlowAnalysis_EventMixing(
         new TH1D(Form("hist_sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
                  Form("hist_sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
                  nbCombo_v2, bins_sys_v2));
+    hist_sys_meanPt.emplace_back(new TH1D(
+        Form("hist_sys_meanPt_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        Form("hist_sys_meanPt_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+        nbCombo_yield, bins_sys_yield));
   }
 
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
@@ -257,6 +265,11 @@ void FlowAnalysis_EventMixing(
     hs_mass_mepp_proj->Scale(ffactor[i]);
     hs_mass_memm_proj->Scale(ffactor[i]);
 
+    // Mean pT profile
+    TH1D *hs_mass_sepm_proj_meanPt =
+        helper.GetMeanPt(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                         cent_min, cent_max, tp_V2SEPM, "SEPM");
+
     // Save plots for invariant mass
     TList *l_SE_ME = new TList();
     helper.PlotSEME("PM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
@@ -296,15 +309,15 @@ void FlowAnalysis_EventMixing(
 
     // Fit invariant mass + v2
     TList *l_diff_fit = new TList();
-    vector<double> results_v2 =
-        fitter.runFittingEM(hs_mass_sepm_proj, hs_mass_mepm_proj,
-                            hs_v2_sepm_proj, hs_v2_mepm_proj, l_diff_fit);
+    vector<double> results_v2 = fitter.runFittingEM(
+        hs_mass_sepm_proj, hs_mass_mepm_proj, hs_v2_sepm_proj, hs_v2_mepm_proj,
+        hs_mass_sepm_proj_meanPt, l_diff_fit);
 
     SNR[i] = results_v2[4];
-    x_yield[i] = (Bin_pt_mass[i] + Bin_pt_mass[i + 1]) / 2;
-    ex_yield[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2;
-    x_v2pt[i] = (Bin_pt_mass[i] + Bin_pt_mass[i + 1]) / 2;
-    ex_v2pt[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2;
+    x_yield[i] = results_v2[7];
+    ex_yield[i] = results_v2[8];
+    x_v2pt[i] = results_v2[7];
+    ex_v2pt[i] = results_v2[8];
 
     f.cd();
     l_diff_fit->SetOwner();
@@ -325,6 +338,7 @@ void FlowAnalysis_EventMixing(
     delete hs_v2_mepm_proj;
     delete hs_v2_mepp_proj;
     delete hs_v2_memm_proj;
+    delete hs_mass_sepm_proj_meanPt;
 
     // Run fittings for systematics
     if (sys) {
@@ -336,6 +350,10 @@ void FlowAnalysis_EventMixing(
           for (int i3 = 0; i3 < int(size(bkg_mass)); i3++) {
             TString combo_yield =
                 Form("{%s;%s}[%g-%g]", sig_enum[sig_mass[i2]].c_str(),
+                     sig_enum[bkg_mass[i3]].c_str(), mass_min_sys[i1],
+                     mass_max_sys[i1]);
+            TString combo_meanPt =
+                Form("{%s;%s;Chebychev}[%g-%g]", sig_enum[sig_mass[i2]].c_str(),
                      sig_enum[bkg_mass[i3]].c_str(), mass_min_sys[i1],
                      mass_max_sys[i1]);
             for (int i4 = 0; i4 < int(size(bkg_v2)); i4++) {
@@ -381,6 +399,11 @@ void FlowAnalysis_EventMixing(
               // Scale mixed-event spectra with F factor
               hs_mass_mepm_proj_sys->Scale(ffactor_sys[i]);
 
+              // Mean pT profile
+              TH1D *hs_mass_sepm_proj_meanPt_sys = helper.GetMeanPt(
+                  Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
+                  cent_min, cent_max, tp_V2SEPM, "MeanPt");
+
               TString combo_v2 =
                   Form("{%s;%s}{%s}[%g-%g]", sig_enum[sig_mass[i2]].c_str(),
                        sig_enum[bkg_mass[i3]].c_str(), bkg_v2_enum[i4].c_str(),
@@ -402,10 +425,14 @@ void FlowAnalysis_EventMixing(
               LOG(info) << "Processing fitting(systematic) for v2{SP} ...";
               vector<double> results_sys_v2 = fitter.runFittingEM(
                   hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
-                  hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys, l_diff_sys);
+                  hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys,
+                  hs_mass_sepm_proj_meanPt_sys, l_diff_sys);
 
               // Fill pT-differential v2 and jpsi
               // yields
+              x_sys_pt[i][index_sys_yield] = results_sys_v2[7];
+              ex_sys_pt[i][index_sys_yield] = results_sys_v2[8];
+
               y_sys_yield[i][index_sys_yield] = results_sys_v2[2];
               y_sys_v2[i][index_sys_v2] = results_sys_v2[0];
 
@@ -414,19 +441,26 @@ void FlowAnalysis_EventMixing(
 
               chi2_yield[i][index_sys_yield] = results_sys_v2[5];
               chi2_v2[i][index_sys_v2] = results_sys_v2[6];
+              chi2_meanPt[i][index_sys_v2] = results_sys_v2[9];
 
               hist_sys_yield[i]->GetXaxis()->SetBinLabel(index_sys_yield + 1,
                                                          combo_yield);
               hist_sys_v2[i]->GetXaxis()->SetBinLabel(index_sys_v2 + 1,
                                                       combo_v2);
+              hist_sys_meanPt[i]->GetXaxis()->SetBinLabel(index_sys_yield + 1,
+                                                          combo_meanPt);
               hist_sys_yield[i]->SetBinContent(index_sys_yield + 1,
                                                y_sys_yield[i][index_sys_yield]);
               hist_sys_v2[i]->SetBinContent(index_sys_v2 + 1,
                                             y_sys_v2[i][index_sys_v2]);
+              hist_sys_meanPt[i]->SetBinContent(index_sys_yield + 1,
+                                                x_sys_pt[i][index_sys_yield]);
               hist_sys_yield[i]->SetBinError(index_sys_yield + 1,
                                              ey_sys_yield[i][index_sys_yield]);
               hist_sys_v2[i]->SetBinError(index_sys_v2 + 1,
                                           ey_sys_v2[i][index_sys_v2]);
+              hist_sys_meanPt[i]->SetBinError(index_sys_yield + 1,
+                                              ex_sys_pt[i][index_sys_yield]);
 
               f.cd();
               l_diff_sys->SetOwner();
@@ -439,6 +473,7 @@ void FlowAnalysis_EventMixing(
               delete hs_mass_mepm_proj_sys;
               delete hs_v2_sepm_proj_sys;
               delete hs_v2_mepm_proj_sys;
+              delete hs_mass_sepm_proj_meanPt_sys;
 
               index_sys_v2++;
             }
@@ -453,8 +488,10 @@ void FlowAnalysis_EventMixing(
   if (sys) {
     TList *l_results_sys_yield = new TList();
     TList *l_results_sys_v2 = new TList();
+    TList *l_results_sys_meanPt = new TList();
     vector<TCanvas *> c_sys_yield;
     vector<TCanvas *> c_sys_v2;
+    vector<TCanvas *> c_sys_meanPt;
     for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
       c_sys_yield.emplace_back(new TCanvas(
           Form("Sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
@@ -462,14 +499,24 @@ void FlowAnalysis_EventMixing(
       c_sys_v2.emplace_back(new TCanvas(
           Form("Sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
           Form("Sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
+      c_sys_meanPt.emplace_back(new TCanvas(
+          Form("Sys_meanPt_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+          Form("Sys_meanPt_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
     }
     for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
       vector<double> stats_yield =
           helper.GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
       vector<double> stats_v2 =
           helper.GetStats(nbCombo_v2, y_sys_v2[i], ey_sys_v2[i]);
+      vector<double> stats_meanPt =
+          helper.GetStats(nbCombo_yield, x_sys_pt[i], ex_sys_pt[i]);
 
       // Fill pT-differential v2 and jpsi yields
+      x_yield[i] = stats_meanPt[0];
+      ex_yield[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2.;
+      x_v2pt[i] = stats_meanPt[0];
+      ex_v2pt[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2.;
+
       y_v2pt[i] = stats_v2[0];
       ey_v2pt[i] = stats_v2[1];
       eysys_v2pt[i] = stats_v2[2];
@@ -479,15 +526,23 @@ void FlowAnalysis_EventMixing(
       eysys_yield[i] = stats_yield[2] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
 
       // Saving results for systematics
-      helper.PlotSystematics(i, c_sys_yield[i], c_sys_v2[i], hist_sys_yield[i],
-                             hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
-                             chi2_yield[i], chi2_v2[i], nbCombo_yield,
-                             nbCombo_v2, stats_yield, stats_v2, Bin_pt_mass,
-                             l_results_sys_yield, l_results_sys_v2);
+      helper.PlotSystematics(
+          i, c_sys_yield[i], c_sys_v2[i], c_sys_meanPt[i], hist_sys_yield[i],
+          hist_sys_v2[i], hist_sys_meanPt[i], bins_sys_yield, bins_sys_v2,
+          chi2_yield[i], chi2_v2[i], chi2_meanPt[i], nbCombo_yield, nbCombo_v2,
+          stats_yield, stats_v2, stats_meanPt, Bin_pt_mass, l_results_sys_yield,
+          l_results_sys_v2, l_results_sys_meanPt);
     }
     f.cd();
+    l_results_sys_yield->SetOwner();
     l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
+    delete l_results_sys_yield;
+    l_results_sys_meanPt->SetOwner();
+    l_results_sys_meanPt->Write("FitMeanPtSystematics", TObject::kSingleKey);
+    delete l_results_sys_meanPt;
+    l_results_sys_v2->SetOwner();
     l_results_sys_v2->Write("FitV2Systematics", TObject::kSingleKey);
+    delete l_results_sys_v2;
 
     // Saving final results
     helper.PlotFinalResults(

@@ -122,6 +122,7 @@ TH1D *FlowAnalysis_Helper::GetMeanPt(double ptmin, double ptmax, double massmin,
   }
 
   delete tp_V2_cp;
+  delete tp_V2_cp_projxyz;
   delete tp_V2_cp_projxy;
   delete tp_V2_cp_projx;
 
@@ -715,11 +716,13 @@ vector<double> FlowAnalysis_Helper::GetStats(int size, double *sample,
 
 //______________________________________________________________________________
 void FlowAnalysis_Helper::PlotSystematics(
-    int index, TCanvas *c_sys_yield, TCanvas *c_sys_v2, TH1D *hist_sys_yield,
-    TH1D *hist_sys_v2, double *bins_sys_yield, double *bins_sys_v2,
-    double *chi2_yield, double *chi2_v2, int nbCombo_yield, int nbCombo_v2,
-    vector<double> stats_yield, vector<double> stats_v2, double *pt_bins,
-    TList *ls_sys_yield, TList *ls_sys_v2, std::string flag) {
+    int index, TCanvas *c_sys_yield, TCanvas *c_sys_v2, TCanvas *c_sys_meanPt,
+    TH1D *hist_sys_yield, TH1D *hist_sys_v2, TH1D *hist_sys_meanPt,
+    double *bins_sys_yield, double *bins_sys_v2, double *chi2_yield,
+    double *chi2_v2, double *chi2_meanPt, int nbCombo_yield, int nbCombo_v2,
+    vector<double> stats_yield, vector<double> stats_v2,
+    vector<double> stats_meanPt, double *pt_bins, TList *ls_sys_yield,
+    TList *ls_sys_v2, TList *ls_sys_meanPt, std::string flag) {
 
   // Plotting for yields systematics
   c_sys_yield->cd();
@@ -846,6 +849,122 @@ void FlowAnalysis_Helper::PlotSystematics(
   lchi2_yield2->SetLineStyle(1);
   lchi2_yield2->Draw("same");
 
+  // Plotting for mean Pt systematics
+  c_sys_meanPt->cd();
+  c_sys_meanPt->SetBottomMargin(0);
+  c_sys_meanPt->SetCanvasSize(1000, 400);
+  TPad *pad_sys_meanPt =
+      new TPad(Form("pad_sys_meanPt_%d", index),
+               Form("pad_sys_meanPt_%d", index), 0, 0.3, 1, 1.0);
+  pad_sys_meanPt->SetBottomMargin(0);
+  pad_sys_meanPt->Draw();
+  pad_sys_meanPt->cd();
+  hist_sys_meanPt->SetMarkerStyle(20);
+  hist_sys_meanPt->SetMarkerSize(1.);
+  hist_sys_meanPt->SetMarkerColor(kBlack);
+  hist_sys_meanPt->SetLineColor(kBlack);
+  hist_sys_meanPt->SetLineWidth(2);
+  hist_sys_meanPt->SetFillStyle(0);
+  hist_sys_meanPt->SetStats(0);
+  hist_sys_meanPt->SetTitle("");
+  hist_sys_meanPt->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
+  hist_sys_meanPt->GetYaxis()->SetTitleSize(0.05);
+  hist_sys_meanPt->GetYaxis()->SetTitleOffset(0.5);
+  hist_sys_meanPt->GetXaxis()->SetLabelOffset(999);
+  hist_sys_meanPt->GetXaxis()->SetLabelSize(0);
+  hist_sys_meanPt->Draw("HIST EP");
+  TF1 *lmeanPt_mean = new TF1("meanmeanPt", "[0]", bins_sys_yield[0],
+                              bins_sys_yield[nbCombo_yield]);
+  lmeanPt_mean->SetParameter(0, stats_meanPt[0]);
+  lmeanPt_mean->SetLineColor(kBlue);
+  lmeanPt_mean->SetLineWidth(3);
+  lmeanPt_mean->SetLineStyle(1);
+  lmeanPt_mean->Draw("same");
+  TF1 *lmeanPt_meanerrorp =
+      new TF1("meanerrorpmeanPt", "[0]+[1]", bins_sys_yield[0],
+              bins_sys_yield[nbCombo_yield]);
+  lmeanPt_meanerrorp->SetParameter(0, stats_meanPt[0]);
+  lmeanPt_meanerrorp->SetParameter(1, stats_meanPt[1]);
+  lmeanPt_meanerrorp->SetLineColor(kBlue);
+  lmeanPt_meanerrorp->SetLineWidth(3);
+  lmeanPt_meanerrorp->SetLineStyle(7);
+  lmeanPt_meanerrorp->Draw("same");
+  TF1 *lmeanPt_meanerrorm =
+      new TF1("meanerrormmeanPt", "[0]-[1]", bins_sys_yield[0],
+              bins_sys_yield[nbCombo_yield]);
+  lmeanPt_meanerrorm->SetParameter(0, stats_meanPt[0]);
+  lmeanPt_meanerrorm->SetParameter(1, stats_meanPt[1]);
+  lmeanPt_meanerrorm->SetLineColor(kBlue);
+  lmeanPt_meanerrorm->SetLineWidth(3);
+  lmeanPt_meanerrorm->SetLineStyle(7);
+  lmeanPt_meanerrorm->Draw("same");
+  TF1 *lmeanPt_rmsp = new TF1("rmspmeanPt", "[0]+[1]", bins_sys_yield[0],
+                              bins_sys_yield[nbCombo_yield]);
+  lmeanPt_rmsp->SetParameter(0, stats_meanPt[0]);
+  lmeanPt_rmsp->SetParameter(1, stats_meanPt[2]);
+  lmeanPt_rmsp->SetLineColor(kBlue);
+  lmeanPt_rmsp->SetLineWidth(3);
+  lmeanPt_rmsp->SetLineStyle(9);
+  lmeanPt_rmsp->Draw("same");
+  TF1 *lmeanPt_rmsm = new TF1("rmsmmeanPt", "[0]-[1]", bins_sys_yield[0],
+                              bins_sys_yield[nbCombo_yield]);
+  lmeanPt_rmsm->SetParameter(0, stats_meanPt[0]);
+  lmeanPt_rmsm->SetParameter(1, stats_meanPt[2]);
+  lmeanPt_rmsm->SetLineColor(kBlue);
+  lmeanPt_rmsm->SetLineWidth(3);
+  lmeanPt_rmsm->SetLineStyle(9);
+  lmeanPt_rmsm->Draw("same");
+  TLatex *text_sys_meanPt = new TLatex();
+  text_sys_meanPt->SetTextSize(0.05);
+  text_sys_meanPt->SetTextFont(42);
+  text_sys_meanPt->SetTextColor(kBlue);
+  text_sys_meanPt->DrawLatexNDC(
+      .12, .85,
+      Form("<#it{p}_{T}>^{J/#psi} [%g-%g] GeV/c = %g #pm %g[%g%%] (stat) #pm "
+           "%g[%g%%] "
+           "(sys)",
+           pt_bins[index], pt_bins[index + 1], stats_meanPt[0], stats_meanPt[1],
+           100. * stats_meanPt[1] / stats_meanPt[0], stats_meanPt[2],
+           100. * stats_meanPt[2] / stats_meanPt[0]));
+  pad_sys_meanPt->ModifiedUpdate();
+  c_sys_meanPt->cd();
+  TPad *pad_sys_meanPt_chi =
+      new TPad(Form("pad_sys_meanPt_chi2_%d", index),
+               Form("pad_sys_meanPt_chi2_%d", index), 0, 0., 1, 0.3);
+  pad_sys_meanPt_chi->SetTopMargin(0);
+  pad_sys_meanPt_chi->SetBottomMargin(0.6);
+  pad_sys_meanPt_chi->Draw();
+  pad_sys_meanPt_chi->cd();
+  TH1D *hist_chi2_meanPt =
+      (TH1D *)hist_sys_meanPt->Clone(Form("hist_meanPt_chi2_%d", index));
+  for (int j = 0; j < hist_chi2_meanPt->GetNbinsX(); j++) {
+    hist_chi2_meanPt->SetBinContent(j + 1, chi2_meanPt[j]);
+    hist_chi2_meanPt->SetBinError(j + 1, 0.);
+  }
+  hist_chi2_meanPt->SetTitle("");
+  hist_chi2_meanPt->GetYaxis()->SetLabelSize(0.05);
+  hist_chi2_meanPt->GetYaxis()->SetRangeUser(0.5, 3.);
+  hist_chi2_meanPt->GetYaxis()->SetTitle("#chi^{2}/ndf");
+  hist_chi2_meanPt->GetYaxis()->SetTitleSize(0.08);
+  hist_chi2_meanPt->GetYaxis()->SetTitleOffset(0.25);
+  hist_chi2_meanPt->GetXaxis()->SetLabelSize(0.14);
+  hist_chi2_meanPt->GetXaxis()->SetLabelOffset(0.02);
+  hist_chi2_meanPt->Draw("HIST P");
+  TF1 *lchi2_meanPt1 = new TF1("lchi2_meanPt1", "[0]", bins_sys_yield[0],
+                               bins_sys_yield[nbCombo_yield]);
+  lchi2_meanPt1->SetParameter(0, 1.0);
+  lchi2_meanPt1->SetLineColor(kBlue);
+  lchi2_meanPt1->SetLineWidth(2);
+  lchi2_meanPt1->SetLineStyle(9);
+  lchi2_meanPt1->Draw("same");
+  TF1 *lchi2_meanPt2 = new TF1("lchi2_meanPt2", "[0]", bins_sys_yield[0],
+                               bins_sys_yield[nbCombo_yield]);
+  lchi2_meanPt2->SetParameter(0, 2.0);
+  lchi2_meanPt2->SetLineColor(kRed);
+  lchi2_meanPt2->SetLineWidth(2);
+  lchi2_meanPt2->SetLineStyle(1);
+  lchi2_meanPt2->Draw("same");
+
   // Plotting for v2 systematics
   c_sys_v2->cd();
   c_sys_v2->SetBottomMargin(0);
@@ -970,6 +1089,7 @@ void FlowAnalysis_Helper::PlotSystematics(
 
   ls_sys_v2->Add(c_sys_v2);
   ls_sys_yield->Add(c_sys_yield);
+  ls_sys_meanPt->Add(c_sys_meanPt);
 }
 
 //______________________________________________________________________________
