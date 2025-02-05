@@ -470,11 +470,11 @@ if (sys) {
     eysys_yield[i] = stats_yield[2] / (Bin_cent_mass[i + 1] - Bin_cent_mass[i]);
 
     // Saving results for systematics
-    helper.PlotSystematics(i, c_sys_yield[i], c_sys_v2[i], hist_sys_yield[i],
-                           hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
-                           chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2,
-                           stats_yield, stats_v2, Bin_cent_mass,
-                           l_results_sys_yield, l_results_sys_v2, "cent");
+    helper.PlotSystematicsNoMeanPt(
+        i, c_sys_yield[i], c_sys_v2[i], hist_sys_yield[i], hist_sys_v2[i],
+        bins_sys_yield, bins_sys_v2, chi2_yield[i], chi2_v2[i], nbCombo_yield,
+        nbCombo_v2, stats_yield, stats_v2, Bin_cent_mass, l_results_sys_yield,
+        l_results_sys_v2, "cent");
   }
   f.cd();
   l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);

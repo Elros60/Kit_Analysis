@@ -25,7 +25,16 @@ using namespace std;
 using namespace ROOT::Math;
 
 // CB2 functions will be parametrised with 2 sets of tails: MC and data
-enum ModelType { CB2Data = 0, CB2MC, NA60, Chebychev, VWG, Exp2, PolExp };
+enum ModelType {
+  CB2Data = 0,
+  CB2MC,
+  NA60,
+  Chebychev,
+  EventMixing,
+  VWG,
+  Exp2,
+  PolExp
+};
 
 class FlowAnalysis_Fitting {
 public:
@@ -47,6 +56,9 @@ public:
   vector<double> runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
                               TH1D *hs_v2se_input, TH1D *hs_v2me_input,
                               TH1D *hs_meanPt_input, TList *ls);
+  vector<double> runFittingEMNoMeanPt(TH1D *hs_mse_input, TH1D *hs_mme_input,
+                                      TH1D *hs_v2se_input, TH1D *hs_v2me_input,
+                                      TList *ls);
   void Print();
 
 private:
@@ -79,7 +91,7 @@ private:
   static int nhar;
   static int mode;
   static string mode_string[2];
-  static string model_string[7];
+  static string model_string[8];
   static string v2bkg_string[3];
 
   double mchi2max_mass{1.};
