@@ -86,10 +86,10 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
   fitter.setCentRange(cent_min, cent_max);
 
   // Define variables' range for analysis
-  // double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  /*
   double Bin_pt_mass[19] = {0, 0.3, 1, 1.5, 2, 2.5, 3,  3.5, 4, 4.5,
                             5, 5.5, 6, 7,   8, 9,   10, 12,  15};
-  /*
   double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
                             7., 8.,  9., 10., 11., 12., 15., 20.};
   */
@@ -274,7 +274,7 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
     hs_mass_memm_proj->Scale(ffactor[i]);
 
     // Mean pT profile
-    TH1D *hs_mass_sepm_proj_meanPt;
+    TH1D *hs_mass_sepm_proj_meanPt = new TH1D();
     if (meanPt) {
       hs_mass_sepm_proj_meanPt =
           helper.GetMeanPt(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
@@ -336,7 +336,6 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
         Form("DifferentialFlow_Fit_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         TObject::kSingleKey);
     delete l_diff_fit;
-
     delete hs_mass_sepm_proj;
     delete hs_mass_sepp_proj;
     delete hs_mass_semm_proj;
@@ -349,7 +348,9 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
     delete hs_v2_mepm_proj;
     delete hs_v2_mepp_proj;
     delete hs_v2_memm_proj;
-    delete hs_mass_sepm_proj_meanPt;
+    if (hs_mass_sepm_proj_meanPt) {
+      delete hs_mass_sepm_proj_meanPt;
+    }
 
     // Run fittings for systematics
     if (sys) {
@@ -411,7 +412,7 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
               hs_mass_mepm_proj_sys->Scale(ffactor_sys[i]);
 
               // Mean pT profile
-              TH1D *hs_mass_sepm_proj_meanPt_sys;
+              TH1D *hs_mass_sepm_proj_meanPt_sys = new TH1D();
               if (meanPt) {
                 hs_mass_sepm_proj_meanPt_sys = helper.GetMeanPt(
                     Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
@@ -449,11 +450,6 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
 
               // Fill pT-differential v2 and jpsi
               // yields
-              if (meanPt) {
-                x_sys_pt[i][index_sys_yield] = results_sys_v2[7];
-                ex_sys_pt[i][index_sys_yield] = results_sys_v2[8];
-              }
-
               y_sys_yield[i][index_sys_yield] = results_sys_v2[2];
               y_sys_v2[i][index_sys_v2] = results_sys_v2[0];
 
@@ -467,15 +463,6 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
                                                          combo_yield);
               hist_sys_v2[i]->GetXaxis()->SetBinLabel(index_sys_v2 + 1,
                                                       combo_v2);
-              if (meanPt) {
-                chi2_meanPt[i][index_sys_v2] = results_sys_v2[9];
-                hist_sys_meanPt[i]->GetXaxis()->SetBinLabel(index_sys_yield + 1,
-                                                            combo_meanPt);
-                hist_sys_meanPt[i]->SetBinContent(index_sys_yield + 1,
-                                                  x_sys_pt[i][index_sys_yield]);
-                hist_sys_meanPt[i]->SetBinError(index_sys_yield + 1,
-                                                ex_sys_pt[i][index_sys_yield]);
-              }
               hist_sys_yield[i]->SetBinContent(index_sys_yield + 1,
                                                y_sys_yield[i][index_sys_yield]);
               hist_sys_v2[i]->SetBinContent(index_sys_v2 + 1,
@@ -484,6 +471,17 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
                                              ey_sys_yield[i][index_sys_yield]);
               hist_sys_v2[i]->SetBinError(index_sys_v2 + 1,
                                           ey_sys_v2[i][index_sys_v2]);
+              if (meanPt) {
+                x_sys_pt[i][index_sys_yield] = results_sys_v2[7];
+                ex_sys_pt[i][index_sys_yield] = results_sys_v2[8];
+                chi2_meanPt[i][index_sys_v2] = results_sys_v2[9];
+                hist_sys_meanPt[i]->GetXaxis()->SetBinLabel(index_sys_yield + 1,
+                                                            combo_meanPt);
+                hist_sys_meanPt[i]->SetBinContent(index_sys_yield + 1,
+                                                  x_sys_pt[i][index_sys_yield]);
+                hist_sys_meanPt[i]->SetBinError(index_sys_yield + 1,
+                                                ex_sys_pt[i][index_sys_yield]);
+              }
 
               f.cd();
               l_diff_sys->SetOwner();
@@ -496,8 +494,9 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
               delete hs_mass_mepm_proj_sys;
               delete hs_v2_sepm_proj_sys;
               delete hs_v2_mepm_proj_sys;
-              delete hs_mass_sepm_proj_meanPt_sys;
-
+              if (hs_mass_sepm_proj_meanPt_sys) {
+                delete hs_mass_sepm_proj_meanPt_sys;
+              }
               index_sys_v2++;
             }
             index_sys_yield++;

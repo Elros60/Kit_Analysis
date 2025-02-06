@@ -83,16 +83,18 @@ void FlowAnalysis_EventMixing_CentDiff(
   fitter.setPtRange(pt_min, pt_max);
 
   // Define variables' range for analysis
-  double Bin_cent_mass[8] = {0, 10, 20, 30, 40, 50, 60, 90};
+  double Bin_cent_mass[16] = {0,  5,  10, 15, 20, 25, 30, 35,
+                              40, 45, 50, 55, 60, 70, 80, 90};
 
   // Define the pool for systematics: 36
   // combinations
   double mass_min_sys[3] = {2.2, 2.3, 2.4};
   double mass_max_sys[3] = {4.2, 4.3, 4.4};
-  string sig_enum[5] = {"CB2(data)", "CB2(MC)", "NA60", "Chebychev", "VWG"};
+  string sig_enum[5] = {"CB2(data)", "CB2(MC)", "NA60", "Chebychev",
+                        "EventMixing"};
   string bkg_v2_enum[1] = {"EventMixing"};
   int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
-  int bkg_mass[1] = {3};       // Chebychev VWG
+  int bkg_mass[2] = {3, 4};    // Chebychev Event-Mixing
   int bkg_v2[1] = {2};         // Event-Mixing
 
   // Create output file
@@ -287,9 +289,9 @@ void FlowAnalysis_EventMixing_CentDiff(
 
     // Fit invariant mass + v2
     TList *l_diff_fit = new TList();
-    vector<double> results_v2 =
-        fitter.runFittingEM(hs_mass_sepm_proj, hs_mass_mepm_proj,
-                            hs_v2_sepm_proj, hs_v2_mepm_proj, l_diff_fit);
+    vector<double> results_v2 = fitter.runFittingEMNoMeanPt(
+        hs_mass_sepm_proj, hs_mass_mepm_proj, hs_v2_sepm_proj, hs_v2_mepm_proj,
+        l_diff_fit);
 
     SNR[i] = results_v2[4];
     x_yield[i] = (Bin_cent_mass[i] + Bin_cent_mass[i + 1]) / 2;
@@ -391,7 +393,7 @@ void FlowAnalysis_EventMixing_CentDiff(
               fitter.setMode(1);
               TList *l_diff_sys = new TList();
               LOG(info) << "Processing fitting(systematic) for v2{SP} ...";
-              vector<double> results_sys_v2 = fitter.runFittingEM(
+              vector<double> results_sys_v2 = fitter.runFittingEMNoMeanPt(
                   hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
                   hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys, l_diff_sys);
 
