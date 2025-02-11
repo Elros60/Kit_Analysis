@@ -683,7 +683,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
                     FlowAnalysis_Fitting::centmin,
                     FlowAnalysis_Fitting::centmax));
   hs->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
-  hs->GetYaxis()->SetTitle(Form("Counts per %g GeV/c", hs->GetBinWidth(1)));
+  hs->GetYaxis()->SetTitle(Form("Counts per %g GeV/c2", hs->GetBinWidth(1)));
   hs->Draw("HIST EP");
   pad1_yield->ModifiedUpdate();
   model->SetLineWidth(3.0);
@@ -1430,7 +1430,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_se_res->SetMarkerColor(3);
     hs_se_res->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se_res->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
     hs_se_res->Draw("HIST EP");
     hs_se_res->GetYaxis()->SetRangeUser(
         0., 1.2 * hs_se->GetBinContent(hs_se->GetMaximumBin()));
@@ -1442,7 +1442,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_se->SetTitle("");
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
     hs_se->Draw("HIST EP same");
     pad1_yield->ModifiedUpdate();
   } else {
@@ -1456,7 +1456,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
              FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
     hs_se->Draw("HIST EP");
     pad1_yield->ModifiedUpdate();
   }
@@ -1467,7 +1467,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_me->SetMarkerColor(kRed);
   hs_me->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_me->GetYaxis()->SetTitle(
-      Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+      Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
   hs_me->Draw("HIST EP same");
   pad1_yield->ModifiedUpdate();
   model->SetLineWidth(3.0);
@@ -1584,8 +1584,13 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   pad2_yield->SetBottomMargin(0.22);
   pad2_yield->Draw();
   pad2_yield->cd();
-  TH1D *hs_pull_yield = dynamic_cast<TH1D *>(
-      FlowAnalysis_Fitting::GetPull(hs_se_res, model, "yield"));
+  TH1D *hs_pull_yield =
+      FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+              "EventMixing"
+          ? dynamic_cast<TH1D *>(
+                FlowAnalysis_Fitting::GetPull(hs_se_res, model, "yield"))
+          : dynamic_cast<TH1D *>(
+                FlowAnalysis_Fitting::GetPull(hs_se, model, "yield"));
   hs_pull_yield->SetStats(0);
   hs_pull_yield->SetTitle("");
   hs_pull_yield->SetMarkerStyle(20);
@@ -2016,6 +2021,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_v2bkg->SetMarkerColor(kRed);
   hs_v2bkg->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_v2bkg->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}");
+  ls->Add(hs_v2bkg);
   hs_v2bkg->Draw("HIST EP same");
   pad1_v2->ModifiedUpdate();
   TH1D *hs_model_v2 = dynamic_cast<TH1D *>(
@@ -2406,7 +2412,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
     hs_se_res->SetMarkerColor(3);
     hs_se_res->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se_res->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
     hs_se_res->Draw("HIST EP");
     hs_se_res->GetYaxis()->SetRangeUser(
         0., 1.2 * hs_se->GetBinContent(hs_se->GetMaximumBin()));
@@ -2418,7 +2424,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
     hs_se->SetTitle("");
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
     hs_se->Draw("HIST EP same");
     pad1_yield->ModifiedUpdate();
   } else {
@@ -2432,7 +2438,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
              FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
     hs_se->Draw("HIST EP");
     pad1_yield->ModifiedUpdate();
   }
@@ -2443,7 +2449,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   hs_me->SetMarkerColor(kRed);
   hs_me->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_me->GetYaxis()->SetTitle(
-      Form("Counts per %g GeV/c", hs_se->GetBinWidth(1)));
+      Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
   hs_me->Draw("HIST EP same");
   pad1_yield->ModifiedUpdate();
   model->SetLineWidth(3.0);
@@ -2560,8 +2566,13 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   pad2_yield->SetBottomMargin(0.22);
   pad2_yield->Draw();
   pad2_yield->cd();
-  TH1D *hs_pull_yield = dynamic_cast<TH1D *>(
-      FlowAnalysis_Fitting::GetPull(hs_se_res, model, "yield"));
+  TH1D *hs_pull_yield =
+      FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+              "EventMixing"
+          ? dynamic_cast<TH1D *>(
+                FlowAnalysis_Fitting::GetPull(hs_se_res, model, "yield"))
+          : dynamic_cast<TH1D *>(
+                FlowAnalysis_Fitting::GetPull(hs_se, model, "yield"));
   hs_pull_yield->SetStats(0);
   hs_pull_yield->SetTitle("");
   hs_pull_yield->SetMarkerStyle(20);
