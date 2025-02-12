@@ -92,7 +92,7 @@ private:
   static int mode;
   static string mode_string[2];
   static string model_string[8];
-  static string v2bkg_string[3];
+  static string v2bkg_string[2];
 
   double mchi2max_mass{1.};
   double mchi2max_v2{1.};

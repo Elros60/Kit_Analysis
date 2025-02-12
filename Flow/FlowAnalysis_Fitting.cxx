@@ -16,7 +16,8 @@ string FlowAnalysis_Fitting::mode_string[2] = {"Std", "Sys"};
 string FlowAnalysis_Fitting::model_string[8] = {
     "CB2(data)",   "CB2(MC)", "NA60", "Cheby",
     "EventMixing", "VWG",     "Exp2", "PolExp"};
-string FlowAnalysis_Fitting::v2bkg_string[3] = {"Pol2", "Cheby", "EventMixing"};
+string FlowAnalysis_Fitting::v2bkg_string[2] = {"EventMixing(beta free)",
+                                                "EventMixing(beta fix)"};
 
 //______________________________________________________________________________
 void FlowAnalysis_Fitting::init() {
@@ -1905,8 +1906,15 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     if (FlowAnalysis_Fitting::mode == 0) {
       val_fct = (par[0] * val_alpha + (1. - val_alpha) * val_bkg);
     } else {
-      val_fct = (par[0] * val_alpha +
-                 (1. - val_alpha) * (val_bkg + par[1] * (val_v2me - val_bkg)));
+      if (FlowAnalysis_Fitting::v2bkg_string
+              [FlowAnalysis_Fitting::mflag_bkg_v2] ==
+          "EventMixing(beta free)") {
+        val_fct =
+            (par[0] * val_alpha +
+             (1. - val_alpha) * (val_bkg + par[1] * (val_v2me - val_bkg)));
+      } else {
+        val_fct = (par[0] * val_alpha + (1. - val_alpha) * val_bkg);
+      }
     }
 
     return val_fct;
@@ -1927,9 +1935,17 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     model_v2->SetParameter(0, 0.01);
     model_v2->SetParLimits(0, -0.1, 0.5);
     model_v2->SetParName(0, "v^{J/#psi}_{2}");
-    model_v2->SetParameter(1, 0.01);
-    model_v2->SetParLimits(1, 0., 1.);
-    model_v2->SetParName(1, "#alpha");
+    if (FlowAnalysis_Fitting::v2bkg_string
+            [FlowAnalysis_Fitting::mflag_bkg_v2] == "EventMixing(beta free)") {
+      model_v2->SetParameter(1, 0.01);
+      model_v2->SetParLimits(1, 0., 1.);
+      model_v2->SetParName(1, "#beta");
+    } else {
+      model_v2->SetParameter(1, 0.01);
+      model_v2->SetParLimits(1, 0., 1.);
+      model_v2->SetParName(1, "#beta");
+      model_meanPt->FixParameter(1, 0.0);
+    }
   }
   hs_v2se->Rebin();
   hs_v2se->Scale(0.5);
