@@ -1928,23 +1928,28 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
           : new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
                     FlowAnalysis_Fitting::massmax, 2);
   if (FlowAnalysis_Fitting::mode == 0) {
+    model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                       FlowAnalysis_Fitting::massmax, 1);
     model_v2->SetParameter(0, 0.01);
     model_v2->SetParLimits(0, -0.1, 0.5);
     model_v2->SetParName(0, "v^{J/#psi}_{2}");
   } else {
-    model_v2->SetParameter(0, 0.01);
-    model_v2->SetParLimits(0, -0.1, 0.5);
-    model_v2->SetParName(0, "v^{J/#psi}_{2}");
     if (FlowAnalysis_Fitting::v2bkg_string
             [FlowAnalysis_Fitting::mflag_bkg_v2] == "EventMixing(beta free)") {
+      model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                         FlowAnalysis_Fitting::massmax, 2);
+      model_v2->SetParameter(0, 0.01);
+      model_v2->SetParLimits(0, -0.1, 0.5);
+      model_v2->SetParName(0, "v^{J/#psi}_{2}");
       model_v2->SetParameter(1, 0.01);
       model_v2->SetParLimits(1, 0., 1.);
       model_v2->SetParName(1, "#beta");
     } else {
-      model_v2->SetParameter(1, 0.01);
-      model_v2->SetParLimits(1, 0., 1.);
-      model_v2->SetParName(1, "#beta");
-      model_meanPt->FixParameter(1, 0.0);
+      model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                         FlowAnalysis_Fitting::massmax, 1);
+      model_v2->SetParameter(0, 0.01);
+      model_v2->SetParLimits(0, -0.1, 0.5);
+      model_v2->SetParName(0, "v^{J/#psi}_{2}");
     }
   }
   hs_v2se->Rebin();
