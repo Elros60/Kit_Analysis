@@ -489,7 +489,6 @@ void FlowAnalysis_EventMixing(
               l_diff_sys->Write(Form("FitSys_%g_%g_%s", Bin_pt_mass[i],
                                      Bin_pt_mass[i + 1], combo_v2.Data()),
                                 TObject::kSingleKey);
-
               delete l_diff_sys;
               delete hs_mass_sepm_proj_sys;
               delete hs_mass_mepm_proj_sys;
@@ -576,10 +575,12 @@ void FlowAnalysis_EventMixing(
     l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
     delete l_results_sys_yield;
     if (meanPt) {
+      f.cd();
       l_results_sys_meanPt->SetOwner();
       l_results_sys_meanPt->Write("FitMeanPtSystematics", TObject::kSingleKey);
       delete l_results_sys_meanPt;
     }
+    f.cd();
     l_results_sys_v2->SetOwner();
     l_results_sys_v2->Write("FitV2Systematics", TObject::kSingleKey);
     delete l_results_sys_v2;

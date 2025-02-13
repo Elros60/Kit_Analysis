@@ -1219,7 +1219,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   cout << ">>>>>>>>>>>>>> Start processing dimuon invariant mass fit..."
        << endl;
   // Construct a combined signal+background model
-  TF1 *sig, *bkg;
+  TF1 *sig = new TF1();
+  TF1 *bkg = new TF1();
   CreateModel(sig, ModelType(FlowAnalysis_Fitting::mflag_sig));
   auto fct_bkgResidual = [](double *x, double *par) {
     double value = 0.0;
@@ -1342,7 +1343,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     value = par[0] * exp(par[2] * x[0]) / par[1];
     return value;
   };
-  TF1 *bkg_fitted;
+  TF1 *bkg_fitted = new TF1();
   if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
       "EventMixing") {
     bkg_fitted = new TF1("bkgResidual_norm", fct_bkgResidual_norm,
@@ -1891,7 +1892,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   //////////////////////////////////////////////////////////////////////////////
   // Setting up fit model for v2 signal fit
   cout << ">>>>>>>>>>>>>> Start processing v2 fit..." << endl;
-  TH1D *hs_v2bkg;
+  TH1D *hs_v2bkg = new TH1D();
   if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
       "EventMixing") {
     auto fct_bkgSum = [bkg_fitted, hs_me](double *x, double *) {
@@ -1939,7 +1940,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   };
 
   // Setup for model
-  TF1 *model_v2;
+  TF1 *model_v2 = new TF1();
   if (FlowAnalysis_Fitting::mode == 0) {
     model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
                        FlowAnalysis_Fitting::massmax, 1);
@@ -2229,7 +2230,8 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   cout << ">>>>>>>>>>>>>> Start processing dimuon invariant mass fit..."
        << endl;
   // Construct a combined signal+background model
-  TF1 *sig, *bkg;
+  TF1 *sig = new TF1();
+  TF1 *bkg = new TF1();
   CreateModel(sig, ModelType(FlowAnalysis_Fitting::mflag_sig));
   auto fct_bkgResidual = [](double *x, double *par) {
     double value = 0.0;
@@ -2352,7 +2354,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
     value = par[0] * exp(par[2] * x[0]) / par[1];
     return value;
   };
-  TF1 *bkg_fitted;
+  TF1 *bkg_fitted = new TF1();
   if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
       "EventMixing") {
     bkg_fitted = new TF1("bkgResidual_norm", fct_bkgResidual_norm,
@@ -2664,7 +2666,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   //////////////////////////////////////////////////////////////////////////////
   // Setting up fit model for v2 signal fit
   cout << ">>>>>>>>>>>>>> Start processing v2 fit..." << endl;
-  TH1D *hs_v2bkg;
+  TH1D *hs_v2bkg = new TH1D();
   if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
       "EventMixing") {
     auto fct_bkgSum = [bkg_fitted, hs_me](double *x, double *) {
