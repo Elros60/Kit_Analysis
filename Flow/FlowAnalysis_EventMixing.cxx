@@ -48,15 +48,13 @@
 using namespace std;
 
 //______________________________________________________________________________
-void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
-                              int flag_run2, int flag_run2yield,
-                              std::string FileName = "AnalysisResults.root",
-                              double mass_min = 2.3, double mass_max = 4.3,
-                              double cent_min = 10., double cent_max = 50.,
-                              double chi2max_mass = 2., double chi2max_v2 = 2.,
-                              bool sys = false, bool meanPt = false,
-                              std::string muonCut = "muonLowPt210SigmaPDCA",
-                              std::string dimuonCut = "") {
+void FlowAnalysis_EventMixing(
+    int flag_sig, int flag_bkg, int flag_v2, int flag_run2, int flag_run2yield,
+    std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
+    double mass_max = 4.3, double cent_min = 10., double cent_max = 50.,
+    double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
+    bool meanPt = false, std::string inputFlag = "goodmedium",
+    std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
   // Init Helper class
   FlowAnalysis_Helper helper;
 
@@ -104,18 +102,22 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
   int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
   int bkg_mass[2] = {3, 4};    // Chebychev Event-Mixing
   int bkg_v2[2] = {0, 1};      // Event-Mixing, beta fix or free
+  int nb_trials = int(size(sig_mass)) * int(size(bkg_mass)) *
+                  int(size(bkg_v2)) * int(size(mass_min_sys));
 
   // Create output file
-  TFile f(sys ? Form("FlowAnalysisResults_"
+  TFile f(sys ? Form("FlowAnalysisResults_%s_"
+                     "EventMixing%d_%s_%g_%"
+                     "g_%dBinPt_%s_withSys.root",
+                     inputFlag.c_str(), nb_trials, muonCut.c_str(), cent_min,
+                     cent_max, int(size(Bin_pt_mass)) - 1,
+                     meanPt ? "MeanPt" : "NoMeanPt")
+              : Form("FlowAnalysisResults_%s_"
                      "EventMixing_%s_%g_%"
-                     "g_%dBinPt_withSys.root",
-                     muonCut.c_str(), cent_min, cent_max,
-                     int(size(Bin_pt_mass)) - 1)
-              : Form("FlowAnalysisResults_"
-                     "EventMixing_%s_%g_%"
-                     "g_%dBinPt.root",
-                     muonCut.c_str(), cent_min, cent_max,
-                     int(size(Bin_pt_mass)) - 1),
+                     "g_%dBinPt_%s.root",
+                     inputFlag.c_str(), muonCut.c_str(), cent_min, cent_max,
+                     int(size(Bin_pt_mass)) - 1,
+                     meanPt ? "MeanPt" : "NoMeanPt"),
           "RECREATE");
 
   ///////////////////////////////////////////////////
@@ -482,7 +484,6 @@ void FlowAnalysis_EventMixing(int flag_sig, int flag_bkg, int flag_v2,
                 hist_sys_meanPt[i]->SetBinError(index_sys_yield + 1,
                                                 ex_sys_pt[i][index_sys_yield]);
               }
-
               f.cd();
               l_diff_sys->SetOwner();
               l_diff_sys->Write(Form("FitSys_%g_%g_%s", Bin_pt_mass[i],

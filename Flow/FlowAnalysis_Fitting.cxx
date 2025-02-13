@@ -1422,10 +1422,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
       "EventMixing") {
     hs_se_res->SetStats(1);
-    hs_se_res->SetTitle(
-        Form("J/#psi invariant mass: %g - %g GeV/c, %g - %g %%",
-             FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
-             FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
+    hs_se_res->SetTitle("Residual (SE-ME)");
     hs_se_res->SetMarkerStyle(20);
     hs_se_res->SetMarkerSize(0.8);
     hs_se_res->SetMarkerColor(3);
@@ -1440,7 +1437,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_se->SetMarkerStyle(20);
     hs_se->SetMarkerSize(0.8);
     hs_se->SetMarkerColor(kBlack);
-    hs_se->SetTitle("");
+    hs_se->SetTitle("Data");
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
         Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
@@ -1451,10 +1448,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_se->SetMarkerStyle(20);
     hs_se->SetMarkerSize(0.8);
     hs_se->SetMarkerColor(kBlack);
-    hs_se->SetTitle(
-        Form("J/#psi invariant mass: %g - %g GeV/c, %g - %g %%",
-             FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
-             FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
+    hs_se->SetTitle("Data");
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
         Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
@@ -1462,7 +1456,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     pad1_yield->ModifiedUpdate();
   }
   hs_me->SetStats(0);
-  hs_me->SetTitle("");
+  hs_me->SetTitle("Event-Mixing");
   hs_me->SetMarkerStyle(20);
   hs_me->SetMarkerSize(0.8);
   hs_me->SetMarkerColor(kRed);
@@ -1473,15 +1467,23 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   pad1_yield->ModifiedUpdate();
   model->SetLineWidth(3.0);
   model->SetLineColor(kBlue);
+  model->SetTitle("Fit full");
   model->Draw("same");
   pad1_yield->ModifiedUpdate();
   bkg_fitted->SetLineWidth(3.0);
   bkg_fitted->SetLineColor(kBlue);
   bkg_fitted->SetLineStyle(kDashed);
+  if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+      "EventMixing") {
+    bkg_fitted->SetTitle("Fit residual bkg");
+  } else {
+    bkg_fitted->SetTitle("Fit background");
+  }
   bkg_fitted->Draw("same");
   pad1_yield->ModifiedUpdate();
   sig_fitted->SetLineWidth(3.0);
   sig_fitted->SetLineColor(kRed);
+  sig_fitted->SetTitle("Fit signal");
   sig_fitted->Draw("same");
   pad1_yield->ModifiedUpdate();
 
@@ -1559,10 +1561,11 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
                           "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
                           "4");
   pad1_yield->ModifiedUpdate();
-  text_info->DrawLatexNDC(.18, .72,
-                          Form("%g < #it{p}_{T} < %g GeV/c",
-                               FlowAnalysis_Fitting::ptmin,
-                               FlowAnalysis_Fitting::ptmax));
+  text_info->DrawLatexNDC(
+      .18, .72,
+      Form("%g < #it{p}_{T} < %g GeV/c, %g-%g%%", FlowAnalysis_Fitting::ptmin,
+           FlowAnalysis_Fitting::ptmax, FlowAnalysis_Fitting::centmin,
+           FlowAnalysis_Fitting::centmax));
   pad1_yield->ModifiedUpdate();
   c->cd();
   TPad *pad2_yield = new TPad(
@@ -1785,10 +1788,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_meanPt->SetStats(1);
   hs_meanPt->SetMarkerStyle(20);
   hs_meanPt->SetMarkerSize(0.8);
-  hs_meanPt->SetTitle(
-      Form("J/#psi <#it{p}_{T}>: %g - %g GeV/c, %g - %g %%",
-           FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
-           FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
+  hs_meanPt->SetTitle("Data");
   hs_meanPt->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_meanPt->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
   hs_meanPt->Draw("HIST EP");
@@ -1798,6 +1798,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
           hs_meanPt, model_meanPt, "ModelMeanPt"));
   hs_model_meanPt->SetLineWidth(3.0);
   hs_model_meanPt->SetLineColor(kBlue);
+  hs_model_meanPt->SetTitle("Fit");
   hs_model_meanPt->Draw("HIST same");
   pad1_meanPt->ModifiedUpdate();
   TPaveStats *sb_meanPt = (TPaveStats *)pad1_meanPt->GetPrimitive("stats");
@@ -1808,6 +1809,23 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   sb_meanPt->SetY2NDC(0.38);
   hs_meanPt->SetStats(0);
   sb_meanPt->Draw();
+  pad1_meanPt->ModifiedUpdate();
+  TLatex *text_info_meanPt = new TLatex();
+  text_info_meanPt->SetTextSize(0.04);
+  text_info_meanPt->SetTextFont(42);
+  text_info_meanPt->DrawLatexNDC(.18, .82,
+                                 "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
+                                 "= 5.36 TeV");
+  pad1_meanPt->ModifiedUpdate();
+  text_info_meanPt->DrawLatexNDC(.18, .77,
+                                 "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
+                                 "4");
+  pad1_meanPt->ModifiedUpdate();
+  text_info_meanPt->DrawLatexNDC(
+      .18, .72,
+      Form("%g < #it{p}_{T} < %g GeV/c, %g-%g%%", FlowAnalysis_Fitting::ptmin,
+           FlowAnalysis_Fitting::ptmax, FlowAnalysis_Fitting::centmin,
+           FlowAnalysis_Fitting::centmax));
   pad1_meanPt->ModifiedUpdate();
   c_meanPt->cd();
   TPad *pad2_meanPt = new TPad(
@@ -1921,12 +1939,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   };
 
   // Setup for model
-  TF1 *model_v2 =
-      FlowAnalysis_Fitting::mode == 0
-          ? new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
-                    FlowAnalysis_Fitting::massmax, 1)
-          : new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
-                    FlowAnalysis_Fitting::massmax, 2);
+  TF1 *model_v2;
   if (FlowAnalysis_Fitting::mode == 0) {
     model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
                        FlowAnalysis_Fitting::massmax, 1);
@@ -2026,29 +2039,25 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_v2se->SetStats(1);
   hs_v2se->SetMarkerStyle(20);
   hs_v2se->SetMarkerSize(0.8);
-  hs_v2se->SetTitle(
-      Form("J/#psi #it{v}_{2}{%d}: %g - %g GeV/c, %g - %g %%",
-           FlowAnalysis_Fitting::norder, FlowAnalysis_Fitting::ptmin,
-           FlowAnalysis_Fitting::ptmax, FlowAnalysis_Fitting::centmin,
-           FlowAnalysis_Fitting::centmax));
+  hs_v2se->SetTitle("Data");
   hs_v2se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_v2se->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}");
   hs_v2se->Draw("HIST EP");
   pad1_v2->ModifiedUpdate();
   hs_v2bkg->SetStats(0);
-  hs_v2bkg->SetTitle("");
+  hs_v2bkg->SetTitle("Event-Mixing");
   hs_v2bkg->SetMarkerStyle(20);
   hs_v2bkg->SetMarkerSize(0.8);
   hs_v2bkg->SetMarkerColor(kRed);
   hs_v2bkg->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_v2bkg->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}");
-  ls->Add(hs_v2bkg);
   hs_v2bkg->Draw("HIST EP same");
   pad1_v2->ModifiedUpdate();
   TH1D *hs_model_v2 = dynamic_cast<TH1D *>(
       FlowAnalysis_Fitting::GetHistFromTF(hs_v2se, model_v2, "ModelV2"));
   hs_model_v2->SetLineWidth(3.0);
   hs_model_v2->SetLineColor(kBlue);
+  hs_model_v2->SetTitle("Fit");
   hs_model_v2->Draw("HIST same");
   pad1_v2->ModifiedUpdate();
   TPaveStats *sb_v2 = (TPaveStats *)pad1_v2->GetPrimitive("stats");
@@ -2131,7 +2140,6 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   results.emplace_back(model_meanPt->GetParameter(0));
   results.emplace_back(model_meanPt->GetParError(0));
   results.emplace_back(chi2ndf_meanPt);
-
   return results;
 }
 
@@ -2424,10 +2432,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
       "EventMixing") {
     hs_se_res->SetStats(1);
-    hs_se_res->SetTitle(
-        Form("J/#psi invariant mass: %g - %g GeV/c, %g - %g %%",
-             FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
-             FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
+    hs_se_res->SetTitle("Residual (SE-ME)");
     hs_se_res->SetMarkerStyle(20);
     hs_se_res->SetMarkerSize(0.8);
     hs_se_res->SetMarkerColor(3);
@@ -2442,7 +2447,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
     hs_se->SetMarkerStyle(20);
     hs_se->SetMarkerSize(0.8);
     hs_se->SetMarkerColor(kBlack);
-    hs_se->SetTitle("");
+    hs_se->SetTitle("Data");
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
         Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
@@ -2453,10 +2458,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
     hs_se->SetMarkerStyle(20);
     hs_se->SetMarkerSize(0.8);
     hs_se->SetMarkerColor(kBlack);
-    hs_se->SetTitle(
-        Form("J/#psi invariant mass: %g - %g GeV/c, %g - %g %%",
-             FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
-             FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
+    hs_se->SetTitle("Data");
     hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
     hs_se->GetYaxis()->SetTitle(
         Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
@@ -2464,7 +2466,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
     pad1_yield->ModifiedUpdate();
   }
   hs_me->SetStats(0);
-  hs_me->SetTitle("");
+  hs_me->SetTitle("Event-Mixing");
   hs_me->SetMarkerStyle(20);
   hs_me->SetMarkerSize(0.8);
   hs_me->SetMarkerColor(kRed);
@@ -2475,15 +2477,23 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   pad1_yield->ModifiedUpdate();
   model->SetLineWidth(3.0);
   model->SetLineColor(kBlue);
+  model->SetTitle("Fit full");
   model->Draw("same");
   pad1_yield->ModifiedUpdate();
   bkg_fitted->SetLineWidth(3.0);
   bkg_fitted->SetLineColor(kBlue);
   bkg_fitted->SetLineStyle(kDashed);
+  if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+      "EventMixing") {
+    bkg_fitted->SetTitle("Fit residual bkg");
+  } else {
+    bkg_fitted->SetTitle("Fit background");
+  }
   bkg_fitted->Draw("same");
   pad1_yield->ModifiedUpdate();
   sig_fitted->SetLineWidth(3.0);
   sig_fitted->SetLineColor(kRed);
+  sig_fitted->SetTitle("Fit signal");
   sig_fitted->Draw("same");
   pad1_yield->ModifiedUpdate();
 
@@ -2561,10 +2571,11 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
                           "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
                           "4");
   pad1_yield->ModifiedUpdate();
-  text_info->DrawLatexNDC(.18, .72,
-                          Form("%g < #it{p}_{T} < %g GeV/c",
-                               FlowAnalysis_Fitting::ptmin,
-                               FlowAnalysis_Fitting::ptmax));
+  text_info->DrawLatexNDC(
+      .18, .72,
+      Form("%g < #it{p}_{T} < %g GeV/c, %g-%g%%", FlowAnalysis_Fitting::ptmin,
+           FlowAnalysis_Fitting::ptmax, FlowAnalysis_Fitting::centmin,
+           FlowAnalysis_Fitting::centmax));
   pad1_yield->ModifiedUpdate();
   c->cd();
   TPad *pad2_yield = new TPad(
@@ -2786,17 +2797,13 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   hs_v2se->SetStats(1);
   hs_v2se->SetMarkerStyle(20);
   hs_v2se->SetMarkerSize(0.8);
-  hs_v2se->SetTitle(
-      Form("J/#psi #it{v}_{2}{%d}: %g - %g GeV/c, %g - %g %%",
-           FlowAnalysis_Fitting::norder, FlowAnalysis_Fitting::ptmin,
-           FlowAnalysis_Fitting::ptmax, FlowAnalysis_Fitting::centmin,
-           FlowAnalysis_Fitting::centmax));
+  hs_v2se->SetTitle("Data");
   hs_v2se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_v2se->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}");
   hs_v2se->Draw("HIST EP");
   pad1_v2->ModifiedUpdate();
   hs_v2bkg->SetStats(0);
-  hs_v2bkg->SetTitle("");
+  hs_v2bkg->SetTitle("Event-Mixing");
   hs_v2bkg->SetMarkerStyle(20);
   hs_v2bkg->SetMarkerSize(0.8);
   hs_v2bkg->SetMarkerColor(kRed);
@@ -2808,6 +2815,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
       FlowAnalysis_Fitting::GetHistFromTF(hs_v2se, model_v2, "ModelV2"));
   hs_model_v2->SetLineWidth(3.0);
   hs_model_v2->SetLineColor(kBlue);
+  hs_model_v2->SetTitle("Fit");
   hs_model_v2->Draw("HIST same");
   pad1_v2->ModifiedUpdate();
   TPaveStats *sb_v2 = (TPaveStats *)pad1_v2->GetPrimitive("stats");

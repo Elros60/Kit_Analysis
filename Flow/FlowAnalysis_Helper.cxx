@@ -1474,7 +1474,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
   TGraphMultiErrors *graph_v2pt =
       new TGraphMultiErrors("graph_v2_pt", "", size_ptbin, x_v2pt, y_v2pt,
                             ex_v2pt, ex_v2pt, ey_v2pt, ey_v2pt);
-  graph_v2pt->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%%",
+  graph_v2pt->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%%",
                             int(cent_min), int(cent_max)));
   graph_v2pt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_v2pt->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
@@ -1484,7 +1484,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
       new TGraphMultiErrors("graph_v2_pt_run2", "", 10, x_run2, y_run2, ex_run2,
                             ex_run2, ey_run2, ey_run2);
   graph_v2pt_run2->AddYError(10, eysys_run2, eysys_run2);
-  graph_v2pt_run2->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%%",
+  graph_v2pt_run2->SetTitle(Form("Run2 #sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%%",
                                  int(cent_min), int(cent_max)));
   graph_v2pt_run2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_v2pt_run2->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
@@ -1492,6 +1492,8 @@ void FlowAnalysis_Helper::PlotFinalResults(
   TGraphMultiErrors *graph_yield =
       new TGraphMultiErrors("graph_yields_pt", "Run3", size_ptbin, x_yield,
                             y_yield, ex_yield, ex_yield, ey_yield, ey_yield);
+  graph_yield->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%%",
+                             int(cent_min), int(cent_max)));
   graph_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_yield->GetYaxis()->SetTitle("dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
   graph_yield->AddYError(size_ptbin, eysys_yield, eysys_yield);
@@ -1499,6 +1501,8 @@ void FlowAnalysis_Helper::PlotFinalResults(
   TGraphMultiErrors *graph_yield_run2 = new TGraphMultiErrors(
       "graph_yields_run2_pt", "Run2", 15, x_yield_run2, y_yield_run2,
       ex_yield_run2, ex_yield_run2, ey_yield_run2, ey_yield_run2);
+  graph_yield_run2->SetTitle(Form("Run2 #sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%%",
+                                  int(cent_min), int(cent_max)));
   graph_yield_run2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_yield_run2->GetYaxis()->SetTitle(
       "dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
@@ -1636,9 +1640,9 @@ void FlowAnalysis_Helper::PlotFinalResults(
   graph_v2pt_run2->SetLineColor(kRed);
   graph_v2pt_run2->SetLineWidth(2);
   graph_v2pt_run2->SetFillStyle(0);
-  mg->Add(graph_v2pt);
   mg->Add(graph_v2pt_run2);
-  mg->GetXaxis()->SetLimits(pt_bins[0], pt_bins[size_ptbin]);
+  mg->Add(graph_v2pt);
+  mg->GetXaxis()->SetRangeUser(0, mg->GetXaxis()->GetXmax());
   mg->Draw("A P Z ; Z ; 5 s=0.5");
   pad_pt_final->BuildLegend();
   TLatex *text_pt = new TLatex();
@@ -1676,7 +1680,7 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   TGraphMultiErrors *graph_v2cent =
       new TGraphMultiErrors("graph_v2_pt", "", size_centbin, x_v2cent, y_v2cent,
                             ex_v2cent, ex_v2cent, ey_v2cent, ey_v2cent);
-  graph_v2cent->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d GeV/c",
+  graph_v2cent->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d GeV/c",
                               int(pt_min), int(pt_max)));
   graph_v2cent->GetXaxis()->SetTitle("Centrality (%)");
   graph_v2cent->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
@@ -1686,14 +1690,17 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
       new TGraphMultiErrors("graph_v2_cent_run2", "", 7, x_run2, y_run2,
                             ex_run2, ex_run2, ey_run2, ey_run2);
   graph_v2cent_run2->AddYError(7, eysys_run2, eysys_run2);
-  graph_v2cent_run2->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d GeV/c",
-                                   int(pt_min), int(pt_max)));
+  graph_v2cent_run2->SetTitle(
+      Form("Run2 #sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d GeV/c", int(pt_min),
+           int(pt_max)));
   graph_v2cent_run2->GetXaxis()->SetTitle("Centrality (%)");
   graph_v2cent_run2->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
 
   TGraphMultiErrors *graph_yield =
       new TGraphMultiErrors("graph_yields_cent", "Run3", size_centbin, x_yield,
                             y_yield, ex_yield, ex_yield, ey_yield, ey_yield);
+  graph_yield->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d GeV/c",
+                             int(pt_min), int(pt_max)));
   graph_yield->GetXaxis()->SetTitle("Centrality (%)");
   graph_yield->GetYaxis()->SetTitle("dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
   graph_yield->AddYError(size_centbin, eysys_yield, eysys_yield);
