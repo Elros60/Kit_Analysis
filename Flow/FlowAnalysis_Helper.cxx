@@ -1871,7 +1871,10 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
   pad_SEME_ratio->cd();
   double *Bin_mass = CreateBinsFromAxis(hist_SE->GetXaxis());
   int NBins_mass = hist_SE->GetXaxis()->GetNbins();
-  TH1D *hs_SEME_ratio = new TH1D("hist_SEME_ratio", "", NBins_mass, Bin_mass);
+  TH1D *hs_SEME_ratio =
+      new TH1D(Form("hist_SEME_ratio_%s_%g_%g_%g_%g_%g_%g", flag.c_str(), ptmin,
+                    ptmax, massmin, massmax, centmin, centmax),
+               "", NBins_mass, Bin_mass);
   for (int i = 0; i < NBins_mass; i++) {
     hs_SEME_ratio->SetBinContent(i + 1, hist_SE->GetBinContent(i + 1) /
                                             hist_ME->GetBinContent(i + 1));
