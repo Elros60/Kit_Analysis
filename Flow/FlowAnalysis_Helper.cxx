@@ -1578,6 +1578,9 @@ void FlowAnalysis_Helper::PlotFinalResults(
     mg_raw->Add(graph_yield);
     mg_raw->Add(graph_yield_run2);
     mg_raw->GetXaxis()->SetLimits(pt_bins[0], pt_bins[size_ptbin]);
+    mg_raw->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    mg_raw->GetYaxis()->SetTitle("dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
+    mg_raw->SetTitle("");
     mg_raw->Draw("A P Z ; Z ; 5 s=0.5");
     pad_yield_final_run2->BuildLegend();
 
@@ -1633,6 +1636,9 @@ void FlowAnalysis_Helper::PlotFinalResults(
     mg_raw->Add(graph_yield);
     mg_raw->Add(graph_yield_run2);
     mg_raw->GetXaxis()->SetLimits(0., 20.);
+    mg_raw->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    mg_raw->GetYaxis()->SetTitle("dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
+    mg_raw->SetTitle("");
     mg_raw->Draw("A P Z ; Z ; 5 s=0.5");
   }
   ls->Add(c_yield_vsRun2);
@@ -1659,6 +1665,9 @@ void FlowAnalysis_Helper::PlotFinalResults(
   mg->Add(graph_v2pt_run2);
   mg->Add(graph_v2pt);
   mg->GetXaxis()->SetRangeUser(0, mg->GetXaxis()->GetXmax());
+  mg->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  mg->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
+  mg->SetTitle("");
   mg->Draw("A P Z ; Z ; 5 s=0.5");
   pad_pt_final->BuildLegend();
   TLatex *text_pt = new TLatex();
@@ -1718,7 +1727,7 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   graph_yield->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d GeV/c",
                              int(pt_min), int(pt_max)));
   graph_yield->GetXaxis()->SetTitle("Centrality (%)");
-  graph_yield->GetYaxis()->SetTitle("dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
+  graph_yield->GetYaxis()->SetTitle("N_{J/#psi}");
   graph_yield->AddYError(size_centbin, eysys_yield, eysys_yield);
 
   // Save final results
@@ -1772,6 +1781,9 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   mg->Add(graph_v2cent);
   mg->Add(graph_v2cent_run2);
   mg->GetXaxis()->SetLimits(cent_bins[0], cent_bins[size_centbin]);
+  mg->GetXaxis()->SetTitle("Centrality (%)");
+  mg->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
+  mg->SetTitle("");
   mg->Draw("A P Z ; Z ; 5 s=0.5");
   pad_cent_final->BuildLegend();
   TLatex *text_cent = new TLatex();
