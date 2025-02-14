@@ -1837,7 +1837,7 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
                        ptmax, massmin, massmax, centmin, centmax));
   c_SEME->cd();
   c_SEME->SetBottomMargin(0);
-  TPad *pad_seme = new TPad("pad_seme", "pad_seme", 0, 0, 1, 1);
+  TPad *pad_seme = new TPad("pad_seme", "pad_seme", 0, 0.3, 1, 1.0);
   pad_seme->SetBottomMargin(0);
   pad_seme->Draw();
   pad_seme->cd();
@@ -1887,7 +1887,7 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
   hs_SEME_ratio->GetYaxis()->SetTitle("Ratio");
   hs_SEME_ratio->GetYaxis()->SetTitleOffset(0.25);
   hs_SEME_ratio->GetYaxis()->SetLabelSize(0.1);
-  hs_SEME_ratio->GetYaxis()->SetRangeUser(0., 10.);
+  hs_SEME_ratio->GetYaxis()->SetRangeUser(0., 2.);
   hs_SEME_ratio->GetXaxis()->SetLabelSize(0.1);
   hs_SEME_ratio->GetXaxis()->SetLabelOffset();
   hs_SEME_ratio->GetXaxis()->SetTitleSize(0.1);
