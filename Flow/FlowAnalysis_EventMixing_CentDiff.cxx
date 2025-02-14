@@ -53,7 +53,7 @@ void FlowAnalysis_EventMixing_CentDiff(
     std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
     double mass_max = 4.3, double pt_min = 0., double pt_max = 5.,
     double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
-    std::string inputFlag = "goodmedium",
+    bool SaveSys = false, std::string inputFlag = "goodmedium",
     std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
   // Init Helper class
   FlowAnalysis_Helper *helper = new FlowAnalysis_Helper();
@@ -487,7 +487,7 @@ void FlowAnalysis_EventMixing_CentDiff(
           hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
           chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
           stats_v2, Bin_cent_mass, l_results_sys_yield, l_results_sys_v2,
-          "cent");
+          SaveSys, "cent");
     }
     f.cd();
     l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);

@@ -53,7 +53,8 @@ void FlowAnalysis_EventMixing(
     std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
     double mass_max = 4.3, double cent_min = 10., double cent_max = 50.,
     double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
-    bool meanPt = false, std::string inputFlag = "goodmedium",
+    bool meanPt = false, bool SaveSys = false,
+    std::string inputFlag = "goodmedium",
     std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
   // Init Helper class
   FlowAnalysis_Helper *helper = new FlowAnalysis_Helper();
@@ -85,10 +86,10 @@ void FlowAnalysis_EventMixing(
   fitter->setCentRange(cent_min, cent_max);
 
   // Define variables' range for analysis
-  // double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  /*
   double Bin_pt_mass[18] = {0, 1,   1.5, 2, 2.5, 3, 3.5, 4,  4.5,
                             5, 5.5, 6,   7, 8,   9, 10,  12, 15};
-  /*
   double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
                             7., 8.,  9., 10., 11., 12., 15., 20.};
   */
@@ -565,14 +566,15 @@ void FlowAnalysis_EventMixing(
             hist_sys_meanPt[i], bins_sys_yield, bins_sys_v2, chi2_yield[i],
             chi2_v2[i], chi2_meanPt[i], nbCombo_yield, nbCombo_v2, stats_yield,
             stats_v2, stats_meanPt, Bin_pt_mass, l_results_sys_yield,
-            l_results_sys_v2, l_results_sys_meanPt);
+            l_results_sys_v2, l_results_sys_meanPt, SaveSys);
       } else {
         helper->PlotSystematicsNoMeanPt(
             Bin_pt_mass[i], Bin_pt_mass[i + 1], cent_min, cent_max,
             int(size(Bin_pt_mass)) - 1, i, c_sys_yield[i], c_sys_v2[i],
             hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
             chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
-            stats_v2, Bin_pt_mass, l_results_sys_yield, l_results_sys_v2);
+            stats_v2, Bin_pt_mass, l_results_sys_yield, l_results_sys_v2,
+            SaveSys);
       }
     }
     f.cd();

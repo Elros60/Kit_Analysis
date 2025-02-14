@@ -723,7 +723,7 @@ void FlowAnalysis_Helper::PlotSystematics(
     double *chi2_v2, double *chi2_meanPt, int nbCombo_yield, int nbCombo_v2,
     vector<double> stats_yield, vector<double> stats_v2,
     vector<double> stats_meanPt, double *pt_bins, TList *ls_sys_yield,
-    TList *ls_sys_v2, TList *ls_sys_meanPt, std::string flag) {
+    TList *ls_sys_v2, TList *ls_sys_meanPt, bool Save, std::string flag) {
 
   // Plotting for yields systematics
   c_sys_yield->cd();
@@ -1090,17 +1090,19 @@ void FlowAnalysis_Helper::PlotSystematics(
   lchi2_v22->SetLineStyle(1);
   lchi2_v22->Draw("same");
 
-  c_sys_v2->SaveAs(Form("FitSys_v2EM%d_%g_%g_%g_%g_%d.pdf", nbCombo_v2, ptmin,
-                        ptmax, centmin, centmax, nBins));
-  ls_sys_v2->Add(c_sys_v2);
-
-  c_sys_yield->SaveAs(Form("FitSys_massEM%d_%g_%g_%g_%g_%d.pdf", nbCombo_yield,
-                           ptmin, ptmax, centmin, centmax, nBins));
-  ls_sys_yield->Add(c_sys_yield);
-
-  ls_sys_meanPt->SaveAs(Form("FitSys_meanPtEM%d_%g_%g_%g_%g_%d.pdf",
+  if (Save) {
+    c_sys_v2->SaveAs(Form("FitSys_v2EM%d_%g_%g_%g_%g_%d.pdf", nbCombo_v2, ptmin,
+                          ptmax, centmin, centmax, nBins));
+    c_sys_yield->SaveAs(Form("FitSys_massEM%d_%g_%g_%g_%g_%d.pdf",
                              nbCombo_yield, ptmin, ptmax, centmin, centmax,
                              nBins));
+    c_sys_meanPt->SaveAs(Form("FitSys_meanPtEM%d_%g_%g_%g_%g_%d.pdf",
+                              nbCombo_yield, ptmin, ptmax, centmin, centmax,
+                              nBins));
+  }
+
+  ls_sys_v2->Add(c_sys_v2);
+  ls_sys_yield->Add(c_sys_yield);
   ls_sys_meanPt->Add(c_sys_meanPt);
 }
 
@@ -1111,7 +1113,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
     TH1D *hist_sys_v2, double *bins_sys_yield, double *bins_sys_v2,
     double *chi2_yield, double *chi2_v2, int nbCombo_yield, int nbCombo_v2,
     vector<double> stats_yield, vector<double> stats_v2, double *pt_bins,
-    TList *ls_sys_yield, TList *ls_sys_v2, std::string flag) {
+    TList *ls_sys_yield, TList *ls_sys_v2, bool Save, std::string flag) {
 
   // Plotting for yields systematics
   c_sys_yield->cd();
@@ -1362,12 +1364,15 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lchi2_v22->SetLineStyle(1);
   lchi2_v22->Draw("same");
 
-  c_sys_v2->SaveAs(Form("FitSys_v2EM%d_%g_%g_%g_%g_%d.pdf", nbCombo_v2, ptmin,
-                        ptmax, centmin, centmax, nBins));
-  ls_sys_v2->Add(c_sys_v2);
+  if (Save) {
+    c_sys_v2->SaveAs(Form("FitSys_v2EM%d_%g_%g_%g_%g_%d.pdf", nbCombo_v2, ptmin,
+                          ptmax, centmin, centmax, nBins));
+    c_sys_yield->SaveAs(Form("FitSys_massEM%d_%g_%g_%g_%g_%d.pdf",
+                             nbCombo_yield, ptmin, ptmax, centmin, centmax,
+                             nBins));
+  }
 
-  c_sys_yield->SaveAs(Form("FitSys_massEM%d_%g_%g_%g_%g_%d.pdf", nbCombo_yield,
-                           ptmin, ptmax, centmin, centmax, nBins));
+  ls_sys_v2->Add(c_sys_v2);
   ls_sys_yield->Add(c_sys_yield);
 }
 
