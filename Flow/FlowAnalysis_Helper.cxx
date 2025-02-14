@@ -1831,25 +1831,69 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
                   Form("hist_Mass_%s_%g_%g_%g_%g_%g_%g", flag.c_str(), ptmin,
                        ptmax, massmin, massmax, centmin, centmax));
   c_SEME->cd();
-
+  c_SEME->SetBottomMargin(0);
+  TPad *pad_seme = new TPad("pad_seme", "pad_seme", 0, 0, 1, 1);
+  pad_seme->SetBottomMargin(0);
+  pad_seme->Draw();
+  pad_seme->cd();
   hist_SE->SetStats(0);
-  hist_SE->SetTitle(Form("Mass spectra with event-mixing: %s", flag.c_str()));
+  hist_SE->SetTitle(Form("SE%s", flag.c_str()));
   hist_SE->SetMarkerStyle(20);
   hist_SE->SetMarkerSize(0.8);
   hist_SE->SetMarkerColor(kBlue);
   hist_SE->GetYaxis()->SetTitle("Counts");
   hist_SE->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hist_SE->Draw("HIST EP");
+  pad_seme->ModifiedUpdate();
 
   hist_ME->SetStats(0);
-  hist_ME->SetTitle("");
+  hist_ME->SetTitle(Form("ME%s", flag.c_str()));
   hist_ME->SetMarkerStyle(20);
   hist_ME->SetMarkerSize(0.8);
   hist_ME->SetMarkerColor(kRed);
   hist_ME->GetYaxis()->SetTitle("Counts");
   hist_ME->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hist_ME->Draw("HIST EP same");
-  gPad->BuildLegend();
+  pad_seme->BuildLegend();
+  pad_seme->ModifiedUpdate();
+
+  c_SEME->cd();
+  TPad *pad_SEME_ratio =
+      new TPad("pad_SEME_ratio", "pad_SEME_ratio", 0, 0., 1, 0.3);
+  pad_SEME_ratio->SetTopMargin(0);
+  pad_SEME_ratio->SetBottomMargin(0.22);
+  pad_SEME_ratio->Draw();
+  pad_SEME_ratio->cd();
+  double *Bin_mass = CreateBinsFromAxis(hist_SE->GetXaxis());
+  int NBins_mass = hist_SE->GetXaxis()->GetNbins();
+  TH1D *hs_SEME_ratio = new TH1D("hist_SEME_ratio", "", NBins_mass, Bin_mass);
+  for (int i = 0; i < NBins_mass; i++) {
+    hs_SEME_ratio->SetBinContent(i + 1, hist_SE->GetBinContent(i + 1) /
+                                            hist_ME->GetBinContent(i + 1));
+  }
+  hs_SEME_ratio->SetStats(0);
+  hs_SEME_ratio->SetTitle("");
+  hs_SEME_ratio->SetMarkerStyle(20);
+  hs_SEME_ratio->SetMarkerSize(0.8);
+  hs_SEME_ratio->GetYaxis()->SetTitleSize(0.1);
+  hs_SEME_ratio->GetYaxis()->SetTitle("Ratio");
+  hs_SEME_ratio->GetYaxis()->SetTitleOffset(0.25);
+  hs_SEME_ratio->GetYaxis()->SetLabelSize(0.1);
+  hs_SEME_ratio->GetYaxis()->SetRangeUser(0., 10.);
+  hs_SEME_ratio->GetXaxis()->SetLabelSize(0.1);
+  hs_SEME_ratio->GetXaxis()->SetLabelOffset();
+  hs_SEME_ratio->GetXaxis()->SetTitleSize(0.1);
+  hs_SEME_ratio->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_SEME_ratio->Draw("HIST P");
+  TF1 *lratio_SEME =
+      new TF1("lratio_yield", "[0]", Bin_mass[0], Bin_mass[NBins_mass]);
+  lratio_SEME->SetParameter(0, 1.);
+  lratio_SEME->SetLineColor(kBlue);
+  lratio_SEME->SetLineWidth(3);
+  lratio_SEME->SetLineStyle(1);
+  lratio_SEME->Draw("same");
+  pad_SEME_ratio->ModifiedUpdate();
+
   ls->Add(c_SEME);
 }
 
