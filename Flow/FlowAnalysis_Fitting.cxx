@@ -473,6 +473,9 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
   cout << ">>>>>>>>>>>>>> Start processing Pt range: "
        << FlowAnalysis_Fitting::ptmin << " " << FlowAnalysis_Fitting::ptmax
        << endl;
+  cout << ">>>>>>>>>>>>>> Start processing centrality range: "
+       << FlowAnalysis_Fitting::centmin << " " << FlowAnalysis_Fitting::centmax
+       << endl;
   // Make copies for input histograms for safety
   TH1D *hs = dynamic_cast<TH1D *>(hs_input->Clone(Form(
       "Proj_Mass_%s_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
@@ -1130,6 +1133,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   // Fitting for dimuon invariant mass + v2 signal
   cout << ">>>>>>>>>>>>>> Start processing Pt range: "
        << FlowAnalysis_Fitting::ptmin << " " << FlowAnalysis_Fitting::ptmax
+       << endl;
+  cout << ">>>>>>>>>>>>>> Start processing centrality range: "
+       << FlowAnalysis_Fitting::centmin << " " << FlowAnalysis_Fitting::centmax
        << endl;
   // Make copies for input histograms for safety
   TH1D *hs_se = dynamic_cast<TH1D *>(hs_mse_input->Clone(Form(
@@ -1789,7 +1795,6 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_meanPt->SetStats(1);
   hs_meanPt->SetMarkerStyle(20);
   hs_meanPt->SetMarkerSize(0.8);
-  hs_meanPt->SetTitle("Data");
   hs_meanPt->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hs_meanPt->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
   hs_meanPt->Draw("HIST EP");
@@ -1799,7 +1804,6 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
           hs_meanPt, model_meanPt, "ModelMeanPt"));
   hs_model_meanPt->SetLineWidth(3.0);
   hs_model_meanPt->SetLineColor(kBlue);
-  hs_model_meanPt->SetTitle("Fit");
   hs_model_meanPt->Draw("HIST same");
   pad1_meanPt->ModifiedUpdate();
   TPaveStats *sb_meanPt = (TPaveStats *)pad1_meanPt->GetPrimitive("stats");
@@ -2154,6 +2158,9 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   // Fitting for dimuon invariant mass + v2 signal
   cout << ">>>>>>>>>>>>>> Start processing Pt range: "
        << FlowAnalysis_Fitting::ptmin << " " << FlowAnalysis_Fitting::ptmax
+       << endl;
+  cout << ">>>>>>>>>>>>>> Start processing centrality range: "
+       << FlowAnalysis_Fitting::centmin << " " << FlowAnalysis_Fitting::centmax
        << endl;
   // Make copies for input histograms for safety
   TH1D *hs_se = dynamic_cast<TH1D *>(hs_mse_input->Clone(Form(
@@ -2707,23 +2714,31 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
   };
 
   // Setup for model
-  TF1 *model_v2 =
-      FlowAnalysis_Fitting::mode == 0
-          ? new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
-                    FlowAnalysis_Fitting::massmax, 1)
-          : new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
-                    FlowAnalysis_Fitting::massmax, 2);
+  TF1 *model_v2 = new TF1();
   if (FlowAnalysis_Fitting::mode == 0) {
+    model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                       FlowAnalysis_Fitting::massmax, 1);
     model_v2->SetParameter(0, 0.01);
     model_v2->SetParLimits(0, -0.1, 0.5);
     model_v2->SetParName(0, "v^{J/#psi}_{2}");
   } else {
-    model_v2->SetParameter(0, 0.01);
-    model_v2->SetParLimits(0, -0.1, 0.5);
-    model_v2->SetParName(0, "v^{J/#psi}_{2}");
-    model_v2->SetParameter(1, 0.01);
-    model_v2->SetParLimits(1, 0., 1.);
-    model_v2->SetParName(1, "#alpha");
+    if (FlowAnalysis_Fitting::v2bkg_string
+            [FlowAnalysis_Fitting::mflag_bkg_v2] == "EventMixing(beta free)") {
+      model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                         FlowAnalysis_Fitting::massmax, 2);
+      model_v2->SetParameter(0, 0.01);
+      model_v2->SetParLimits(0, -0.1, 0.5);
+      model_v2->SetParName(0, "v^{J/#psi}_{2}");
+      model_v2->SetParameter(1, 0.01);
+      model_v2->SetParLimits(1, 0., 1.);
+      model_v2->SetParName(1, "#beta");
+    } else {
+      model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
+                         FlowAnalysis_Fitting::massmax, 1);
+      model_v2->SetParameter(0, 0.01);
+      model_v2->SetParLimits(0, -0.1, 0.5);
+      model_v2->SetParName(0, "v^{J/#psi}_{2}");
+    }
   }
   hs_v2se->Rebin();
   hs_v2se->Scale(0.5);

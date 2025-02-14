@@ -56,14 +56,15 @@ void FlowAnalysis_EventMixing(
     bool meanPt = false, std::string inputFlag = "goodmedium",
     std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
   // Init Helper class
-  FlowAnalysis_Helper helper;
+  FlowAnalysis_Helper *helper = new FlowAnalysis_Helper();
 
   // Load input data for analysis
   TProfile3D *tp_V2SEPM, *tp_V2SEPP, *tp_V2SEMM;
   TProfile3D *tp_V2MEPM, *tp_V2MEPP, *tp_V2MEMM;
 
-  helper.LoadDataMEProfile(FileName, tp_V2SEPM, tp_V2SEPP, tp_V2SEMM, tp_V2MEPM,
-                           tp_V2MEPP, tp_V2MEMM, muonCut, dimuonCut);
+  helper->LoadDataMEProfile(FileName, tp_V2SEPM, tp_V2SEPP, tp_V2SEMM,
+                            tp_V2MEPM, tp_V2MEPP, tp_V2MEMM, muonCut,
+                            dimuonCut);
 
   // Get general binning information
   TAxis *massAxis = tp_V2SEPM->GetXaxis();
@@ -72,22 +73,22 @@ void FlowAnalysis_EventMixing(
   int Nbins_mass = massAxis->GetNbins();
   int Nbins_pt = ptAxis->GetNbins();
   int Nbins_cent = centAxis->GetNbins();
-  double *Bin_mass = helper.CreateBinsFromAxis(massAxis);
-  double *Bin_pt = helper.CreateBinsFromAxis(ptAxis);
-  double *Bin_cent = helper.CreateBinsFromAxis(centAxis);
+  double *Bin_mass = helper->CreateBinsFromAxis(massAxis);
+  double *Bin_pt = helper->CreateBinsFromAxis(ptAxis);
+  double *Bin_cent = helper->CreateBinsFromAxis(centAxis);
 
   // Initialize fitter
-  FlowAnalysis_Fitting fitter;
-  fitter.init();
-  fitter.setChi2MaxMass(chi2max_mass);
-  fitter.setChi2MaxV2(chi2max_v2);
-  fitter.setCentRange(cent_min, cent_max);
+  FlowAnalysis_Fitting *fitter = new FlowAnalysis_Fitting();
+  fitter->init();
+  fitter->setChi2MaxMass(chi2max_mass);
+  fitter->setChi2MaxV2(chi2max_v2);
+  fitter->setCentRange(cent_min, cent_max);
 
   // Define variables' range for analysis
-  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  // double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15};
+  double Bin_pt_mass[18] = {0, 1,   1.5, 2, 2.5, 3, 3.5, 4,  4.5,
+                            5, 5.5, 6,   7, 8,   9, 10,  12, 15};
   /*
-  double Bin_pt_mass[19] = {0, 0.3, 1, 1.5, 2, 2.5, 3,  3.5, 4, 4.5,
-                            5, 5.5, 6, 7,   8, 9,   10, 12,  15};
   double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
                             7., 8.,  9., 10., 11., 12., 15., 20.};
   */
@@ -132,10 +133,10 @@ void FlowAnalysis_EventMixing(
   LOG(info) << "Processing analysis for R and F factors ...";
   vector<double> ffactor;
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
-    TH1D *hist_rfactor = helper.GetRfactorProfile(
+    TH1D *hist_rfactor = helper->GetRfactorProfile(
         Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
         cent_max, tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
-    double F_value = helper.GetFfactorProfile(
+    double F_value = helper->GetFfactorProfile(
         Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
         cent_max, tp_V2SEPP, tp_V2SEMM, tp_V2MEPM, hist_rfactor);
     LOG(info) << Form("F factor for [%g - %g] (Gev/c): %g", Bin_pt_mass[i],
@@ -168,14 +169,14 @@ void FlowAnalysis_EventMixing(
 
   // Load Run2 data for comparaison
   double *x_run2, *y_run2, *ex_run2, *ey_run2, *eysys_run2;
-  helper.LoadDataRun2(x_run2, y_run2, ex_run2, ey_run2, eysys_run2, flag_run2);
+  helper->LoadDataRun2(x_run2, y_run2, ex_run2, ey_run2, eysys_run2, flag_run2);
 
   double *x_yield_run2, *ex_yield_run2, *y_yield_run2, *ey_yield_run2,
       *eysys_yield_run2, *SNR_run2;
   int nbins_run2yield = 15;
-  helper.LoadDataYieldRun2(x_yield_run2, y_yield_run2, ex_yield_run2,
-                           ey_yield_run2, eysys_yield_run2, SNR_run2,
-                           flag_run2yield);
+  helper->LoadDataYieldRun2(x_yield_run2, y_yield_run2, ex_yield_run2,
+                            ey_yield_run2, eysys_yield_run2, SNR_run2,
+                            flag_run2yield);
 
   // Initialize arrays for each trial of systematic study
   const int nbCombo_v2 = int(size(sig_mass)) * int(size(bkg_mass)) *
@@ -228,47 +229,47 @@ void FlowAnalysis_EventMixing(
   for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
     // Same-event profiles: mass
     TH1D *hs_mass_sepm_proj =
-        helper.GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                              mass_max, cent_min, cent_max, tp_V2SEPM, "SEPM");
+        helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                               mass_max, cent_min, cent_max, tp_V2SEPM, "SEPM");
     TH1D *hs_mass_sepp_proj =
-        helper.GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                              mass_max, cent_min, cent_max, tp_V2SEPP, "SEPP");
+        helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                               mass_max, cent_min, cent_max, tp_V2SEPP, "SEPP");
     TH1D *hs_mass_semm_proj =
-        helper.GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                              mass_max, cent_min, cent_max, tp_V2SEMM, "SEMM");
+        helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                               mass_max, cent_min, cent_max, tp_V2SEMM, "SEMM");
 
     // Same-event profiles: v2
     TH1D *hs_v2_sepm_proj =
-        helper.GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                            mass_max, cent_min, cent_max, tp_V2SEPM, "SEPM");
+        helper->GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                             mass_max, cent_min, cent_max, tp_V2SEPM, "SEPM");
     TH1D *hs_v2_sepp_proj =
-        helper.GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                            mass_max, cent_min, cent_max, tp_V2SEPP, "SEPP");
+        helper->GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                             mass_max, cent_min, cent_max, tp_V2SEPP, "SEPP");
     TH1D *hs_v2_semm_proj =
-        helper.GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                            mass_max, cent_min, cent_max, tp_V2SEMM, "SEMM");
+        helper->GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                             mass_max, cent_min, cent_max, tp_V2SEMM, "SEMM");
 
     // Mixed-event profiles: mass
     TH1D *hs_mass_mepm_proj =
-        helper.GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                              mass_max, cent_min, cent_max, tp_V2MEPM, "MEPM");
+        helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                               mass_max, cent_min, cent_max, tp_V2MEPM, "MEPM");
     TH1D *hs_mass_mepp_proj =
-        helper.GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                              mass_max, cent_min, cent_max, tp_V2MEPP, "MEPP");
+        helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                               mass_max, cent_min, cent_max, tp_V2MEPP, "MEPP");
     TH1D *hs_mass_memm_proj =
-        helper.GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                              mass_max, cent_min, cent_max, tp_V2MEMM, "MEMM");
+        helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                               mass_max, cent_min, cent_max, tp_V2MEMM, "MEMM");
 
     // Mixed-event profiles: v2
     TH1D *hs_v2_mepm_proj =
-        helper.GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                            mass_max, cent_min, cent_max, tp_V2MEPM, "MEPM");
+        helper->GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                             mass_max, cent_min, cent_max, tp_V2MEPM, "MEPM");
     TH1D *hs_v2_mepp_proj =
-        helper.GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                            mass_max, cent_min, cent_max, tp_V2MEPP, "MEPP");
+        helper->GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                             mass_max, cent_min, cent_max, tp_V2MEPP, "MEPP");
     TH1D *hs_v2_memm_proj =
-        helper.GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                            mass_max, cent_min, cent_max, tp_V2MEMM, "MEMM");
+        helper->GetV2Profile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                             mass_max, cent_min, cent_max, tp_V2MEMM, "MEMM");
 
     // Scale mixed-event spectra with F factor
     hs_mass_mepm_proj->Scale(ffactor[i]);
@@ -279,21 +280,21 @@ void FlowAnalysis_EventMixing(
     TH1D *hs_mass_sepm_proj_meanPt = new TH1D();
     if (meanPt) {
       hs_mass_sepm_proj_meanPt =
-          helper.GetMeanPt(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                           mass_max, cent_min, cent_max, tp_V2SEPM, "SEPM");
+          helper->GetMeanPt(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                            mass_max, cent_min, cent_max, tp_V2SEPM, "SEPM");
     }
 
     // Save plots for invariant mass
     TList *l_SE_ME = new TList();
-    helper.PlotSEME("PM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                    mass_max, cent_min, cent_max, hs_mass_sepm_proj,
-                    hs_mass_mepm_proj, l_SE_ME);
-    helper.PlotSEME("PP", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                    mass_max, cent_min, cent_max, hs_mass_sepp_proj,
-                    hs_mass_mepp_proj, l_SE_ME);
-    helper.PlotSEME("MM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
-                    mass_max, cent_min, cent_max, hs_mass_semm_proj,
-                    hs_mass_memm_proj, l_SE_ME);
+    helper->PlotSEME("PM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_mass_sepm_proj,
+                     hs_mass_mepm_proj, l_SE_ME);
+    helper->PlotSEME("PP", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_mass_sepp_proj,
+                     hs_mass_mepp_proj, l_SE_ME);
+    helper->PlotSEME("MM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_mass_semm_proj,
+                     hs_mass_memm_proj, l_SE_ME);
     f.cd();
     l_SE_ME->Write(Form("Mass_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
                    TObject::kSingleKey);
@@ -313,22 +314,23 @@ void FlowAnalysis_EventMixing(
 
     /// Do fitting
     // Configuration for fitting
-    fitter.setModel(flag_sig, flag_bkg);
-    fitter.setModelV2(flag_v2);
-    fitter.setMassRange(mass_min, mass_max);
-    fitter.setPtRange(Bin_pt_mass[i], Bin_pt_mass[i + 1]);
-    fitter.setOrder(2);
-    fitter.setMode(0); // standard mode, no systematics
+    fitter->setModel(flag_sig, flag_bkg);
+    fitter->setModelV2(flag_v2);
+    fitter->setMassRange(mass_min, mass_max);
+    fitter->setPtRange(Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+    fitter->setOrder(2);
+    fitter->setMode(0); // standard mode, no systematics
 
     // Fit invariant mass + v2
     TList *l_diff_fit = new TList();
     vector<double> results_v2 =
-        meanPt ? fitter.runFittingEM(hs_mass_sepm_proj, hs_mass_mepm_proj,
-                                     hs_v2_sepm_proj, hs_v2_mepm_proj,
-                                     hs_mass_sepm_proj_meanPt, l_diff_fit)
-               : fitter.runFittingEMNoMeanPt(hs_mass_sepm_proj,
-                                             hs_mass_mepm_proj, hs_v2_sepm_proj,
-                                             hs_v2_mepm_proj, l_diff_fit);
+        meanPt
+            ? fitter->runFittingEM(hs_mass_sepm_proj, hs_mass_mepm_proj,
+                                   hs_v2_sepm_proj, hs_v2_mepm_proj,
+                                   hs_mass_sepm_proj_meanPt, l_diff_fit)
+            : fitter->runFittingEMNoMeanPt(hs_mass_sepm_proj, hs_mass_mepm_proj,
+                                           hs_v2_sepm_proj, hs_v2_mepm_proj,
+                                           l_diff_fit);
 
     SNR[i] = results_v2[4];
 
@@ -376,11 +378,11 @@ void FlowAnalysis_EventMixing(
               LOG(info) << "Processing analysis for R and F factors ...";
               vector<double> ffactor_sys;
               for (int k = 0; k < int(size(Bin_pt_mass)) - 1; k++) {
-                TH1D *hist_rfactor_sys = helper.GetRfactorProfile(
+                TH1D *hist_rfactor_sys = helper->GetRfactorProfile(
                     Bin_pt_mass[k], Bin_pt_mass[k + 1], mass_min_sys[i1],
                     mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, tp_V2MEPP,
                     tp_V2MEMM);
-                double F_value = helper.GetFfactorProfile(
+                double F_value = helper->GetFfactorProfile(
                     Bin_pt_mass[k], Bin_pt_mass[k + 1], mass_min_sys[i1],
                     mass_max_sys[i1], cent_min, cent_max, tp_V2SEPP, tp_V2SEMM,
                     tp_V2MEPM, hist_rfactor_sys);
@@ -391,22 +393,22 @@ void FlowAnalysis_EventMixing(
 
               // Get mass and v2 to fit
               // Same-event profiles: mass
-              TH1D *hs_mass_sepm_proj_sys = helper.GetMassProfile(
+              TH1D *hs_mass_sepm_proj_sys = helper->GetMassProfile(
                   Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
                   mass_max_sys[i1], cent_min, cent_max, tp_V2SEPM, "SEPM");
 
               // Same-event profiles: v2
-              TH1D *hs_v2_sepm_proj_sys = helper.GetV2Profile(
+              TH1D *hs_v2_sepm_proj_sys = helper->GetV2Profile(
                   Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
                   mass_max_sys[i1], cent_min, cent_max, tp_V2SEPM, "SEPM");
 
               // Mixed-event profiles: mass
-              TH1D *hs_mass_mepm_proj_sys = helper.GetMassProfile(
+              TH1D *hs_mass_mepm_proj_sys = helper->GetMassProfile(
                   Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
                   mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, "MEPM");
 
               // Mixed-event profiles: v2
-              TH1D *hs_v2_mepm_proj_sys = helper.GetV2Profile(
+              TH1D *hs_v2_mepm_proj_sys = helper->GetV2Profile(
                   Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
                   mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, "MEPM");
 
@@ -416,7 +418,7 @@ void FlowAnalysis_EventMixing(
               // Mean pT profile
               TH1D *hs_mass_sepm_proj_meanPt_sys = new TH1D();
               if (meanPt) {
-                hs_mass_sepm_proj_meanPt_sys = helper.GetMeanPt(
+                hs_mass_sepm_proj_meanPt_sys = helper->GetMeanPt(
                     Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
                     cent_min, cent_max, tp_V2SEPM, "MeanPt");
               }
@@ -432,20 +434,20 @@ void FlowAnalysis_EventMixing(
                                 mass_max_sys[i1]);
 
               // Do evaluation for v2
-              fitter.setOrder(2);
-              fitter.setMassRange(mass_min_sys[i1], mass_max_sys[i1]);
-              fitter.setPtRange(Bin_pt_mass[i], Bin_pt_mass[i + 1]);
-              fitter.setModel(sig_mass[i2], bkg_mass[i3]);
-              fitter.setModelV2(bkg_v2[i4]);
-              fitter.setMode(1);
+              fitter->setOrder(2);
+              fitter->setMassRange(mass_min_sys[i1], mass_max_sys[i1]);
+              fitter->setPtRange(Bin_pt_mass[i], Bin_pt_mass[i + 1]);
+              fitter->setModel(sig_mass[i2], bkg_mass[i3]);
+              fitter->setModelV2(bkg_v2[i4]);
+              fitter->setMode(1);
               TList *l_diff_sys = new TList();
               LOG(info) << "Processing fitting(systematic) for v2{SP} ...";
               vector<double> results_sys_v2 =
-                  meanPt ? fitter.runFittingEM(
+                  meanPt ? fitter->runFittingEM(
                                hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
                                hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys,
                                hs_mass_sepm_proj_meanPt_sys, l_diff_sys)
-                         : fitter.runFittingEMNoMeanPt(
+                         : fitter->runFittingEMNoMeanPt(
                                hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
                                hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys,
                                l_diff_sys);
@@ -529,13 +531,13 @@ void FlowAnalysis_EventMixing(
     }
     for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
       vector<double> stats_yield =
-          helper.GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
+          helper->GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
       vector<double> stats_v2 =
-          helper.GetStats(nbCombo_v2, y_sys_v2[i], ey_sys_v2[i]);
+          helper->GetStats(nbCombo_v2, y_sys_v2[i], ey_sys_v2[i]);
       vector<double> stats_meanPt;
       if (meanPt) {
         stats_meanPt =
-            helper.GetStats(nbCombo_yield, x_sys_pt[i], ex_sys_pt[i]);
+            helper->GetStats(nbCombo_yield, x_sys_pt[i], ex_sys_pt[i]);
       }
 
       // Fill pT-differential v2 and jpsi yields
@@ -556,14 +558,14 @@ void FlowAnalysis_EventMixing(
 
       // Saving results for systematics
       if (meanPt) {
-        helper.PlotSystematics(
+        helper->PlotSystematics(
             i, c_sys_yield[i], c_sys_v2[i], c_sys_meanPt[i], hist_sys_yield[i],
             hist_sys_v2[i], hist_sys_meanPt[i], bins_sys_yield, bins_sys_v2,
             chi2_yield[i], chi2_v2[i], chi2_meanPt[i], nbCombo_yield,
             nbCombo_v2, stats_yield, stats_v2, stats_meanPt, Bin_pt_mass,
             l_results_sys_yield, l_results_sys_v2, l_results_sys_meanPt);
       } else {
-        helper.PlotSystematicsNoMeanPt(
+        helper->PlotSystematicsNoMeanPt(
             i, c_sys_yield[i], c_sys_v2[i], hist_sys_yield[i], hist_sys_v2[i],
             bins_sys_yield, bins_sys_v2, chi2_yield[i], chi2_v2[i],
             nbCombo_yield, nbCombo_v2, stats_yield, stats_v2, Bin_pt_mass,
@@ -586,7 +588,7 @@ void FlowAnalysis_EventMixing(
     delete l_results_sys_v2;
 
     // Saving final results
-    helper.PlotFinalResults(
+    helper->PlotFinalResults(
         int(size(Bin_pt_mass)) - 1, cent_min, cent_max, Bin_pt_mass, x_v2pt,
         y_v2pt, ex_v2pt, ey_v2pt, eysys_v2pt, x_run2, y_run2, ex_run2, ey_run2,
         eysys_run2, x_yield, y_yield, ex_yield, ey_yield, eysys_yield,
@@ -598,4 +600,6 @@ void FlowAnalysis_EventMixing(
     delete l_results;
   }
   f.Close();
+  delete helper;
+  delete fitter;
 }
