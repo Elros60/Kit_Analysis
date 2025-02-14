@@ -1960,7 +1960,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       model_v2->SetParLimits(0, -0.1, 0.5);
       model_v2->SetParName(0, "v^{J/#psi}_{2}");
       model_v2->SetParameter(1, 0.01);
-      model_v2->SetParLimits(1, 0., 1.);
+      model_v2->SetParLimits(1, 0., 2.);
       model_v2->SetParName(1, "#beta");
     } else {
       model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
@@ -2730,7 +2730,7 @@ vector<double> FlowAnalysis_Fitting::runFittingEMNoMeanPt(TH1D *hs_mse_input,
       model_v2->SetParLimits(0, -0.1, 0.5);
       model_v2->SetParName(0, "v^{J/#psi}_{2}");
       model_v2->SetParameter(1, 0.01);
-      model_v2->SetParLimits(1, 0., 1.);
+      model_v2->SetParLimits(1, 0., 2.);
       model_v2->SetParName(1, "#beta");
     } else {
       model_v2 = new TF1("model_v2", fct_v2, FlowAnalysis_Fitting::massmin,
