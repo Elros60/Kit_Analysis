@@ -1666,6 +1666,11 @@ void FlowAnalysis_Helper::PlotFinalResults(
   mg->Add(graph_v2pt);
   mg->GetXaxis()->SetRangeUser(0, mg->GetXaxis()->GetXmax());
   mg->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  if (cent_min == 0) {
+    mg->GetYaxis()->SetRangeUser(-0.01, 0.2);
+  } else {
+    mg->GetYaxis()->SetRangeUser(-0.02, 0.2);
+  }
   mg->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
   mg->SetTitle("");
   mg->Draw("A P Z ; Z ; 5 s=0.5");
@@ -1782,6 +1787,11 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   mg->Add(graph_v2cent_run2);
   mg->GetXaxis()->SetLimits(cent_bins[0], cent_bins[size_centbin]);
   mg->GetXaxis()->SetTitle("Centrality (%)");
+  if (pt_min == 0) {
+    mg->GetYaxis()->SetRangeUser(-0.02, 0.2);
+  } else {
+    mg->GetYaxis()->SetRangeUser(-0.01, 0.1);
+  }
   mg->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
   mg->SetTitle("");
   mg->Draw("A P Z ; Z ; 5 s=0.5");
