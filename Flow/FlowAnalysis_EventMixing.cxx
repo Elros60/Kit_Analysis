@@ -559,17 +559,20 @@ void FlowAnalysis_EventMixing(
       // Saving results for systematics
       if (meanPt) {
         helper->PlotSystematics(
-            i, c_sys_yield[i], c_sys_v2[i], c_sys_meanPt[i], hist_sys_yield[i],
-            hist_sys_v2[i], hist_sys_meanPt[i], bins_sys_yield, bins_sys_v2,
-            chi2_yield[i], chi2_v2[i], chi2_meanPt[i], nbCombo_yield,
-            nbCombo_v2, stats_yield, stats_v2, stats_meanPt, Bin_pt_mass,
-            l_results_sys_yield, l_results_sys_v2, l_results_sys_meanPt);
+            Bin_pt_mass[i], Bin_pt_mass[i + 1], cent_min, cent_max,
+            int(size(Bin_pt_mass)) - 1, i, c_sys_yield[i], c_sys_v2[i],
+            c_sys_meanPt[i], hist_sys_yield[i], hist_sys_v2[i],
+            hist_sys_meanPt[i], bins_sys_yield, bins_sys_v2, chi2_yield[i],
+            chi2_v2[i], chi2_meanPt[i], nbCombo_yield, nbCombo_v2, stats_yield,
+            stats_v2, stats_meanPt, Bin_pt_mass, l_results_sys_yield,
+            l_results_sys_v2, l_results_sys_meanPt);
       } else {
         helper->PlotSystematicsNoMeanPt(
-            i, c_sys_yield[i], c_sys_v2[i], hist_sys_yield[i], hist_sys_v2[i],
-            bins_sys_yield, bins_sys_v2, chi2_yield[i], chi2_v2[i],
-            nbCombo_yield, nbCombo_v2, stats_yield, stats_v2, Bin_pt_mass,
-            l_results_sys_yield, l_results_sys_v2);
+            Bin_pt_mass[i], Bin_pt_mass[i + 1], cent_min, cent_max,
+            int(size(Bin_pt_mass)) - 1, i, c_sys_yield[i], c_sys_v2[i],
+            hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
+            chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
+            stats_v2, Bin_pt_mass, l_results_sys_yield, l_results_sys_v2);
       }
     }
     f.cd();

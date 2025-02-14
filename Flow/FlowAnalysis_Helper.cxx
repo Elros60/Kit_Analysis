@@ -716,6 +716,7 @@ vector<double> FlowAnalysis_Helper::GetStats(int size, double *sample,
 
 //______________________________________________________________________________
 void FlowAnalysis_Helper::PlotSystematics(
+    double ptmin, double ptmax, double centmin, double centmax, int nBins,
     int index, TCanvas *c_sys_yield, TCanvas *c_sys_v2, TCanvas *c_sys_meanPt,
     TH1D *hist_sys_yield, TH1D *hist_sys_v2, TH1D *hist_sys_meanPt,
     double *bins_sys_yield, double *bins_sys_v2, double *chi2_yield,
@@ -1089,13 +1090,23 @@ void FlowAnalysis_Helper::PlotSystematics(
   lchi2_v22->SetLineStyle(1);
   lchi2_v22->Draw("same");
 
+  c_sys_v2->SaveAs(Form("FitSys_v2EM%d_%g_%g_%g_%g_%d.pdf", nbCombo_v2, ptmin,
+                        ptmax, centmin, centmax, nBins));
   ls_sys_v2->Add(c_sys_v2);
+
+  c_sys_yield->SaveAs(Form("FitSys_massEM%d_%g_%g_%g_%g_%d.pdf", nbCombo_yield,
+                           ptmin, ptmax, centmin, centmax, nBins));
   ls_sys_yield->Add(c_sys_yield);
+
+  ls_sys_meanPt->SaveAs(Form("FitSys_meanPtEM%d_%g_%g_%g_%g_%d.pdf",
+                             nbCombo_yield, ptmin, ptmax, centmin, centmax,
+                             nBins));
   ls_sys_meanPt->Add(c_sys_meanPt);
 }
 
 //______________________________________________________________________________
 void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
+    double ptmin, double ptmax, double centmin, double centmax, int nBins,
     int index, TCanvas *c_sys_yield, TCanvas *c_sys_v2, TH1D *hist_sys_yield,
     TH1D *hist_sys_v2, double *bins_sys_yield, double *bins_sys_v2,
     double *chi2_yield, double *chi2_v2, int nbCombo_yield, int nbCombo_v2,
@@ -1351,7 +1362,12 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lchi2_v22->SetLineStyle(1);
   lchi2_v22->Draw("same");
 
+  c_sys_v2->SaveAs(Form("FitSys_v2EM%d_%g_%g_%g_%g_%d.pdf", nbCombo_v2, ptmin,
+                        ptmax, centmin, centmax, nBins));
   ls_sys_v2->Add(c_sys_v2);
+
+  c_sys_yield->SaveAs(Form("FitSys_massEM%d_%g_%g_%g_%g_%d.pdf", nbCombo_yield,
+                           ptmin, ptmax, centmin, centmax, nBins));
   ls_sys_yield->Add(c_sys_yield);
 }
 

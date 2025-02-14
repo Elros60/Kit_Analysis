@@ -482,10 +482,12 @@ void FlowAnalysis_EventMixing_CentDiff(
 
       // Saving results for systematics
       helper->PlotSystematicsNoMeanPt(
-          i, c_sys_yield[i], c_sys_v2[i], hist_sys_yield[i], hist_sys_v2[i],
-          bins_sys_yield, bins_sys_v2, chi2_yield[i], chi2_v2[i], nbCombo_yield,
-          nbCombo_v2, stats_yield, stats_v2, Bin_cent_mass, l_results_sys_yield,
-          l_results_sys_v2, "cent");
+          pt_min, pt_max, Bin_cent_mass[i], Bin_cent_mass[i + 1],
+          int(size(Bin_cent_mass)) - 1, i, c_sys_yield[i], c_sys_v2[i],
+          hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
+          chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
+          stats_v2, Bin_cent_mass, l_results_sys_yield, l_results_sys_v2,
+          "cent");
     }
     f.cd();
     l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
