@@ -753,7 +753,7 @@ void FlowAnalysis_Helper::PlotSystematics(
                              bins_sys_yield[nbCombo_yield]);
   lyield_mean->SetParameter(0, stats_yield[0]);
   lyield_mean->SetLineColor(kBlue);
-  lyield_mean->SetLineWidth(3);
+  lyield_mean->SetLineWidth(2);
   lyield_mean->SetLineStyle(1);
   lyield_mean->Draw("same");
   TF1 *lyield_meanerrorp =
@@ -762,7 +762,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lyield_meanerrorp->SetParameter(0, stats_yield[0]);
   lyield_meanerrorp->SetParameter(1, stats_yield[1]);
   lyield_meanerrorp->SetLineColor(kBlue);
-  lyield_meanerrorp->SetLineWidth(3);
+  lyield_meanerrorp->SetLineWidth(2);
   lyield_meanerrorp->SetLineStyle(7);
   lyield_meanerrorp->Draw("same");
   TF1 *lyield_meanerrorm =
@@ -771,7 +771,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lyield_meanerrorm->SetParameter(0, stats_yield[0]);
   lyield_meanerrorm->SetParameter(1, stats_yield[1]);
   lyield_meanerrorm->SetLineColor(kBlue);
-  lyield_meanerrorm->SetLineWidth(3);
+  lyield_meanerrorm->SetLineWidth(2);
   lyield_meanerrorm->SetLineStyle(7);
   lyield_meanerrorm->Draw("same");
   TF1 *lyield_rmsp = new TF1("rmspyield", "[0]+[1]", bins_sys_yield[0],
@@ -779,7 +779,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lyield_rmsp->SetParameter(0, stats_yield[0]);
   lyield_rmsp->SetParameter(1, stats_yield[2]);
   lyield_rmsp->SetLineColor(kBlue);
-  lyield_rmsp->SetLineWidth(3);
+  lyield_rmsp->SetLineWidth(2);
   lyield_rmsp->SetLineStyle(9);
   lyield_rmsp->Draw("same");
   TF1 *lyield_rmsm = new TF1("rmsmyield", "[0]-[1]", bins_sys_yield[0],
@@ -787,7 +787,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lyield_rmsm->SetParameter(0, stats_yield[0]);
   lyield_rmsm->SetParameter(1, stats_yield[2]);
   lyield_rmsm->SetLineColor(kBlue);
-  lyield_rmsm->SetLineWidth(3);
+  lyield_rmsm->SetLineWidth(2);
   lyield_rmsm->SetLineStyle(9);
   lyield_rmsm->Draw("same");
   TLatex *text_sys_yield = new TLatex();
@@ -878,7 +878,7 @@ void FlowAnalysis_Helper::PlotSystematics(
                               bins_sys_yield[nbCombo_yield]);
   lmeanPt_mean->SetParameter(0, stats_meanPt[0]);
   lmeanPt_mean->SetLineColor(kBlue);
-  lmeanPt_mean->SetLineWidth(3);
+  lmeanPt_mean->SetLineWidth(2);
   lmeanPt_mean->SetLineStyle(1);
   lmeanPt_mean->Draw("same");
   TF1 *lmeanPt_meanerrorp =
@@ -887,7 +887,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lmeanPt_meanerrorp->SetParameter(0, stats_meanPt[0]);
   lmeanPt_meanerrorp->SetParameter(1, stats_meanPt[1]);
   lmeanPt_meanerrorp->SetLineColor(kBlue);
-  lmeanPt_meanerrorp->SetLineWidth(3);
+  lmeanPt_meanerrorp->SetLineWidth(2);
   lmeanPt_meanerrorp->SetLineStyle(7);
   lmeanPt_meanerrorp->Draw("same");
   TF1 *lmeanPt_meanerrorm =
@@ -896,7 +896,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lmeanPt_meanerrorm->SetParameter(0, stats_meanPt[0]);
   lmeanPt_meanerrorm->SetParameter(1, stats_meanPt[1]);
   lmeanPt_meanerrorm->SetLineColor(kBlue);
-  lmeanPt_meanerrorm->SetLineWidth(3);
+  lmeanPt_meanerrorm->SetLineWidth(2);
   lmeanPt_meanerrorm->SetLineStyle(7);
   lmeanPt_meanerrorm->Draw("same");
   TF1 *lmeanPt_rmsp = new TF1("rmspmeanPt", "[0]+[1]", bins_sys_yield[0],
@@ -904,7 +904,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lmeanPt_rmsp->SetParameter(0, stats_meanPt[0]);
   lmeanPt_rmsp->SetParameter(1, stats_meanPt[2]);
   lmeanPt_rmsp->SetLineColor(kBlue);
-  lmeanPt_rmsp->SetLineWidth(3);
+  lmeanPt_rmsp->SetLineWidth(2);
   lmeanPt_rmsp->SetLineStyle(9);
   lmeanPt_rmsp->Draw("same");
   TF1 *lmeanPt_rmsm = new TF1("rmsmmeanPt", "[0]-[1]", bins_sys_yield[0],
@@ -912,7 +912,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lmeanPt_rmsm->SetParameter(0, stats_meanPt[0]);
   lmeanPt_rmsm->SetParameter(1, stats_meanPt[2]);
   lmeanPt_rmsm->SetLineColor(kBlue);
-  lmeanPt_rmsm->SetLineWidth(3);
+  lmeanPt_rmsm->SetLineWidth(2);
   lmeanPt_rmsm->SetLineStyle(9);
   lmeanPt_rmsm->Draw("same");
   TLatex *text_sys_meanPt = new TLatex();
@@ -993,7 +993,7 @@ void FlowAnalysis_Helper::PlotSystematics(
       new TF1("meanv2", "[0]", bins_sys_v2[0], bins_sys_v2[nbCombo_v2]);
   lv2_mean->SetParameter(0, stats_v2[0]);
   lv2_mean->SetLineColor(kBlue);
-  lv2_mean->SetLineWidth(3);
+  lv2_mean->SetLineWidth(2);
   lv2_mean->SetLineStyle(1);
   lv2_mean->Draw("same");
   TF1 *lv2_meanerrorp = new TF1("meanerrorpv2", "[0]+[1]", bins_sys_v2[0],
@@ -1001,7 +1001,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lv2_meanerrorp->SetParameter(0, stats_v2[0]);
   lv2_meanerrorp->SetParameter(1, stats_v2[1]);
   lv2_meanerrorp->SetLineColor(kBlue);
-  lv2_meanerrorp->SetLineWidth(3);
+  lv2_meanerrorp->SetLineWidth(2);
   lv2_meanerrorp->SetLineStyle(7);
   lv2_meanerrorp->Draw("same");
   TF1 *lv2_meanerrorm = new TF1("meanerrormv2", "[0]-[1]", bins_sys_v2[0],
@@ -1009,7 +1009,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lv2_meanerrorm->SetParameter(0, stats_v2[0]);
   lv2_meanerrorm->SetParameter(1, stats_v2[1]);
   lv2_meanerrorm->SetLineColor(kBlue);
-  lv2_meanerrorm->SetLineWidth(3);
+  lv2_meanerrorm->SetLineWidth(2);
   lv2_meanerrorm->SetLineStyle(7);
   lv2_meanerrorm->Draw("same");
   TF1 *lv2_rmsp =
@@ -1017,7 +1017,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lv2_rmsp->SetParameter(0, stats_v2[0]);
   lv2_rmsp->SetParameter(1, stats_v2[2]);
   lv2_rmsp->SetLineColor(kBlue);
-  lv2_rmsp->SetLineWidth(3);
+  lv2_rmsp->SetLineWidth(2);
   lv2_rmsp->SetLineStyle(9);
   lv2_rmsp->Draw("same");
   TF1 *lv2_rmsm =
@@ -1025,7 +1025,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   lv2_rmsm->SetParameter(0, stats_v2[0]);
   lv2_rmsm->SetParameter(1, stats_v2[2]);
   lv2_rmsm->SetLineColor(kBlue);
-  lv2_rmsm->SetLineWidth(3);
+  lv2_rmsm->SetLineWidth(2);
   lv2_rmsm->SetLineStyle(9);
   lv2_rmsm->Draw("same");
   TLatex *text_sys_v2 = new TLatex();
@@ -1143,7 +1143,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
                              bins_sys_yield[nbCombo_yield]);
   lyield_mean->SetParameter(0, stats_yield[0]);
   lyield_mean->SetLineColor(kBlue);
-  lyield_mean->SetLineWidth(3);
+  lyield_mean->SetLineWidth(2);
   lyield_mean->SetLineStyle(1);
   lyield_mean->Draw("same");
   TF1 *lyield_meanerrorp =
@@ -1152,7 +1152,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lyield_meanerrorp->SetParameter(0, stats_yield[0]);
   lyield_meanerrorp->SetParameter(1, stats_yield[1]);
   lyield_meanerrorp->SetLineColor(kBlue);
-  lyield_meanerrorp->SetLineWidth(3);
+  lyield_meanerrorp->SetLineWidth(2);
   lyield_meanerrorp->SetLineStyle(7);
   lyield_meanerrorp->Draw("same");
   TF1 *lyield_meanerrorm =
@@ -1161,7 +1161,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lyield_meanerrorm->SetParameter(0, stats_yield[0]);
   lyield_meanerrorm->SetParameter(1, stats_yield[1]);
   lyield_meanerrorm->SetLineColor(kBlue);
-  lyield_meanerrorm->SetLineWidth(3);
+  lyield_meanerrorm->SetLineWidth(2);
   lyield_meanerrorm->SetLineStyle(7);
   lyield_meanerrorm->Draw("same");
   TF1 *lyield_rmsp = new TF1("rmspyield", "[0]+[1]", bins_sys_yield[0],
@@ -1169,7 +1169,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lyield_rmsp->SetParameter(0, stats_yield[0]);
   lyield_rmsp->SetParameter(1, stats_yield[2]);
   lyield_rmsp->SetLineColor(kBlue);
-  lyield_rmsp->SetLineWidth(3);
+  lyield_rmsp->SetLineWidth(2);
   lyield_rmsp->SetLineStyle(9);
   lyield_rmsp->Draw("same");
   TF1 *lyield_rmsm = new TF1("rmsmyield", "[0]-[1]", bins_sys_yield[0],
@@ -1177,7 +1177,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lyield_rmsm->SetParameter(0, stats_yield[0]);
   lyield_rmsm->SetParameter(1, stats_yield[2]);
   lyield_rmsm->SetLineColor(kBlue);
-  lyield_rmsm->SetLineWidth(3);
+  lyield_rmsm->SetLineWidth(2);
   lyield_rmsm->SetLineStyle(9);
   lyield_rmsm->Draw("same");
   TLatex *text_sys_yield = new TLatex();
@@ -1267,7 +1267,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
       new TF1("meanv2", "[0]", bins_sys_v2[0], bins_sys_v2[nbCombo_v2]);
   lv2_mean->SetParameter(0, stats_v2[0]);
   lv2_mean->SetLineColor(kBlue);
-  lv2_mean->SetLineWidth(3);
+  lv2_mean->SetLineWidth(2);
   lv2_mean->SetLineStyle(1);
   lv2_mean->Draw("same");
   TF1 *lv2_meanerrorp = new TF1("meanerrorpv2", "[0]+[1]", bins_sys_v2[0],
@@ -1275,7 +1275,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lv2_meanerrorp->SetParameter(0, stats_v2[0]);
   lv2_meanerrorp->SetParameter(1, stats_v2[1]);
   lv2_meanerrorp->SetLineColor(kBlue);
-  lv2_meanerrorp->SetLineWidth(3);
+  lv2_meanerrorp->SetLineWidth(2);
   lv2_meanerrorp->SetLineStyle(7);
   lv2_meanerrorp->Draw("same");
   TF1 *lv2_meanerrorm = new TF1("meanerrormv2", "[0]-[1]", bins_sys_v2[0],
@@ -1283,7 +1283,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lv2_meanerrorm->SetParameter(0, stats_v2[0]);
   lv2_meanerrorm->SetParameter(1, stats_v2[1]);
   lv2_meanerrorm->SetLineColor(kBlue);
-  lv2_meanerrorm->SetLineWidth(3);
+  lv2_meanerrorm->SetLineWidth(2);
   lv2_meanerrorm->SetLineStyle(7);
   lv2_meanerrorm->Draw("same");
   TF1 *lv2_rmsp =
@@ -1291,7 +1291,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lv2_rmsp->SetParameter(0, stats_v2[0]);
   lv2_rmsp->SetParameter(1, stats_v2[2]);
   lv2_rmsp->SetLineColor(kBlue);
-  lv2_rmsp->SetLineWidth(3);
+  lv2_rmsp->SetLineWidth(2);
   lv2_rmsp->SetLineStyle(9);
   lv2_rmsp->Draw("same");
   TF1 *lv2_rmsm =
@@ -1299,7 +1299,7 @@ void FlowAnalysis_Helper::PlotSystematicsNoMeanPt(
   lv2_rmsm->SetParameter(0, stats_v2[0]);
   lv2_rmsm->SetParameter(1, stats_v2[2]);
   lv2_rmsm->SetLineColor(kBlue);
-  lv2_rmsm->SetLineWidth(3);
+  lv2_rmsm->SetLineWidth(2);
   lv2_rmsm->SetLineStyle(9);
   lv2_rmsm->Draw("same");
   TLatex *text_sys_v2 = new TLatex();
