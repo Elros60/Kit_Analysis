@@ -86,7 +86,7 @@ void FlowAnalysis_EventMixing(
   fitter->setCentRange(cent_min, cent_max);
 
   // Define variables' range for analysis
-  double Bin_pt_mass[11] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 20};
+  double Bin_pt_mass[12] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20};
   /*
   double Bin_pt_mass[18] = {0, 1,   1.5, 2, 2.5, 3, 3.5, 4,  4.5,
                             5, 5.5, 6,   7, 8,   9, 10,  12, 15};
@@ -155,7 +155,6 @@ void FlowAnalysis_EventMixing(
   }
 
   // Create histogram for pt-differential v2
-  TList *l_results = new TList();
   double *x_yield = new double[int(size(Bin_pt_mass)) - 1];
   double *y_yield = new double[int(size(Bin_pt_mass)) - 1];
   double *ex_yield = new double[int(size(Bin_pt_mass)) - 1];
@@ -516,6 +515,7 @@ void FlowAnalysis_EventMixing(
 
   // Save plots for systematics
   if (sys) {
+    TList *l_results = new TList();
     TList *l_results_sys_yield = new TList();
     TList *l_results_sys_v2 = new TList();
     TList *l_results_sys_meanPt = new TList();

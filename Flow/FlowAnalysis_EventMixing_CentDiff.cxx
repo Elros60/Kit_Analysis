@@ -460,6 +460,7 @@ void FlowAnalysis_EventMixing_CentDiff(
 
   // Save plots for systematics
   if (sys) {
+    TList *l_results = new TList();
     TList *l_results_sys_yield = new TList();
     TList *l_results_sys_v2 = new TList();
     vector<TCanvas *> c_sys_yield;
@@ -497,9 +498,6 @@ void FlowAnalysis_EventMixing_CentDiff(
           stats_v2, Bin_cent_mass, l_results_sys_yield, l_results_sys_v2,
           SaveSys, "cent");
     }
-    f.cd();
-    l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
-    l_results_sys_v2->Write("FitV2Systematics", TObject::kSingleKey);
 
     // Saving final results
     helper->PlotFinalResultsCent(int(size(Bin_cent_mass)) - 1, pt_min, pt_max,
@@ -507,6 +505,16 @@ void FlowAnalysis_EventMixing_CentDiff(
                                  ey_v2cent, eysys_v2cent, x_run2, y_run2,
                                  ex_run2, ey_run2, eysys_run2, x_yield, y_yield,
                                  ex_yield, ey_yield, eysys_yield, l_results);
+
+    f.cd();
+    l_results_sys_yield->SetOwner();
+    l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
+    delete l_results_sys_yield;
+
+    f.cd();
+    l_results_sys_v2->SetOwner();
+    l_results_sys_v2->Write("FitV2Systematics", TObject::kSingleKey);
+    delete l_results_sys_v2;
 
     f.cd();
     l_results->SetOwner();

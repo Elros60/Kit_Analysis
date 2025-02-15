@@ -1672,7 +1672,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
   mg->GetXaxis()->SetRangeUser(0, mg->GetXaxis()->GetXmax());
   mg->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   if (cent_min == 0) {
-    mg->GetYaxis()->SetRangeUser(-0.01, 0.2);
+    mg->GetYaxis()->SetRangeUser(-0.1, 0.2);
   } else {
     mg->GetYaxis()->SetRangeUser(-0.02, 0.2);
   }
