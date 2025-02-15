@@ -268,6 +268,7 @@ void FlowAnalysis_EventMixing_CentDiff(
                      Bin_cent_mass[i + 1], hs_mass_semm_proj, hs_mass_memm_proj,
                      l_SE_ME);
     f.cd();
+    l_SE_ME->SetOwner();
     l_SE_ME->Write(
         Form("Mass_SEME_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
         TObject::kSingleKey);
@@ -281,6 +282,7 @@ void FlowAnalysis_EventMixing_CentDiff(
     l_SE_ME_V2->Add(hs_v2_mepp_proj);
     l_SE_ME_V2->Add(hs_v2_memm_proj);
     f.cd();
+    l_SE_ME_V2->SetOwner();
     l_SE_ME_V2->Write(
         Form("V2_SEME_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
         TObject::kSingleKey);

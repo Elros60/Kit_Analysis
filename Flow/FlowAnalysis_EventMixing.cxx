@@ -297,6 +297,7 @@ void FlowAnalysis_EventMixing(
                      mass_max, cent_min, cent_max, hs_mass_semm_proj,
                      hs_mass_memm_proj, l_SE_ME);
     f.cd();
+    l_SE_ME->SetOwner();
     l_SE_ME->Write(Form("Mass_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
                    TObject::kSingleKey);
     delete l_SE_ME;
@@ -309,6 +310,7 @@ void FlowAnalysis_EventMixing(
     l_SE_ME_V2->Add(hs_v2_mepp_proj);
     l_SE_ME_V2->Add(hs_v2_memm_proj);
     f.cd();
+    l_SE_ME_V2->SetOwner();
     l_SE_ME_V2->Write(Form("V2_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
                       TObject::kSingleKey);
     delete l_SE_ME_V2;
