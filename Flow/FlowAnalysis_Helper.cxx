@@ -1826,15 +1826,16 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
 }
 
 //______________________________________________________________________________
-void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
-                                   double massmin, double massmax,
-                                   double centmin, double centmax,
-                                   TH1D *hist_SE, TH1D *hist_ME, TList *ls) {
-  TCanvas *c_SEME =
-      new TCanvas(Form("hist_Mass_%s_%g_%g_%g_%g_%g_%g", flag.c_str(), ptmin,
-                       ptmax, massmin, massmax, centmin, centmax),
-                  Form("hist_Mass_%s_%g_%g_%g_%g_%g_%g", flag.c_str(), ptmin,
-                       ptmax, massmin, massmax, centmin, centmax));
+void FlowAnalysis_Helper::PlotSEME(std::string flag, std::string type,
+                                   double ptmin, double ptmax, double massmin,
+                                   double massmax, double centmin,
+                                   double centmax, TH1D *hist_SE, TH1D *hist_ME,
+                                   TList *ls) {
+  TCanvas *c_SEME = new TCanvas(
+      Form("hist_%s_%s_%g_%g_%g_%g_%g_%g", type.c_str(), flag.c_str(), ptmin,
+           ptmax, massmin, massmax, centmin, centmax),
+      Form("hist_%s_%s_%g_%g_%g_%g_%g_%g", type.c_str(), flag.c_str(), ptmin,
+           ptmax, massmin, massmax, centmin, centmax));
   c_SEME->cd();
   c_SEME->SetBottomMargin(0);
   TPad *pad_seme = new TPad("pad_seme", "pad_seme", 0, 0.3, 1, 1.0);
@@ -1844,9 +1845,13 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
   hist_SE->SetStats(0);
   hist_SE->SetTitle(Form("SE%s", flag.c_str()));
   hist_SE->SetMarkerStyle(20);
-  hist_SE->SetMarkerSize(0.8);
+  hist_SE->SetMarkerSize(0.5);
   hist_SE->SetMarkerColor(kBlue);
-  hist_SE->GetYaxis()->SetTitle("Counts");
+  if (type == "Mass") {
+    hist_SE->GetYaxis()->SetTitle("Counts");
+  } else {
+    hist_SE->GetYaxis()->SetTitle("v_{2}");
+  }
   hist_SE->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hist_SE->Draw("HIST EP");
   pad_seme->ModifiedUpdate();
@@ -1854,9 +1859,13 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
   hist_ME->SetStats(0);
   hist_ME->SetTitle(Form("ME%s", flag.c_str()));
   hist_ME->SetMarkerStyle(20);
-  hist_ME->SetMarkerSize(0.8);
+  hist_ME->SetMarkerSize(0.5);
   hist_ME->SetMarkerColor(kRed);
-  hist_ME->GetYaxis()->SetTitle("Counts");
+  if (type == "Mass") {
+    hist_SE->GetYaxis()->SetTitle("Counts");
+  } else {
+    hist_SE->GetYaxis()->SetTitle("v_{2}");
+  }
   hist_ME->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
   hist_ME->Draw("HIST EP same");
   pad_seme->BuildLegend();
@@ -1882,7 +1891,7 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, double ptmin, double ptmax,
   hs_SEME_ratio->SetStats(0);
   hs_SEME_ratio->SetTitle("");
   hs_SEME_ratio->SetMarkerStyle(20);
-  hs_SEME_ratio->SetMarkerSize(0.8);
+  hs_SEME_ratio->SetMarkerSize(0.5);
   hs_SEME_ratio->GetYaxis()->SetTitleSize(0.1);
   hs_SEME_ratio->GetYaxis()->SetTitle("Ratio");
   hs_SEME_ratio->GetYaxis()->SetTitleOffset(0.25);

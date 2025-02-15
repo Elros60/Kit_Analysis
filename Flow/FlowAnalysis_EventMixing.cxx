@@ -287,13 +287,13 @@ void FlowAnalysis_EventMixing(
 
     // Save plots for invariant mass
     TList *l_SE_ME = new TList();
-    helper->PlotSEME("PM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+    helper->PlotSEME("PM", "Mass", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_mass_sepm_proj,
                      hs_mass_mepm_proj, l_SE_ME);
-    helper->PlotSEME("PP", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+    helper->PlotSEME("PP", "Mass", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_mass_sepp_proj,
                      hs_mass_mepp_proj, l_SE_ME);
-    helper->PlotSEME("MM", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+    helper->PlotSEME("MM", "Mass", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_mass_semm_proj,
                      hs_mass_memm_proj, l_SE_ME);
     f.cd();
@@ -303,12 +303,15 @@ void FlowAnalysis_EventMixing(
     delete l_SE_ME;
 
     TList *l_SE_ME_V2 = new TList();
-    l_SE_ME_V2->Add(hs_v2_sepm_proj);
-    l_SE_ME_V2->Add(hs_v2_sepp_proj);
-    l_SE_ME_V2->Add(hs_v2_semm_proj);
-    l_SE_ME_V2->Add(hs_v2_mepm_proj);
-    l_SE_ME_V2->Add(hs_v2_mepp_proj);
-    l_SE_ME_V2->Add(hs_v2_memm_proj);
+    helper->PlotSEME("PM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_v2_sepm_proj,
+                     hs_v2_mepm_proj, l_SE_ME_V2);
+    helper->PlotSEME("PP", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_v2_sepp_proj,
+                     hs_v2_mepp_proj, l_SE_ME_V2);
+    helper->PlotSEME("MM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_v2_semm_proj,
+                     hs_v2_memm_proj, l_SE_ME_V2);
     f.cd();
     l_SE_ME_V2->SetOwner();
     l_SE_ME_V2->Write(Form("V2_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),

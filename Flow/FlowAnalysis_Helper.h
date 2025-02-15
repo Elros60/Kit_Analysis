@@ -172,8 +172,8 @@ public:
                             double *ey_run2, double *eysys_run2,
                             double *x_yield, double *y_yield, double *ex_yield,
                             double *ey_yield, double *eysys_yield, TList *ls);
-  void PlotSEME(std::string flag, double ptmin, double ptmax, double massmin,
-                double massmax, double centmin, double centmax, TH1D *hist_SE,
-                TH1D *hist_ME, TList *ls);
+  void PlotSEME(std::string flag, std::string type, double ptmin, double ptmax,
+                double massmin, double massmax, double centmin, double centmax,
+                TH1D *hist_SE, TH1D *hist_ME, TList *ls);
 };
 #endif

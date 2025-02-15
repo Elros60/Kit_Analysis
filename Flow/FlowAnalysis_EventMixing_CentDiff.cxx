@@ -275,12 +275,15 @@ void FlowAnalysis_EventMixing_CentDiff(
     delete l_SE_ME;
 
     TList *l_SE_ME_V2 = new TList();
-    l_SE_ME_V2->Add(hs_v2_sepm_proj);
-    l_SE_ME_V2->Add(hs_v2_sepp_proj);
-    l_SE_ME_V2->Add(hs_v2_semm_proj);
-    l_SE_ME_V2->Add(hs_v2_mepm_proj);
-    l_SE_ME_V2->Add(hs_v2_mepp_proj);
-    l_SE_ME_V2->Add(hs_v2_memm_proj);
+    helper->PlotSEME("PM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_v2_sepm_proj,
+                     hs_v2_mepm_proj, l_SE_ME_V2);
+    helper->PlotSEME("PP", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_v2_sepp_proj,
+                     hs_v2_mepp_proj, l_SE_ME_V2);
+    helper->PlotSEME("MM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
+                     mass_max, cent_min, cent_max, hs_v2_semm_proj,
+                     hs_v2_memm_proj, l_SE_ME_V2);
     f.cd();
     l_SE_ME_V2->SetOwner();
     l_SE_ME_V2->Write(
@@ -344,7 +347,8 @@ void FlowAnalysis_EventMixing_CentDiff(
             for (int i4 = 0; i4 < int(size(bkg_v2)); i4++) {
               // Get F factors
               // Calculate R factors and F factors
-              LOG(info) << "Processing analysis for R and F factors ...";
+              LOG(info) << "Processing analysis for R and F "
+                           "factors ...";
               vector<double> ffactor_sys;
               for (int k = 0; k < int(size(Bin_cent_mass)) - 1; k++) {
                 TH1D *hist_rfactor_sys = helper->GetRfactorProfile(
@@ -388,7 +392,8 @@ void FlowAnalysis_EventMixing_CentDiff(
                   Form("{%s;%s}{%s}[%g-%g]", sig_enum[sig_mass[i2]].c_str(),
                        sig_enum[bkg_mass[i3]].c_str(), bkg_v2_enum[i4].c_str(),
                        mass_min_sys[i1], mass_max_sys[i1]);
-              LOG(info) << Form("Processing combination: {%s,%s}+{%s}+[%g-%g]",
+              LOG(info) << Form("Processing combination: "
+                                "{%s,%s}+{%s}+[%g-%g]",
                                 sig_enum[sig_mass[i2]].c_str(),
                                 sig_enum[bkg_mass[i3]].c_str(),
                                 bkg_v2_enum[i4].c_str(), mass_min_sys[i1],
@@ -402,7 +407,8 @@ void FlowAnalysis_EventMixing_CentDiff(
               fitter->setModelV2(bkg_v2[i4]);
               fitter->setMode(1);
               TList *l_diff_sys = new TList();
-              LOG(info) << "Processing fitting(systematic) for v2{SP} ...";
+              LOG(info) << "Processing fitting(systematic) "
+                           "for v2{SP} ...";
               vector<double> results_sys_v2 = fitter->runFittingEMNoMeanPt(
                   hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
                   hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys, l_diff_sys);
