@@ -513,7 +513,7 @@ void FlowAnalysis_EventMixing_CentDiff(
     l_results->Write("FinalResults", TObject::kSingleKey);
     delete l_results;
   }
-  f.Close();
   delete helper;
   delete fitter;
+  f.Close();
 }
