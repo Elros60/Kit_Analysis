@@ -476,21 +476,13 @@ void FlowAnalysis_EventMixing_CentDiff(
     TList *l_results = new TList();
     TList *l_results_sys_yield = new TList();
     TList *l_results_sys_v2 = new TList();
-    vector<TCanvas *> c_sys_yield;
-    vector<TCanvas *> c_sys_v2;
-    for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
-      c_sys_yield.emplace_back(new TCanvas(
-          Form("Sys_yield_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
-          Form("Sys_yield_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1])));
-      c_sys_v2.emplace_back(new TCanvas(
-          Form("Sys_v2_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
-          Form("Sys_v2_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1])));
-    }
+
     for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
       vector<double> stats_yield =
           helper->GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
       vector<double> stats_v2 =
           helper->GetStats(nbCombo_v2, y_sys_v2[i], ey_sys_v2[i]);
+      vector<double> nothing;
 
       // Fill pT-differential v2 and jpsi yields
       y_v2cent[i] = stats_v2[0];
@@ -503,13 +495,14 @@ void FlowAnalysis_EventMixing_CentDiff(
           stats_yield[2] / (Bin_cent_mass[i + 1] - Bin_cent_mass[i]);
 
       // Saving results for systematics
-      helper->PlotSystematicsNoMeanPt(
+      helper->PlotSystematics(
           pt_min, pt_max, Bin_cent_mass[i], Bin_cent_mass[i + 1],
           int(Bin_cent_mass.size()) - 1, i, c_sys_yield[i], c_sys_v2[i],
-          hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
-          chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
-          stats_v2, reinterpret_cast<double *>(Bin_cent_mass.data()),
-          l_results_sys_yield, l_results_sys_v2, SaveSys, "cent");
+          hist_sys_yield[i], hist_sys_v2[i], nullptr, bins_sys_yield,
+          bins_sys_v2, chi2_yield[i], chi2_v2[i], nullptr, nbCombo_yield,
+          nbCombo_v2, stats_yield, stats_v2, nothing,
+          reinterpret_cast<double *>(Bin_cent_mass.data()), l_results_sys_yield,
+          l_results_sys_v2, nullptr, SaveSys, "cent");
     }
 
     // Saving final results

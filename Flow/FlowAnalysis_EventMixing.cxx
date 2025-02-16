@@ -536,22 +536,7 @@ void FlowAnalysis_EventMixing(
     TList *l_results_sys_yield = new TList();
     TList *l_results_sys_v2 = new TList();
     TList *l_results_sys_meanPt = new TList();
-    vector<TCanvas *> c_sys_yield;
-    vector<TCanvas *> c_sys_v2;
-    vector<TCanvas *> c_sys_meanPt;
-    for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
-      c_sys_yield.emplace_back(new TCanvas(
-          Form("Sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-          Form("Sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
-      c_sys_v2.emplace_back(new TCanvas(
-          Form("Sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-          Form("Sys_v2_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
-      if (meanPt) {
-        c_sys_meanPt.emplace_back(new TCanvas(
-            Form("Sys_meanPt_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-            Form("Sys_meanPt_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
-      }
-    }
+
     for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
       vector<double> stats_yield =
           helper->GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
@@ -583,21 +568,20 @@ void FlowAnalysis_EventMixing(
       if (meanPt) {
         helper->PlotSystematics(
             Bin_pt_mass[i], Bin_pt_mass[i + 1], cent_min, cent_max,
-            int(Bin_pt_mass.size()) - 1, i, c_sys_yield[i], c_sys_v2[i],
-            c_sys_meanPt[i], hist_sys_yield[i], hist_sys_v2[i],
+            int(Bin_pt_mass.size()) - 1, i, hist_sys_yield[i], hist_sys_v2[i],
             hist_sys_meanPt[i], bins_sys_yield, bins_sys_v2, chi2_yield[i],
             chi2_v2[i], chi2_meanPt[i], nbCombo_yield, nbCombo_v2, stats_yield,
             stats_v2, stats_meanPt,
             reinterpret_cast<double *>(Bin_pt_mass.data()), l_results_sys_yield,
             l_results_sys_v2, l_results_sys_meanPt, SaveSys);
       } else {
-        helper->PlotSystematicsNoMeanPt(
+        helper->PlotSystematics(
             Bin_pt_mass[i], Bin_pt_mass[i + 1], cent_min, cent_max,
-            int(Bin_pt_mass.size()) - 1, i, c_sys_yield[i], c_sys_v2[i],
-            hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
-            chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
-            stats_v2, reinterpret_cast<double *>(Bin_pt_mass.data()),
-            l_results_sys_yield, l_results_sys_v2, SaveSys);
+            int(Bin_pt_mass.size()) - 1, i, hist_sys_yield[i], hist_sys_v2[i],
+            nullptr, bins_sys_yield, bins_sys_v2, chi2_yield[i], chi2_v2[i],
+            nullptr, nbCombo_yield, nbCombo_v2, stats_yield, stats_v2,
+            stats_meanPt, reinterpret_cast<double *>(Bin_pt_mass.data()),
+            l_results_sys_yield, l_results_sys_v2, nullptr, SaveSys);
       }
     }
     f.cd();
