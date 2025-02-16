@@ -47,14 +47,20 @@
 
 using namespace std;
 
+// Predefined binnings
+vector<double> Bin_cent_mass_7 = {0, 10, 20, 30, 40, 50, 60, 90};
+vector<double> Bin_cent_mass_15 = {0,  5,  10, 15, 20, 25, 30, 35,
+                                   40, 45, 50, 55, 60, 70, 80, 90};
+
 //______________________________________________________________________________
 void FlowAnalysis_EventMixing_CentDiff(
-    int flag_sig, int flag_bkg, int flag_v2, int flag_run2,
+    int flag_binning, int flag_sig, int flag_bkg, int flag_v2, int flag_run2,
     std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
     double mass_max = 4.3, double pt_min = 0., double pt_max = 5.,
     double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
     bool SaveSys = false, std::string inputFlag = "goodmedium",
     std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
+  LOG(info) << "Start flow analysis...";
   // Init Helper class
   FlowAnalysis_Helper *helper = new FlowAnalysis_Helper();
 
@@ -85,11 +91,18 @@ void FlowAnalysis_EventMixing_CentDiff(
   fitter->setPtRange(pt_min, pt_max);
 
   // Define variables' range for analysis
-  /*
-  double Bin_cent_mass[16] = {0,  5,  10, 15, 20, 25, 30, 35,
-                              40, 45, 50, 55, 60, 70, 80, 90};
-  */
-  double Bin_cent_mass[8] = {0, 10, 20, 30, 40, 50, 60, 90};
+  vector<double> Bin_cent_mass;
+  switch (flag_binning) {
+  case 7:
+    Bin_cent_mass = Bin_cent_mass_7;
+    break;
+  case 15:
+    Bin_cent_mass = Bin_cent_mass_15;
+    break;
+  default:
+    Bin_cent_mass = Bin_cent_mass_7;
+    break;
+  }
 
   // Define the pool for systematics: 36
   // combinations
@@ -109,12 +122,12 @@ void FlowAnalysis_EventMixing_CentDiff(
                      "EventMixing%d_CentDiff_%s_%g_%"
                      "g_%dBinPt_withSys.root",
                      inputFlag.c_str(), nb_trials, muonCut.c_str(), pt_min,
-                     pt_max, int(size(Bin_cent_mass)) - 1)
+                     pt_max, int(Bin_cent_mass.size()) - 1)
               : Form("FlowAnalysisResults_%s_"
                      "EventMixing_CentDiff_%s_%g_%"
                      "g_%dBinPt.root",
                      inputFlag.c_str(), muonCut.c_str(), pt_min, pt_max,
-                     int(size(Bin_cent_mass)) - 1),
+                     int(Bin_cent_mass.size()) - 1),
           "RECREATE");
 
   ///////////////////////////////////////////////////
@@ -128,7 +141,7 @@ void FlowAnalysis_EventMixing_CentDiff(
   // Calculate R factors and F factors
   LOG(info) << "Processing analysis for R and F factors ...";
   vector<double> ffactor;
-  for (int i = 0; i < int(size(Bin_cent_mass)) - 1; i++) {
+  for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
     TH1D *hist_rfactor = helper->GetRfactorProfile(
         pt_min, pt_max, mass_min, mass_max, Bin_cent_mass[i],
         Bin_cent_mass[i + 1], tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
@@ -151,17 +164,17 @@ void FlowAnalysis_EventMixing_CentDiff(
 
   // Create histogram for pt-differential v2
   TList *l_results = new TList();
-  double *x_yield = new double[int(size(Bin_cent_mass)) - 1];
-  double *y_yield = new double[int(size(Bin_cent_mass)) - 1];
-  double *ex_yield = new double[int(size(Bin_cent_mass)) - 1];
-  double *ey_yield = new double[int(size(Bin_cent_mass)) - 1];
-  double *eysys_yield = new double[int(size(Bin_cent_mass)) - 1];
-  double *SNR = new double[int(size(Bin_cent_mass)) - 1];
-  double *x_v2cent = new double[int(size(Bin_cent_mass)) - 1];
-  double *y_v2cent = new double[int(size(Bin_cent_mass)) - 1];
-  double *ex_v2cent = new double[int(size(Bin_cent_mass)) - 1];
-  double *ey_v2cent = new double[int(size(Bin_cent_mass)) - 1];
-  double *eysys_v2cent = new double[int(size(Bin_cent_mass)) - 1];
+  double *x_yield = new double[int(Bin_cent_mass.size()) - 1];
+  double *y_yield = new double[int(Bin_cent_mass.size()) - 1];
+  double *ex_yield = new double[int(Bin_cent_mass.size()) - 1];
+  double *ey_yield = new double[int(Bin_cent_mass.size()) - 1];
+  double *eysys_yield = new double[int(Bin_cent_mass.size()) - 1];
+  double *SNR = new double[int(Bin_cent_mass.size()) - 1];
+  double *x_v2cent = new double[int(Bin_cent_mass.size()) - 1];
+  double *y_v2cent = new double[int(Bin_cent_mass.size()) - 1];
+  double *ex_v2cent = new double[int(Bin_cent_mass.size()) - 1];
+  double *ey_v2cent = new double[int(Bin_cent_mass.size()) - 1];
+  double *eysys_v2cent = new double[int(Bin_cent_mass.size()) - 1];
 
   // Load Run2 data for comparaison
   double *x_run2, *y_run2, *ex_run2, *ey_run2, *eysys_run2;
@@ -186,7 +199,7 @@ void FlowAnalysis_EventMixing_CentDiff(
   }
 
   vector<TH1D *> hist_sys_yield, hist_sys_v2;
-  for (int i = 0; i < int(size(Bin_cent_mass)) - 1; i++) {
+  for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
     y_sys_yield.emplace_back(new double[nbCombo_yield]);
     ey_sys_yield.emplace_back(new double[nbCombo_yield]);
 
@@ -206,7 +219,7 @@ void FlowAnalysis_EventMixing_CentDiff(
         nbCombo_v2, bins_sys_v2));
   }
 
-  for (int i = 0; i < int(size(Bin_cent_mass)) - 1; i++) {
+  for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
     // Same-event profiles: mass
     TH1D *hs_mass_sepm_proj = helper->GetMassProfile(
         pt_min, pt_max, mass_min, mass_max, Bin_cent_mass[i],
@@ -350,7 +363,7 @@ void FlowAnalysis_EventMixing_CentDiff(
               LOG(info) << "Processing analysis for R and F "
                            "factors ...";
               vector<double> ffactor_sys;
-              for (int k = 0; k < int(size(Bin_cent_mass)) - 1; k++) {
+              for (int k = 0; k < int(Bin_cent_mass.size()) - 1; k++) {
                 TH1D *hist_rfactor_sys = helper->GetRfactorProfile(
                     pt_min, pt_max, mass_min_sys[i1], mass_max_sys[i1],
                     Bin_cent_mass[k], Bin_cent_mass[k + 1], tp_V2MEPM,
@@ -465,7 +478,7 @@ void FlowAnalysis_EventMixing_CentDiff(
     TList *l_results_sys_v2 = new TList();
     vector<TCanvas *> c_sys_yield;
     vector<TCanvas *> c_sys_v2;
-    for (int i = 0; i < int(size(Bin_cent_mass)) - 1; i++) {
+    for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
       c_sys_yield.emplace_back(new TCanvas(
           Form("Sys_yield_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
           Form("Sys_yield_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1])));
@@ -473,7 +486,7 @@ void FlowAnalysis_EventMixing_CentDiff(
           Form("Sys_v2_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1]),
           Form("Sys_v2_%g_%g", Bin_cent_mass[i], Bin_cent_mass[i + 1])));
     }
-    for (int i = 0; i < int(size(Bin_cent_mass)) - 1; i++) {
+    for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
       vector<double> stats_yield =
           helper->GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
       vector<double> stats_v2 =
@@ -492,19 +505,20 @@ void FlowAnalysis_EventMixing_CentDiff(
       // Saving results for systematics
       helper->PlotSystematicsNoMeanPt(
           pt_min, pt_max, Bin_cent_mass[i], Bin_cent_mass[i + 1],
-          int(size(Bin_cent_mass)) - 1, i, c_sys_yield[i], c_sys_v2[i],
+          int(Bin_cent_mass.size()) - 1, i, c_sys_yield[i], c_sys_v2[i],
           hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
           chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
-          stats_v2, Bin_cent_mass, l_results_sys_yield, l_results_sys_v2,
-          SaveSys, "cent");
+          stats_v2, reinterpret_cast<double *>(Bin_cent_mass.data()),
+          l_results_sys_yield, l_results_sys_v2, SaveSys, "cent");
     }
 
     // Saving final results
-    helper->PlotFinalResultsCent(int(size(Bin_cent_mass)) - 1, pt_min, pt_max,
-                                 Bin_cent_mass, x_v2cent, y_v2cent, ex_v2cent,
-                                 ey_v2cent, eysys_v2cent, x_run2, y_run2,
-                                 ex_run2, ey_run2, eysys_run2, x_yield, y_yield,
-                                 ex_yield, ey_yield, eysys_yield, l_results);
+    helper->PlotFinalResultsCent(
+        int(Bin_cent_mass.size()) - 1, pt_min, pt_max,
+        reinterpret_cast<double *>(Bin_cent_mass.data()), x_v2cent, y_v2cent,
+        ex_v2cent, ey_v2cent, eysys_v2cent, x_run2, y_run2, ex_run2, ey_run2,
+        eysys_run2, x_yield, y_yield, ex_yield, ey_yield, eysys_yield,
+        l_results);
 
     f.cd();
     l_results_sys_yield->SetOwner();
@@ -521,7 +535,9 @@ void FlowAnalysis_EventMixing_CentDiff(
     l_results->Write("FinalResults", TObject::kSingleKey);
     delete l_results;
   }
+  f.Close();
+  LOG(info) << "Analysis done."; // this is a temporary solution to get rid of
+                                 // destructor issue with in-list tcanvas
   delete helper;
   delete fitter;
-  f.Close();
 }

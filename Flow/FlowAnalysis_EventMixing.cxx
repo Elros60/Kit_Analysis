@@ -47,15 +47,24 @@
 
 using namespace std;
 
+// Predefined binnings
+vector<double> Bin_pt_mass_11 = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20};
+vector<double> Bin_pt_mass_15 = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
+                                 7., 8.,  9., 10., 11., 12., 15., 20.};
+vector<double> Bin_pt_mass_18 = {0,   1, 1.5, 2, 2.5, 3,  3.5, 4,  4.5, 5,
+                                 5.5, 6, 7,   8, 9,   10, 12,  15, 20};
+
 //______________________________________________________________________________
 void FlowAnalysis_EventMixing(
-    int flag_sig, int flag_bkg, int flag_v2, int flag_run2, int flag_run2yield,
-    std::string FileName = "AnalysisResults.root", double mass_min = 2.3,
-    double mass_max = 4.3, double cent_min = 10., double cent_max = 50.,
-    double chi2max_mass = 2., double chi2max_v2 = 2., bool sys = false,
-    bool meanPt = false, bool SaveSys = false,
+    int flag_binning, int flag_sig, int flag_bkg, int flag_v2, int flag_run2,
+    int flag_run2yield, std::string FileName = "AnalysisResults.root",
+    double mass_min = 2.3, double mass_max = 4.3, double cent_min = 10.,
+    double cent_max = 50., double chi2max_mass = 2., double chi2max_v2 = 2.,
+    bool sys = false, bool meanPt = false, bool SaveSys = false,
     std::string inputFlag = "goodmedium",
     std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
+
+  LOG(info) << "Start flow analysis...";
   // Init Helper class
   FlowAnalysis_Helper *helper = new FlowAnalysis_Helper();
 
@@ -86,13 +95,21 @@ void FlowAnalysis_EventMixing(
   fitter->setCentRange(cent_min, cent_max);
 
   // Define variables' range for analysis
-  double Bin_pt_mass[12] = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20};
-  /*
-  double Bin_pt_mass[18] = {0, 1,   1.5, 2, 2.5, 3, 3.5, 4,  4.5,
-                            5, 5.5, 6,   7, 8,   9, 10,  12, 15};
-  double Bin_pt_mass[16] = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
-                            7., 8.,  9., 10., 11., 12., 15., 20.};
-  */
+  vector<double> Bin_pt_mass;
+  switch (flag_binning) {
+  case 11:
+    Bin_pt_mass = Bin_pt_mass_11;
+    break;
+  case 15:
+    Bin_pt_mass = Bin_pt_mass_15;
+    break;
+  case 18:
+    Bin_pt_mass = Bin_pt_mass_11;
+    break;
+  default:
+    Bin_pt_mass = Bin_pt_mass_11;
+    break;
+  }
 
   // Define the pool for systematics:
   // combinations
@@ -112,13 +129,13 @@ void FlowAnalysis_EventMixing(
                      "EventMixing%d_%s_%g_%"
                      "g_%dBinPt_%s_withSys.root",
                      inputFlag.c_str(), nb_trials, muonCut.c_str(), cent_min,
-                     cent_max, int(size(Bin_pt_mass)) - 1,
+                     cent_max, int(Bin_pt_mass.size()) - 1,
                      meanPt ? "MeanPt" : "NoMeanPt")
               : Form("FlowAnalysisResults_%s_"
                      "EventMixing_%s_%g_%"
                      "g_%dBinPt_%s.root",
                      inputFlag.c_str(), muonCut.c_str(), cent_min, cent_max,
-                     int(size(Bin_pt_mass)) - 1,
+                     int(Bin_pt_mass.size()) - 1,
                      meanPt ? "MeanPt" : "NoMeanPt"),
           "RECREATE");
 
@@ -133,7 +150,7 @@ void FlowAnalysis_EventMixing(
   // Calculate R factors and F factors
   LOG(info) << "Processing analysis for R and F factors ...";
   vector<double> ffactor;
-  for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+  for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
     TH1D *hist_rfactor = helper->GetRfactorProfile(
         Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max, cent_min,
         cent_max, tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
@@ -155,17 +172,17 @@ void FlowAnalysis_EventMixing(
   }
 
   // Create histogram for pt-differential v2
-  double *x_yield = new double[int(size(Bin_pt_mass)) - 1];
-  double *y_yield = new double[int(size(Bin_pt_mass)) - 1];
-  double *ex_yield = new double[int(size(Bin_pt_mass)) - 1];
-  double *ey_yield = new double[int(size(Bin_pt_mass)) - 1];
-  double *eysys_yield = new double[int(size(Bin_pt_mass)) - 1];
-  double *SNR = new double[int(size(Bin_pt_mass)) - 1];
-  double *x_v2pt = new double[int(size(Bin_pt_mass)) - 1];
-  double *y_v2pt = new double[int(size(Bin_pt_mass)) - 1];
-  double *ex_v2pt = new double[int(size(Bin_pt_mass)) - 1];
-  double *ey_v2pt = new double[int(size(Bin_pt_mass)) - 1];
-  double *eysys_v2pt = new double[int(size(Bin_pt_mass)) - 1];
+  double *x_yield = new double[int(Bin_pt_mass.size()) - 1];
+  double *y_yield = new double[int(Bin_pt_mass.size()) - 1];
+  double *ex_yield = new double[int(Bin_pt_mass.size()) - 1];
+  double *ey_yield = new double[int(Bin_pt_mass.size()) - 1];
+  double *eysys_yield = new double[int(Bin_pt_mass.size()) - 1];
+  double *SNR = new double[int(Bin_pt_mass.size()) - 1];
+  double *x_v2pt = new double[int(Bin_pt_mass.size()) - 1];
+  double *y_v2pt = new double[int(Bin_pt_mass.size()) - 1];
+  double *ex_v2pt = new double[int(Bin_pt_mass.size()) - 1];
+  double *ey_v2pt = new double[int(Bin_pt_mass.size()) - 1];
+  double *eysys_v2pt = new double[int(Bin_pt_mass.size()) - 1];
 
   // Load Run2 data for comparaison
   double *x_run2, *y_run2, *ex_run2, *ey_run2, *eysys_run2;
@@ -196,7 +213,7 @@ void FlowAnalysis_EventMixing(
   }
 
   vector<TH1D *> hist_sys_yield, hist_sys_v2, hist_sys_meanPt;
-  for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+  for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
     y_sys_yield.emplace_back(new double[nbCombo_yield]);
     ey_sys_yield.emplace_back(new double[nbCombo_yield]);
 
@@ -226,7 +243,7 @@ void FlowAnalysis_EventMixing(
     }
   }
 
-  for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+  for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
     // Same-event profiles: mass
     TH1D *hs_mass_sepm_proj =
         helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
@@ -382,7 +399,7 @@ void FlowAnalysis_EventMixing(
               // Calculate R factors and F factors
               LOG(info) << "Processing analysis for R and F factors ...";
               vector<double> ffactor_sys;
-              for (int k = 0; k < int(size(Bin_pt_mass)) - 1; k++) {
+              for (int k = 0; k < int(Bin_pt_mass.size()) - 1; k++) {
                 TH1D *hist_rfactor_sys = helper->GetRfactorProfile(
                     Bin_pt_mass[k], Bin_pt_mass[k + 1], mass_min_sys[i1],
                     mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, tp_V2MEPP,
@@ -522,7 +539,7 @@ void FlowAnalysis_EventMixing(
     vector<TCanvas *> c_sys_yield;
     vector<TCanvas *> c_sys_v2;
     vector<TCanvas *> c_sys_meanPt;
-    for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+    for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
       c_sys_yield.emplace_back(new TCanvas(
           Form("Sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
           Form("Sys_yield_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
@@ -535,7 +552,7 @@ void FlowAnalysis_EventMixing(
             Form("Sys_meanPt_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1])));
       }
     }
-    for (int i = 0; i < int(size(Bin_pt_mass)) - 1; i++) {
+    for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
       vector<double> stats_yield =
           helper->GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
       vector<double> stats_v2 =
@@ -566,20 +583,21 @@ void FlowAnalysis_EventMixing(
       if (meanPt) {
         helper->PlotSystematics(
             Bin_pt_mass[i], Bin_pt_mass[i + 1], cent_min, cent_max,
-            int(size(Bin_pt_mass)) - 1, i, c_sys_yield[i], c_sys_v2[i],
+            int(Bin_pt_mass.size()) - 1, i, c_sys_yield[i], c_sys_v2[i],
             c_sys_meanPt[i], hist_sys_yield[i], hist_sys_v2[i],
             hist_sys_meanPt[i], bins_sys_yield, bins_sys_v2, chi2_yield[i],
             chi2_v2[i], chi2_meanPt[i], nbCombo_yield, nbCombo_v2, stats_yield,
-            stats_v2, stats_meanPt, Bin_pt_mass, l_results_sys_yield,
+            stats_v2, stats_meanPt,
+            reinterpret_cast<double *>(Bin_pt_mass.data()), l_results_sys_yield,
             l_results_sys_v2, l_results_sys_meanPt, SaveSys);
       } else {
         helper->PlotSystematicsNoMeanPt(
             Bin_pt_mass[i], Bin_pt_mass[i + 1], cent_min, cent_max,
-            int(size(Bin_pt_mass)) - 1, i, c_sys_yield[i], c_sys_v2[i],
+            int(Bin_pt_mass.size()) - 1, i, c_sys_yield[i], c_sys_v2[i],
             hist_sys_yield[i], hist_sys_v2[i], bins_sys_yield, bins_sys_v2,
             chi2_yield[i], chi2_v2[i], nbCombo_yield, nbCombo_v2, stats_yield,
-            stats_v2, Bin_pt_mass, l_results_sys_yield, l_results_sys_v2,
-            SaveSys);
+            stats_v2, reinterpret_cast<double *>(Bin_pt_mass.data()),
+            l_results_sys_yield, l_results_sys_v2, SaveSys);
       }
     }
     f.cd();
@@ -598,18 +616,21 @@ void FlowAnalysis_EventMixing(
     delete l_results_sys_v2;
 
     // Saving final results
-    helper->PlotFinalResults(
-        int(size(Bin_pt_mass)) - 1, cent_min, cent_max, Bin_pt_mass, x_v2pt,
-        y_v2pt, ex_v2pt, ey_v2pt, eysys_v2pt, x_run2, y_run2, ex_run2, ey_run2,
-        eysys_run2, x_yield, y_yield, ex_yield, ey_yield, eysys_yield,
-        x_yield_run2, y_yield_run2, ex_yield_run2, ey_yield_run2,
-        eysys_yield_run2, l_results);
+    helper->PlotFinalResults(int(Bin_pt_mass.size()) - 1, cent_min, cent_max,
+                             reinterpret_cast<double *>(Bin_pt_mass.data()),
+                             x_v2pt, y_v2pt, ex_v2pt, ey_v2pt, eysys_v2pt,
+                             x_run2, y_run2, ex_run2, ey_run2, eysys_run2,
+                             x_yield, y_yield, ex_yield, ey_yield, eysys_yield,
+                             x_yield_run2, y_yield_run2, ex_yield_run2,
+                             ey_yield_run2, eysys_yield_run2, l_results);
     f.cd();
     l_results->SetOwner();
     l_results->Write("FinalResults", TObject::kSingleKey);
     delete l_results;
   }
+  f.Close();
+  LOG(info) << "Analysis done."; // this is a temporary solution to get rid of
+                                 // destructor issue with in-list tcanvas
   delete helper;
   delete fitter;
-  f.Close();
 }

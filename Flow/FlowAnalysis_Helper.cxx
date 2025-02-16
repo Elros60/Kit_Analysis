@@ -1567,7 +1567,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
     pad_yield_final_run2->SetBottomMargin(0);
     pad_yield_final_run2->Draw();
     pad_yield_final_run2->cd();
-    auto mg_raw = new TMultiGraph();
+    TMultiGraph *mg_raw = new TMultiGraph();
     graph_yield->SetMarkerStyle(20);
     graph_yield->SetMarkerSize(1.);
     graph_yield->SetMarkerColor(kBlue);
@@ -1625,7 +1625,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
     pad_yield_ratio->ModifiedUpdate();
   } else {
     c_yield_vsRun2->cd();
-    auto mg_raw = new TMultiGraph();
+    TMultiGraph *mg_raw = new TMultiGraph();
     graph_yield->SetMarkerStyle(20);
     graph_yield->SetMarkerSize(1.);
     graph_yield->SetMarkerColor(kBlue);
@@ -1654,7 +1654,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
   TPad *pad_pt_final = new TPad("pad_pt_final", "pad_pt_final", 0, 0, 1, 1);
   pad_pt_final->Draw();
   pad_pt_final->cd();
-  auto mg = new TMultiGraph();
+  TMultiGraph *mg = new TMultiGraph();
   graph_v2pt->SetMarkerStyle(20);
   graph_v2pt->SetMarkerSize(1.);
   graph_v2pt->SetMarkerColor(kBlue);
@@ -1775,7 +1775,7 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
       new TPad("pad_cent_final", "pad_cent_final", 0, 0, 1, 1);
   pad_cent_final->Draw();
   pad_cent_final->cd();
-  auto mg = new TMultiGraph();
+  TMultiGraph *mg = new TMultiGraph();
   graph_v2cent->SetMarkerStyle(20);
   graph_v2cent->SetMarkerSize(1.);
   graph_v2cent->SetMarkerColor(kBlue);
