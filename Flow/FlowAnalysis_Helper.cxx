@@ -1654,6 +1654,8 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, std::string type,
   lratio_SEME->Draw("same");
   pad_SEME_ratio->ModifiedUpdate();
 
+  ls->Add(hist_SE);
+  ls->Add(hist_ME);
   ls->Add(c_SEME);
 }
 

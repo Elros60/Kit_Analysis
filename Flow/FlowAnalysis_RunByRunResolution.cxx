@@ -262,6 +262,8 @@ void FlowAnalysis_RunByRunResolution(
   TH1D *hist_final =
       new TH1D(Form("R2SP_All_%s", Label.c_str()),
                Form("R2SP_All_%s", Label.c_str()), NBins_cent, Bin_cent);
+  hist_final->GetXaxis()->SetTitle("Centrality FT0C (%)");
+  hist_final->GetYaxis()->SetTitle("R_{2}{SP}");
   for (int i = 0; i < Ncol; i++) {
     vector<double> final_stats = GetMeanError(Nrow, stats_trans[i]);
     hist_final->SetBinContent(i + 1, final_stats[0]);
