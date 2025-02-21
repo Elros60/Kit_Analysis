@@ -336,13 +336,12 @@ void FlowAnalysis_EventMixing(
     // Fit invariant mass + v2
     TList *l_diff_fit = new TList();
     vector<double> results_v2 =
-        meanPt
-            ? fitter->runFittingEM(hs_mass_sepm_proj, hs_mass_mepm_proj,
-                                   hs_v2_sepm_proj, hs_v2_mepm_proj,
-                                   hs_mass_sepm_proj_meanPt, l_diff_fit)
-            : fitter->runFittingEMNoMeanPt(hs_mass_sepm_proj, hs_mass_mepm_proj,
-                                           hs_v2_sepm_proj, hs_v2_mepm_proj,
-                                           l_diff_fit);
+        meanPt ? fitter->runFittingEM(hs_mass_sepm_proj, hs_mass_mepm_proj,
+                                      hs_v2_sepm_proj, hs_v2_mepm_proj,
+                                      hs_mass_sepm_proj_meanPt, l_diff_fit)
+               : fitter->runFittingEM(hs_mass_sepm_proj, hs_mass_mepm_proj,
+                                      hs_v2_sepm_proj, hs_v2_mepm_proj, nullptr,
+                                      l_diff_fit);
 
     SNR[i] = results_v2[4];
 
@@ -478,10 +477,10 @@ void FlowAnalysis_EventMixing(
                                hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
                                hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys,
                                hs_mass_sepm_proj_meanPt_sys, l_diff_sys)
-                         : fitter->runFittingEMNoMeanPt(
+                         : fitter->runFittingEM(
                                hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
                                hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys,
-                               l_diff_sys);
+                               nullptr, l_diff_sys);
 
               // Fill pT-differential v2 and jpsi
               // yields

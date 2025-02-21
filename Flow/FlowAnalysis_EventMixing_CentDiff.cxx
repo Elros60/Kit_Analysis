@@ -315,9 +315,9 @@ void FlowAnalysis_EventMixing_CentDiff(
 
     // Fit invariant mass + v2
     TList *l_diff_fit = new TList();
-    vector<double> results_v2 = fitter->runFittingEMNoMeanPt(
+    vector<double> results_v2 = fitter->runFittingEM(
         hs_mass_sepm_proj, hs_mass_mepm_proj, hs_v2_sepm_proj, hs_v2_mepm_proj,
-        l_diff_fit);
+        nullptr, l_diff_fit);
 
     SNR[i] = results_v2[4];
     x_yield[i] = (Bin_cent_mass[i] + Bin_cent_mass[i + 1]) / 2;
@@ -422,9 +422,10 @@ void FlowAnalysis_EventMixing_CentDiff(
               TList *l_diff_sys = new TList();
               LOG(info) << "Processing fitting(systematic) "
                            "for v2{SP} ...";
-              vector<double> results_sys_v2 = fitter->runFittingEMNoMeanPt(
+              vector<double> results_sys_v2 = fitter->runFittingEM(
                   hs_mass_sepm_proj_sys, hs_mass_mepm_proj_sys,
-                  hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys, l_diff_sys);
+                  hs_v2_sepm_proj_sys, hs_v2_mepm_proj_sys, nullptr,
+                  l_diff_sys);
 
               // Fill pT-differential v2 and jpsi
               // yields
