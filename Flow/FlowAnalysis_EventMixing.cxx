@@ -312,11 +312,6 @@ void FlowAnalysis_EventMixing(
     helper->PlotSEME("MM", "Mass", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_mass_semm_proj,
                      hs_mass_memm_proj, l_SE_ME);
-    f.cd();
-    l_SE_ME->SetOwner();
-    l_SE_ME->Write(Form("Mass_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-                   TObject::kSingleKey);
-    delete l_SE_ME;
 
     TList *l_SE_ME_V2 = new TList();
     helper->PlotSEME("PM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
@@ -328,11 +323,6 @@ void FlowAnalysis_EventMixing(
     helper->PlotSEME("MM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_v2_semm_proj,
                      hs_v2_memm_proj, l_SE_ME_V2);
-    f.cd();
-    l_SE_ME_V2->SetOwner();
-    l_SE_ME_V2->Write(Form("V2_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
-                      TObject::kSingleKey);
-    delete l_SE_ME_V2;
 
     /// Do fitting
     // Configuration for fitting
@@ -357,11 +347,24 @@ void FlowAnalysis_EventMixing(
     SNR[i] = results_v2[4];
 
     f.cd();
+    l_SE_ME->SetOwner();
+    l_SE_ME->Write(Form("Mass_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+                   TObject::kSingleKey);
+    delete l_SE_ME;
+
+    f.cd();
+    l_SE_ME_V2->SetOwner();
+    l_SE_ME_V2->Write(Form("V2_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
+                      TObject::kSingleKey);
+    delete l_SE_ME_V2;
+
+    f.cd();
     l_diff_fit->SetOwner();
     l_diff_fit->Write(
         Form("DifferentialFlow_Fit_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         TObject::kSingleKey);
     delete l_diff_fit;
+
     delete hs_mass_sepm_proj;
     delete hs_mass_sepp_proj;
     delete hs_mass_semm_proj;
@@ -371,9 +374,15 @@ void FlowAnalysis_EventMixing(
     delete hs_v2_sepm_proj;
     delete hs_v2_sepp_proj;
     delete hs_v2_semm_proj;
-    delete hs_v2_mepm_proj;
-    delete hs_v2_mepp_proj;
-    delete hs_v2_memm_proj;
+    if (hs_v2_mepm_proj) {
+      delete hs_v2_mepm_proj;
+    }
+    if (hs_v2_mepp_proj) {
+      delete hs_v2_mepp_proj;
+    }
+    if (hs_v2_memm_proj) {
+      delete hs_v2_memm_proj;
+    }
     if (hs_mass_sepm_proj_meanPt) {
       delete hs_mass_sepm_proj_meanPt;
     }

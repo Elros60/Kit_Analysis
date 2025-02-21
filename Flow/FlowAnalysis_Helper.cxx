@@ -1574,6 +1574,16 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, std::string type,
                                    double massmax, double centmin,
                                    double centmax, TH1D *hist_SE, TH1D *hist_ME,
                                    TList *ls) {
+
+  TH1D *hist_SE_cp = dynamic_cast<TH1D *>(hist_SE->Clone(
+      Form("Copy_%s_%s_%s", type.c_str(), flag.c_str(), hist_SE->GetName())));
+  TH1D *hist_ME_cp = dynamic_cast<TH1D *>(hist_ME->Clone(
+      Form("Copy_%s_%s_%s", type.c_str(), flag.c_str(), hist_ME->GetName())));
+  TH1D *hist_SE_save = dynamic_cast<TH1D *>(hist_SE->Clone(
+      Form("Save_%s_%s_%s", type.c_str(), flag.c_str(), hist_SE->GetName())));
+  TH1D *hist_ME_save = dynamic_cast<TH1D *>(hist_ME->Clone(
+      Form("Save_%s_%s_%s", type.c_str(), flag.c_str(), hist_ME->GetName())));
+
   TCanvas *c_SEME = new TCanvas(
       Form("hist_%s_%s_%g_%g_%g_%g_%g_%g", type.c_str(), flag.c_str(), ptmin,
            ptmax, massmin, massmax, centmin, centmax),
@@ -1585,32 +1595,32 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, std::string type,
   pad_seme->SetBottomMargin(0);
   pad_seme->Draw();
   pad_seme->cd();
-  hist_SE->SetStats(0);
-  hist_SE->SetTitle(Form("SE%s", flag.c_str()));
-  hist_SE->SetMarkerStyle(20);
-  hist_SE->SetMarkerSize(0.5);
-  hist_SE->SetMarkerColor(kBlue);
+  hist_SE_cp->SetStats(0);
+  hist_SE_cp->SetTitle(Form("SE%s", flag.c_str()));
+  hist_SE_cp->SetMarkerStyle(20);
+  hist_SE_cp->SetMarkerSize(0.5);
+  hist_SE_cp->SetMarkerColor(kBlue);
   if (type == "Mass") {
-    hist_SE->GetYaxis()->SetTitle("Counts");
+    hist_SE_cp->GetYaxis()->SetTitle("Counts");
   } else {
-    hist_SE->GetYaxis()->SetTitle("v_{2}");
+    hist_SE_cp->GetYaxis()->SetTitle("v_{2}");
   }
-  hist_SE->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
-  hist_SE->Draw("HIST EP");
+  hist_SE_cp->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hist_SE_cp->Draw("HIST EP");
   pad_seme->ModifiedUpdate();
 
-  hist_ME->SetStats(0);
-  hist_ME->SetTitle(Form("ME%s", flag.c_str()));
-  hist_ME->SetMarkerStyle(20);
-  hist_ME->SetMarkerSize(0.5);
-  hist_ME->SetMarkerColor(kRed);
+  hist_ME_cp->SetStats(0);
+  hist_ME_cp->SetTitle(Form("ME%s", flag.c_str()));
+  hist_ME_cp->SetMarkerStyle(20);
+  hist_ME_cp->SetMarkerSize(0.5);
+  hist_ME_cp->SetMarkerColor(kRed);
   if (type == "Mass") {
-    hist_SE->GetYaxis()->SetTitle("Counts");
+    hist_ME_cp->GetYaxis()->SetTitle("Counts");
   } else {
-    hist_SE->GetYaxis()->SetTitle("v_{2}");
+    hist_ME_cp->GetYaxis()->SetTitle("v_{2}");
   }
-  hist_ME->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
-  hist_ME->Draw("HIST EP same");
+  hist_ME_cp->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hist_ME_cp->Draw("HIST EP same");
   pad_seme->BuildLegend();
   pad_seme->ModifiedUpdate();
 
@@ -1621,15 +1631,15 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, std::string type,
   pad_SEME_ratio->SetBottomMargin(0.22);
   pad_SEME_ratio->Draw();
   pad_SEME_ratio->cd();
-  double *Bin_mass = CreateBinsFromAxis(hist_SE->GetXaxis());
-  int NBins_mass = hist_SE->GetXaxis()->GetNbins();
+  double *Bin_mass = CreateBinsFromAxis(hist_SE_cp->GetXaxis());
+  int NBins_mass = hist_SE_cp->GetXaxis()->GetNbins();
   TH1D *hs_SEME_ratio = new TH1D(Form("hist_SEME_ratio_%s_%s_%g_%g_%g_%g_%g_%g",
                                       type.c_str(), flag.c_str(), ptmin, ptmax,
                                       massmin, massmax, centmin, centmax),
                                  "", NBins_mass, Bin_mass);
   for (int i = 0; i < NBins_mass; i++) {
-    hs_SEME_ratio->SetBinContent(i + 1, hist_SE->GetBinContent(i + 1) /
-                                            hist_ME->GetBinContent(i + 1));
+    hs_SEME_ratio->SetBinContent(i + 1, hist_SE_cp->GetBinContent(i + 1) /
+                                            hist_ME_cp->GetBinContent(i + 1));
   }
   hs_SEME_ratio->SetStats(0);
   hs_SEME_ratio->SetTitle("");
@@ -1654,8 +1664,8 @@ void FlowAnalysis_Helper::PlotSEME(std::string flag, std::string type,
   lratio_SEME->Draw("same");
   pad_SEME_ratio->ModifiedUpdate();
 
-  ls->Add(hist_SE);
-  ls->Add(hist_ME);
+  ls->Add(hist_SE_save);
+  ls->Add(hist_ME_save);
   ls->Add(c_SEME);
 }
 

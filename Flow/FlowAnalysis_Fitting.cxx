@@ -1574,6 +1574,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
            FlowAnalysis_Fitting::ptmax, FlowAnalysis_Fitting::centmin,
            FlowAnalysis_Fitting::centmax));
   pad1_yield->ModifiedUpdate();
+  pad1_yield->SetTitle("");
+  pad1_yield->ModifiedUpdate();
   c->cd();
   TPad *pad2_yield = new TPad(
       Form(
@@ -1637,6 +1639,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   lyield3->SetLineWidth(3);
   lyield3->SetLineStyle(9);
   lyield3->Draw("same");
+  pad2_yield->SetTitle("");
+  pad2_yield->ModifiedUpdate();
 
   ls->Add(c);
   // Constructing alpha function
@@ -1832,6 +1836,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
            FlowAnalysis_Fitting::ptmax, FlowAnalysis_Fitting::centmin,
            FlowAnalysis_Fitting::centmax));
   pad1_meanPt->ModifiedUpdate();
+  pad1_meanPt->SetTitle("");
+  pad1_meanPt->ModifiedUpdate();
+
   c_meanPt->cd();
   TPad *pad2_meanPt = new TPad(
       Form(
@@ -1889,6 +1896,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   lmeanPt3->SetLineWidth(3);
   lmeanPt3->SetLineStyle(9);
   lmeanPt3->Draw("same");
+  pad2_meanPt->SetTitle("");
+  pad2_meanPt->ModifiedUpdate();
   ls->Add(c_meanPt);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -2074,6 +2083,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_v2se->SetStats(0);
   sb_v2->Draw();
   pad1_v2->ModifiedUpdate();
+  pad1_v2->SetTitle("");
+  pad1_v2->ModifiedUpdate();
+
   c_v2->cd();
   TPad *pad2_v2 = new TPad(
       Form(
@@ -2131,6 +2143,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   lv23->SetLineWidth(3);
   lv23->SetLineStyle(9);
   lv23->Draw("same");
+  pad2_v2->SetTitle("");
+  pad2_v2->ModifiedUpdate();
   ls->Add(c_v2);
 
   cout << endl;
