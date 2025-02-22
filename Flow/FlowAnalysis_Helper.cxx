@@ -114,7 +114,7 @@ TH1D *FlowAnalysis_Helper::GetMeanPt(double ptmin, double ptmax, double massmin,
                                Form("ProjPt_%s", tp_V2_cp_projx->GetName()),
                                NBins_mass_new, Bin_mass_new);
   hist_meanPt->GetXaxis()->SetTitle("mass (GeV/c2)");
-  hist_meanPt->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
+  hist_meanPt->GetYaxis()->SetTitle("<#it{p}^{#mu#mu}_{T}> (GeV/c)");
 
   for (int i = 0; i < NBins_mass_new; i++) {
     hist_meanPt->SetBinContent(i + 1, tp_V2_cp_projx->GetBinContent(i + 1));

@@ -96,10 +96,11 @@
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TLatex.h
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TText.h
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TAttText.h
-./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TPaveStats.h
-./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TPaveText.h
+./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TLegend.h
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TPave.h
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TBox.h
+./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TPaveStats.h
+./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TPaveText.h
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TVirtualPaveStats.h
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TROOT.h
 ./FlowAnalysis_Fitting_cxx.so: /Users/cz263673/alice/sw/osx_arm64/ROOT/v6-32-06-alice1-local7/include/TDirectory.h

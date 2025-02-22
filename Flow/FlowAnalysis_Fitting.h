@@ -12,6 +12,7 @@
 #include <TFitResultPtr.h>
 #include <TH1F.h>
 #include <TLatex.h>
+#include <TLegend.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TPad.h>
