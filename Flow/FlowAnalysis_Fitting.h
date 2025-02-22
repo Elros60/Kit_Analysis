@@ -10,6 +10,7 @@
 #include <TF1NormSum.h>
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
+#include <TGraph.h>
 #include <TH1F.h>
 #include <TLatex.h>
 #include <TLegend.h>

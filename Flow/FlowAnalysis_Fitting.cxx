@@ -1583,7 +1583,10 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   legend_yield->SetFillStyle(0);
   legend_yield->AddEntry(hs_se, "Data", "P");
   legend_yield->AddEntry(hs_me, "Event mixing", "P");
-  legend_yield->AddEntry(hs_se_res, "Residual", "P");
+  if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+      "EventMixing") {
+    legend_yield->AddEntry(hs_se_res, "Residual", "P");
+  }
   legend_yield->AddEntry(model, "Total");
   legend_yield->AddEntry(sig_fitted, "Signal");
   legend_yield->AddEntry(bkg_fitted, "Background");
@@ -2257,11 +2260,12 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     c_all->cd();
     c_all->Divide(1, 3, 0, 0);
     c_all->cd(1);
+    TH1D *hs_se_res_cp = new TH1D();
+    TH1D *hs_se_cp = new TH1D();
     if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
         "EventMixing") {
-      TH1D *hs_se_res_cp = new TH1D();
       hs_se_res->Copy(*hs_se_res_cp);
-      TH1D *hs_se_cp = dynamic_cast<TH1D *>(hs_se->Clone());
+      hs_se_cp = dynamic_cast<TH1D *>(hs_se->Clone());
       hs_se_res_cp->SetStats(0);
       hs_se_res_cp->GetYaxis()->SetTitleSize(0.06);
       hs_se_res_cp->GetYaxis()->SetLabelSize(0.05);
@@ -2270,7 +2274,6 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       hs_se_res_cp->Draw("HIST EP");
       hs_se_cp->Draw("HIST EP same");
     } else {
-      TH1D *hs_se_cp = new TH1D();
       hs_se->Copy(*hs_se_cp);
       hs_se_cp->SetStats(0);
       hs_se_cp->GetYaxis()->SetTitleSize(0.06);
@@ -2280,19 +2283,32 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       hs_se_cp->Draw("HIST EP");
     }
     TH1D *hs_me_cp = dynamic_cast<TH1D *>(hs_me->Clone());
+    TGraph *gr_model = new TGraph(model);
+    gr_model->SetLineWidth(2.0);
+    gr_model->SetLineColor(kBlue);
+    gr_model->SetTitle("");
+    TGraph *gr_bkg_fitted = new TGraph(bkg_fitted);
+    gr_bkg_fitted->SetLineWidth(2.0);
+    gr_bkg_fitted->SetLineColor(kBlue);
+    gr_bkg_fitted->SetLineStyle(kDashed);
+    gr_bkg_fitted->SetTitle("");
+    TGraph *gr_sig_fitted = new TGraph(bkg_fitted);
+    gr_sig_fitted->SetLineWidth(2.0);
+    gr_sig_fitted->SetLineColor(kRed);
+    gr_sig_fitted->SetTitle("");
     hs_me_cp->Draw("HIST EP same");
-    model->Draw("same");
-    bkg_fitted->Draw("same");
-    sig_fitted->Draw("same");
+    gr_model->Draw("C same");
+    gr_bkg_fitted->Draw("C same");
+    gr_sig_fitted->Draw("C same");
     TLatex *text_info_yield_all = new TLatex();
     text_info_yield_all->SetTextSize(0.06);
     text_info_yield_all->SetTextFont(42);
     text_info_yield_all->DrawLatexNDC(
-        .50, .9,
+        .52, .90,
         "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
         "= 5.36 TeV");
     text_info_yield_all->DrawLatexNDC(
-        .50, .83,
+        .52, .83,
         "J/#psi #rightarrow #mu^{+}#mu^{-}, 2.5 < y < "
         "4");
     text_info_yield_all->SetTextSize(0.07);
@@ -2302,7 +2318,19 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
         Form("%g < #it{p}_{T} < %g GeV/c    %g-%g%%",
              FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
              FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
-    legend_yield->Draw("same");
+    TLegend *legend_yield_all = new TLegend(0.13, 0.05, 0.35, 0.45);
+    legend_yield_all->SetBorderSize(0);
+    legend_yield_all->SetFillStyle(0);
+    legend_yield_all->AddEntry(hs_se_cp, "Data", "P");
+    legend_yield_all->AddEntry(hs_me_cp, "Event mixing", "P");
+    if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+        "EventMixing") {
+      legend_yield_all->AddEntry(hs_se_res_cp, "Residual", "P");
+    }
+    legend_yield_all->AddEntry(gr_model, "Total");
+    legend_yield_all->AddEntry(gr_sig_fitted, "Signal");
+    legend_yield_all->AddEntry(gr_bkg_fitted, "Background");
+    legend_yield_all->Draw("same");
 
     c_all->cd(2);
     TH1D *hs_v2se_cp = new TH1D();
@@ -2315,10 +2343,16 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_v2se_cp->GetYaxis()->SetTitleOffset(0.8);
     hs_v2se_cp->GetYaxis()->CenterTitle();
     hs_v2se_cp->Draw("HIST EP");
-    lv2->Draw("same");
+    lv2->DrawClone("same");
     hs_v2bkg_cp->Draw("HIST EP same");
     hs_model_v2_cp->Draw("HIST same");
-    legend_v2->Draw("same");
+    TLegend *legend_v2_all = new TLegend(0.13, 0.45, 0.35, 0.7);
+    legend_v2_all->SetBorderSize(0);
+    legend_v2_all->SetFillStyle(0);
+    legend_v2_all->AddEntry(hs_v2se_cp, "Data", "P");
+    legend_v2_all->AddEntry(hs_v2bkg_cp, "Event mixing", "P");
+    legend_v2_all->AddEntry(hs_model_v2_cp, "Fit");
+    legend_v2_all->Draw("same");
 
     c_all->cd(3);
     TH1D *hs_meanPt_cp = new TH1D();
@@ -2333,24 +2367,30 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_meanPt_cp->GetXaxis()->SetLabelSize(0.05);
     hs_meanPt_cp->Draw("HIST EP");
     hs_model_meanPt_cp->Draw("HIST same");
-    legend_meanPt->Draw("same");
+    TLegend *legend_meanPt_all = new TLegend(0.13, 0.45, 0.28, 0.65);
+    legend_meanPt_all->SetBorderSize(0);
+    legend_meanPt_all->SetFillStyle(0);
+    legend_meanPt_all->AddEntry(hs_meanPt_cp, "Data", "P");
+    legend_meanPt_all->AddEntry(hs_model_meanPt_cp, "Fit");
+    legend_meanPt_all->Draw("same");
   } else {
     c_all->SetCanvasSize(600, 600);
     c_all->cd();
     c_all->Divide(1, 2, 0, 0);
     c_all->cd(1);
+    TH1D *hs_se_res_cp = new TH1D();
+    TH1D *hs_se_cp = new TH1D();
     if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
         "EventMixing") {
-      TH1D *hs_se_res_cp = new TH1D();
       hs_se_res->Copy(*hs_se_res_cp);
+      hs_se_cp = dynamic_cast<TH1D *>(hs_se->Clone());
       hs_se_res_cp->SetStats(0);
       hs_se_res_cp->GetYaxis()->SetTitleSize(0.06);
       hs_se_res_cp->GetYaxis()->SetLabelSize(0.05);
       hs_se_res_cp->GetYaxis()->SetTitleOffset(0.8);
       hs_se_res_cp->Draw("HIST EP");
-      hs_se->Draw("HIST EP same");
+      hs_se_cp->Draw("HIST EP same");
     } else {
-      TH1D *hs_se_cp = new TH1D();
       hs_se->Copy(*hs_se_cp);
       hs_se_cp->SetStats(0);
       hs_se_cp->GetYaxis()->SetTitleSize(0.06);
@@ -2358,19 +2398,33 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       hs_se_cp->GetYaxis()->SetTitleOffset(0.8);
       hs_se_cp->Draw("HIST EP");
     }
-    hs_me->Draw("HIST EP same");
-    model->Draw("same");
-    bkg_fitted->Draw("same");
-    sig_fitted->Draw("same");
+    TH1D *hs_me_cp = dynamic_cast<TH1D *>(hs_me->Clone());
+    TGraph *gr_model = new TGraph(model);
+    gr_model->SetLineWidth(2.0);
+    gr_model->SetLineColor(kBlue);
+    gr_model->SetTitle("");
+    TGraph *gr_bkg_fitted = new TGraph(bkg_fitted);
+    gr_bkg_fitted->SetLineWidth(2.0);
+    gr_bkg_fitted->SetLineColor(kBlue);
+    gr_bkg_fitted->SetLineStyle(kDashed);
+    gr_bkg_fitted->SetTitle("");
+    TGraph *gr_sig_fitted = new TGraph(bkg_fitted);
+    gr_sig_fitted->SetLineWidth(2.0);
+    gr_sig_fitted->SetLineColor(kRed);
+    gr_sig_fitted->SetTitle("");
+    hs_me_cp->Draw("HIST EP same");
+    gr_model->Draw("C same");
+    gr_bkg_fitted->Draw("C same");
+    gr_sig_fitted->Draw("C same");
     TLatex *text_info_yield_all = new TLatex();
     text_info_yield_all->SetTextSize(0.06);
     text_info_yield_all->SetTextFont(42);
     text_info_yield_all->DrawLatexNDC(
-        .50, .9,
+        .52, .9,
         "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
         "= 5.36 TeV");
     text_info_yield_all->DrawLatexNDC(
-        .50, .83,
+        .52, .83,
         "J/#psi #rightarrow #mu^{+}#mu^{-}, 2.5 < y < "
         "4");
     text_info_yield_all->SetTextSize(0.07);
@@ -2381,23 +2435,41 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
         Form("%g < #it{p}_{T} < %g GeV/c    %g-%g%%",
              FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
              FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
-    legend_yield->Draw("same");
+    TLegend *legend_yield_all = new TLegend(0.13, 0.05, 0.35, 0.45);
+    legend_yield_all->SetBorderSize(0);
+    legend_yield_all->SetFillStyle(0);
+    legend_yield_all->AddEntry(hs_se_cp, "Data", "P");
+    legend_yield_all->AddEntry(hs_me_cp, "Event mixing", "P");
+    if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+        "EventMixing") {
+      legend_yield_all->AddEntry(hs_se_res_cp, "Residual", "P");
+    }
+    legend_yield_all->AddEntry(gr_model, "Total");
+    legend_yield_all->AddEntry(gr_sig_fitted, "Signal");
+    legend_yield_all->AddEntry(gr_bkg_fitted, "Background");
+    legend_yield_all->Draw("same");
 
     c_all->cd(2);
     TH1D *hs_v2se_cp = new TH1D();
     hs_v2se->Copy(*hs_v2se_cp);
+    TH1D *hs_v2bkg_cp = dynamic_cast<TH1D *>(hs_v2bkg->Clone());
+    TH1D *hs_model_v2_cp = dynamic_cast<TH1D *>(hs_model_v2->Clone());
     hs_v2se_cp->SetStats(0);
     hs_v2se_cp->GetYaxis()->SetTitleSize(0.06);
     hs_v2se_cp->GetYaxis()->SetLabelSize(0.05);
     hs_v2se_cp->GetYaxis()->SetTitleOffset(0.8);
     hs_v2se_cp->GetYaxis()->CenterTitle();
-    hs_v2se_cp->GetXaxis()->SetTitleSize(0.05);
-    hs_v2se_cp->GetXaxis()->SetLabelSize(0.05);
     hs_v2se_cp->Draw("HIST EP");
-    lv2->Draw("same");
-    hs_v2bkg->Draw("HIST EP same");
-    hs_model_v2->Draw("HIST same");
-    legend_v2->Draw("same");
+    lv2->DrawClone("same");
+    hs_v2bkg_cp->Draw("HIST EP same");
+    hs_model_v2_cp->Draw("HIST same");
+    TLegend *legend_v2_all = new TLegend(0.13, 0.45, 0.35, 0.7);
+    legend_v2_all->SetBorderSize(0);
+    legend_v2_all->SetFillStyle(0);
+    legend_v2_all->AddEntry(hs_v2se_cp, "Data", "P");
+    legend_v2_all->AddEntry(hs_v2bkg_cp, "Event mixing", "P");
+    legend_v2_all->AddEntry(hs_model_v2_cp, "Fit");
+    legend_v2_all->Draw("same");
   }
   ls->Add(c_all);
 

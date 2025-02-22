@@ -118,8 +118,10 @@ void FlowAnalysis_EventMixing(
   string sig_enum[5] = {"CB2(data)", "CB2(MC)", "NA60", "Chebychev",
                         "EventMixing"};
   string bkg_v2_enum[2] = {"EventMixing(beta free)", "EventMixing(beta fix)"};
-  int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
-  int bkg_mass[2] = {3, 4};    // Chebychev Event-Mixing
+  // int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
+  int sig_mass[1] = {0}; // CB2(MC,data) NA60
+  // int bkg_mass[2] = {3, 4};    // Chebychev Event-Mixing
+  int bkg_mass[1] = {4};       // Chebychev Event-Mixing
   int bkg_v2[2] = {0, 1};      // Event-Mixing, beta fix or free
   int nb_trials = int(size(sig_mass)) * int(size(bkg_mass)) *
                   int(size(bkg_v2)) * int(size(mass_min_sys));
