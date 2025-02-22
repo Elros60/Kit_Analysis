@@ -2304,11 +2304,11 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     text_info_yield_all->SetTextSize(0.06);
     text_info_yield_all->SetTextFont(42);
     text_info_yield_all->DrawLatexNDC(
-        .52, .90,
+        .55, .90,
         "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
         "= 5.36 TeV");
     text_info_yield_all->DrawLatexNDC(
-        .52, .83,
+        .55, .83,
         "J/#psi #rightarrow #mu^{+}#mu^{-}, 2.5 < y < "
         "4");
     text_info_yield_all->SetTextSize(0.07);
@@ -2420,11 +2420,11 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     text_info_yield_all->SetTextSize(0.06);
     text_info_yield_all->SetTextFont(42);
     text_info_yield_all->DrawLatexNDC(
-        .52, .9,
+        .55, .9,
         "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
         "= 5.36 TeV");
     text_info_yield_all->DrawLatexNDC(
-        .52, .83,
+        .55, .83,
         "J/#psi #rightarrow #mu^{+}#mu^{-}, 2.5 < y < "
         "4");
     text_info_yield_all->SetTextSize(0.07);

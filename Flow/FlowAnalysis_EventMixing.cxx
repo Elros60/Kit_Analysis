@@ -48,6 +48,7 @@
 using namespace std;
 
 // Predefined binnings
+vector<double> Bin_pt_mass_10 = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 20};
 vector<double> Bin_pt_mass_11 = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20};
 vector<double> Bin_pt_mass_15 = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
                                  7., 8.,  9., 10., 11., 12., 15., 20.};
@@ -97,6 +98,9 @@ void FlowAnalysis_EventMixing(
   // Define variables' range for analysis
   vector<double> Bin_pt_mass;
   switch (flag_binning) {
+  case 10:
+    Bin_pt_mass = Bin_pt_mass_10;
+    break;
   case 11:
     Bin_pt_mass = Bin_pt_mass_11;
     break;
@@ -107,7 +111,7 @@ void FlowAnalysis_EventMixing(
     Bin_pt_mass = Bin_pt_mass_11;
     break;
   default:
-    Bin_pt_mass = Bin_pt_mass_11;
+    Bin_pt_mass = Bin_pt_mass_10;
     break;
   }
 
@@ -118,10 +122,8 @@ void FlowAnalysis_EventMixing(
   string sig_enum[5] = {"CB2(data)", "CB2(MC)", "NA60", "Chebychev",
                         "EventMixing"};
   string bkg_v2_enum[2] = {"EventMixing(beta free)", "EventMixing(beta fix)"};
-  // int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
-  int sig_mass[1] = {0}; // CB2(MC,data) NA60
-  // int bkg_mass[2] = {3, 4};    // Chebychev Event-Mixing
-  int bkg_mass[1] = {4};       // Chebychev Event-Mixing
+  int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
+  int bkg_mass[2] = {3, 4};    // Chebychev Event-Mixing
   int bkg_v2[2] = {0, 1};      // Event-Mixing, beta fix or free
   int nb_trials = int(size(sig_mass)) * int(size(bkg_mass)) *
                   int(size(bkg_v2)) * int(size(mass_min_sys));
