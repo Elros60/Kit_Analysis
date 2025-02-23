@@ -686,8 +686,8 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
                     FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
                     FlowAnalysis_Fitting::centmin,
                     FlowAnalysis_Fitting::centmax));
-  hs->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
-  hs->GetYaxis()->SetTitle(Form("Counts per %g GeV/c2", hs->GetBinWidth(1)));
+  hs->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
+  hs->GetYaxis()->SetTitle(Form("Counts per %g GeV/c^{2}", hs->GetBinWidth(1)));
   hs->Draw("HIST EP");
   pad1_yield->ModifiedUpdate();
   model->SetLineWidth(3.0);
@@ -800,7 +800,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
   hs_pull_yield->GetXaxis()->SetLabelSize(0.1);
   hs_pull_yield->GetXaxis()->SetLabelOffset();
   hs_pull_yield->GetXaxis()->SetTitleSize(0.1);
-  hs_pull_yield->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_pull_yield->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_pull_yield->Draw("HIST P");
   TF1 *lyield1 = new TF1("lyield1", "[0]", FlowAnalysis_Fitting::massmin,
                          FlowAnalysis_Fitting::massmax);
@@ -1029,7 +1029,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
                        FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
                        FlowAnalysis_Fitting::centmin,
                        FlowAnalysis_Fitting::centmax));
-  hs_v2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_v2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_v2->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}");
   hs_v2->Draw("HIST EP");
   pad1_v2->ModifiedUpdate();
@@ -1085,7 +1085,7 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
   hs_pull_v2->GetXaxis()->SetLabelSize(0.1);
   hs_pull_v2->GetXaxis()->SetLabelOffset();
   hs_pull_v2->GetXaxis()->SetTitleSize(0.1);
-  hs_pull_v2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_pull_v2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_pull_v2->Draw("HIST P");
   TF1 *lv21 = new TF1("lv21", "[0]", FlowAnalysis_Fitting::massmin,
                       FlowAnalysis_Fitting::massmax);
@@ -1436,9 +1436,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_se_res->SetMarkerStyle(4);
     hs_se_res->SetMarkerSize(0.6);
     hs_se_res->SetMarkerColor(kBlue);
-    hs_se_res->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+    hs_se_res->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
     hs_se_res->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c^{2}", hs_se->GetBinWidth(1)));
     hs_se_res->Draw("HIST EP");
     hs_se_res->GetYaxis()->SetRangeUser(
         0.1, 1.2 * hs_se->GetBinContent(hs_se->GetMaximumBin()));
@@ -1448,9 +1448,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_se->SetMarkerSize(0.6);
     hs_se->SetMarkerColor(kBlack);
     hs_se->SetTitle("");
-    hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+    hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
     hs_se->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c^{2}", hs_se->GetBinWidth(1)));
     hs_se->Draw("HIST EP same");
     pad1_yield->ModifiedUpdate();
   } else {
@@ -1459,9 +1459,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_se->SetMarkerSize(0.6);
     hs_se->SetMarkerColor(kBlack);
     hs_se->SetTitle("");
-    hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+    hs_se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
     hs_se->GetYaxis()->SetTitle(
-        Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
+        Form("Counts per %g GeV/c^{2}", hs_se->GetBinWidth(1)));
     hs_se->GetYaxis()->SetRangeUser(
         0.1, 1.2 * hs_se->GetBinContent(hs_se->GetMaximumBin()));
     hs_se->Draw("HIST EP");
@@ -1472,9 +1472,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_me->SetMarkerStyle(4);
   hs_me->SetMarkerSize(0.6);
   hs_me->SetMarkerColor(kBlack);
-  hs_me->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_me->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_me->GetYaxis()->SetTitle(
-      Form("Counts per %g GeV/c2", hs_se->GetBinWidth(1)));
+      Form("Counts per %g GeV/c^{2}", hs_se->GetBinWidth(1)));
   hs_me->Draw("HIST EP same");
   pad1_yield->ModifiedUpdate();
   model->SetLineWidth(2.0);
@@ -1634,7 +1634,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_pull_yield->GetXaxis()->SetLabelSize(0.1);
   hs_pull_yield->GetXaxis()->SetLabelOffset();
   hs_pull_yield->GetXaxis()->SetTitleSize(0.1);
-  hs_pull_yield->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_pull_yield->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_pull_yield->Draw("HIST P");
   TF1 *lyield1 = new TF1("lyield1", "[0]", FlowAnalysis_Fitting::massmin,
                          FlowAnalysis_Fitting::massmax);
@@ -1683,7 +1683,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   double meanPt_fitted = 0.;
   double meanPterror_fitted = 0.;
   double chi2ndf_meanPt = 0.;
-  TH1D *hs_model_meanPt = new TH1D();
+  TF1 *model_meanPt = new TF1();
+  TGraph *hs_model_meanPt = new TGraph();
   TLegend *legend_meanPt = new TLegend(0.13, 0.45, 0.28, 0.65);
   if (hs_meanPt_input) {
     // Setting up fit model for mean pT fit
@@ -1697,9 +1698,12 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       return value;
     };
 
-    TF1 *model_meanPt =
-        new TF1("model_meanPt", fct_meanPt, FlowAnalysis_Fitting::massmin,
-                FlowAnalysis_Fitting::massmax, 8);
+    model_meanPt =
+        FlowAnalysis_Fitting::ptmax <= 3
+            ? new TF1("model_meanPt", fct_meanPt, 2.5, 3.8, 8)
+            : new TF1("model_meanPt", fct_meanPt, FlowAnalysis_Fitting::massmin,
+                      FlowAnalysis_Fitting::massmax, 8);
+
     model_meanPt->SetParameter(
         0, (FlowAnalysis_Fitting::ptmin + FlowAnalysis_Fitting::ptmax) / 2.);
     model_meanPt->SetParLimits(0, FlowAnalysis_Fitting::ptmin,
@@ -1739,7 +1743,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_meanPt->Scale(0.5);
 
     for (int i = 1; i <= 7; i++) {
-      auto result_meanPt = hs_meanPt->Fit("model_meanPt", "S Q B 0");
+      auto result_meanPt = FlowAnalysis_Fitting::ptmax <= 3
+                               ? hs_meanPt->Fit("model_meanPt", "S Q B R 0")
+                               : hs_meanPt->Fit("model_meanPt", "S Q B 0");
       int fitStatus_meanPt = result_meanPt;
       int bit_improve_meanPt = int(fitStatus_meanPt / 1000);
       int bit_minos_meanPt =
@@ -1828,16 +1834,19 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_meanPt->SetTitle("");
     hs_meanPt->SetMarkerStyle(20);
     hs_meanPt->SetMarkerSize(0.8);
-    hs_meanPt->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+    hs_meanPt->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
     hs_meanPt->GetYaxis()->SetTitle("<#it{p}^{#mu#mu}_{T}> (GeV/c)");
     hs_meanPt->Draw("HIST EP");
     pad1_meanPt->ModifiedUpdate();
+    /*
     hs_model_meanPt = dynamic_cast<TH1D *>(FlowAnalysis_Fitting::GetHistFromTF(
         hs_meanPt, model_meanPt, "ModelMeanPt"));
+    */
+    hs_model_meanPt = new TGraph(model_meanPt);
     hs_model_meanPt->SetLineWidth(3.0);
     hs_model_meanPt->SetLineColor(kBlue);
     hs_model_meanPt->SetTitle("");
-    hs_model_meanPt->Draw("HIST same");
+    hs_model_meanPt->Draw("C same");
     pad1_meanPt->ModifiedUpdate();
     TPaveStats *sb_meanPt = (TPaveStats *)pad1_meanPt->GetPrimitive("stats");
     sb_meanPt->SetName("J/#psi <#it{p}_{T}> fit");
@@ -1849,18 +1858,6 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     sb_meanPt->Draw();
     pad1_meanPt->ModifiedUpdate();
     TLatex *text_info_meanPt = new TLatex();
-    /*
-    text_info_meanPt->SetTextSize(0.04);
-    text_info_meanPt->SetTextFont(42);
-    text_info_meanPt->DrawLatexNDC(
-        .18, .82,
-        "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
-        "= 5.36 TeV");
-    pad1_meanPt->ModifiedUpdate();
-    text_info_meanPt->DrawLatexNDC(.18, .77,
-                                   "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
-                                   "4");
-    */
     text_info_meanPt->SetTextSize(0.05);
     text_info_meanPt->SetTextFont(62);
     text_info_meanPt->DrawLatexNDC(
@@ -1912,7 +1909,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_pull_meanPt->GetXaxis()->SetLabelSize(0.1);
     hs_pull_meanPt->GetXaxis()->SetLabelOffset();
     hs_pull_meanPt->GetXaxis()->SetTitleSize(0.1);
-    hs_pull_meanPt->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+    hs_pull_meanPt->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
     hs_pull_meanPt->Draw("HIST P");
     TF1 *lmeanPt1 = new TF1("lmeanPt1", "[0]", FlowAnalysis_Fitting::massmin,
                             FlowAnalysis_Fitting::massmax);
@@ -2093,7 +2090,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_v2se->SetMarkerStyle(20);
   hs_v2se->SetMarkerSize(0.8);
   hs_v2se->SetTitle("");
-  hs_v2se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_v2se->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_v2se->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}{SP}");
   hs_v2se->Draw("HIST EP");
   pad1_v2->ModifiedUpdate();
@@ -2110,7 +2107,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_v2bkg->SetMarkerStyle(4);
   hs_v2bkg->SetMarkerSize(0.8);
   hs_v2bkg->SetMarkerColor(kBlue);
-  hs_v2bkg->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_v2bkg->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_v2bkg->GetYaxis()->SetTitle("#it{v}^{#mu#mu}_{2}");
   hs_v2bkg->Draw("HIST EP same");
   pad1_v2->ModifiedUpdate();
@@ -2131,18 +2128,6 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   sb_v2->Draw();
   pad1_v2->ModifiedUpdate();
   TLatex *text_info_v2 = new TLatex();
-  /*
-  text_info_meanPt->SetTextSize(0.04);
-  text_info_meanPt->SetTextFont(42);
-  text_info_meanPt->DrawLatexNDC(
-      .18, .82,
-      "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
-      "= 5.36 TeV");
-  pad1_meanPt->ModifiedUpdate();
-  text_info_meanPt->DrawLatexNDC(.18, .77,
-                                 "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
-                                 "4");
-  */
   text_info_v2->SetTextSize(0.05);
   text_info_v2->SetTextFont(62);
   text_info_v2->DrawLatexNDC(
@@ -2195,7 +2180,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_pull_v2->GetXaxis()->SetLabelSize(0.1);
   hs_pull_v2->GetXaxis()->SetLabelOffset();
   hs_pull_v2->GetXaxis()->SetTitleSize(0.1);
-  hs_pull_v2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c2)");
+  hs_pull_v2->GetXaxis()->SetTitle("m_{#mu#mu} (GeV/c^{2})");
   hs_pull_v2->Draw("HIST P");
   TF1 *lv21 = new TF1("lv21", "[0]", FlowAnalysis_Fitting::massmin,
                       FlowAnalysis_Fitting::massmax);
@@ -2318,6 +2303,14 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
         Form("%g < #it{p}_{T} < %g GeV/c    %g-%g%%",
              FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
              FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
+    text_info_yield_all->DrawLatexNDC(
+        .65, .70,
+        Form("%s = %d #pm %d", "N_{J/#psi}",
+             int(model->GetParameter(0) / hs_se->GetBinWidth(1)),
+             int(model->GetParError(0) / hs_se->GetBinWidth(1))));
+    text_info_yield_all->DrawLatexNDC(
+        .65, .60, Form("%s = %.2f", "(S/B)_{3#sigma}", S_3sigma / B_3sigma));
+
     TLegend *legend_yield_all = new TLegend(0.13, 0.05, 0.35, 0.45);
     legend_yield_all->SetBorderSize(0);
     legend_yield_all->SetFillStyle(0);
@@ -2357,7 +2350,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     c_all->cd(3);
     TH1D *hs_meanPt_cp = new TH1D();
     hs_meanPt->Copy(*hs_meanPt_cp);
-    TH1D *hs_model_meanPt_cp = dynamic_cast<TH1D *>(hs_model_meanPt->Clone());
+    TGraph *hs_model_meanPt_cp =
+        dynamic_cast<TGraph *>(hs_model_meanPt->Clone());
     hs_meanPt_cp->SetStats(0);
     hs_meanPt_cp->GetYaxis()->SetTitleSize(0.06);
     hs_meanPt_cp->GetYaxis()->SetLabelSize(0.05);
@@ -2366,7 +2360,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_meanPt_cp->GetXaxis()->SetTitleSize(0.05);
     hs_meanPt_cp->GetXaxis()->SetLabelSize(0.05);
     hs_meanPt_cp->Draw("HIST EP");
-    hs_model_meanPt_cp->Draw("HIST same");
+    hs_model_meanPt_cp->Draw("C same");
     TLegend *legend_meanPt_all = new TLegend(0.13, 0.45, 0.28, 0.65);
     legend_meanPt_all->SetBorderSize(0);
     legend_meanPt_all->SetFillStyle(0);
@@ -2429,12 +2423,18 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
         "4");
     text_info_yield_all->SetTextSize(0.07);
     text_info_yield_all->SetTextFont(62);
-    TPaveText *text_all = new TPaveText();
     text_info_yield_all->DrawLatexNDC(
         .15, .9,
         Form("%g < #it{p}_{T} < %g GeV/c    %g-%g%%",
              FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
              FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax));
+    text_info_yield_all->DrawLatexNDC(
+        .65, .70,
+        Form("%s = %d #pm %d", "N_{J/#psi}",
+             int(model->GetParameter(0) / hs_se->GetBinWidth(1)),
+             int(model->GetParError(0) / hs_se->GetBinWidth(1))));
+    text_info_yield_all->DrawLatexNDC(
+        .65, .60, Form("%s = %.2f", "(S/B)_{3#sigma}", S_3sigma / B_3sigma));
     TLegend *legend_yield_all = new TLegend(0.13, 0.05, 0.35, 0.45);
     legend_yield_all->SetBorderSize(0);
     legend_yield_all->SetFillStyle(0);
@@ -2491,10 +2491,16 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
 
 //______________________________________________________________________________
 TH1D *FlowAnalysis_Fitting::GetPull(TH1D *hs, TF1 *model, string fit_case) {
-  int Nbins = hs->GetXaxis()->GetNbins();
+  double xmin, xmax;
+  model->GetRange(xmin, xmax);
+  TH1D *hs_cp = new TH1D();
+  hs->Copy(*hs_cp);
+  int idx_massmin = hs_cp->FindBin(xmin);
+  int idx_massmax = hs_cp->FindBin(xmax);
+  int Nbins = hs_cp->GetXaxis()->GetNbins();
   double *Bins = new double[Nbins + 1];
-  hs->GetXaxis()->GetLowEdge(Bins);
-  Bins[Nbins] = hs->GetXaxis()->GetBinUpEdge(Nbins);
+  hs_cp->GetXaxis()->GetLowEdge(Bins);
+  Bins[Nbins] = hs_cp->GetXaxis()->GetBinUpEdge(Nbins);
   TH1D *hs_pull = new TH1D(
       Form(
           "Pull_%s_%s_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s", fit_case.c_str(),
@@ -2511,11 +2517,16 @@ TH1D *FlowAnalysis_Fitting::GetPull(TH1D *hs, TF1 *model, string fit_case) {
               .c_str()),
       "", Nbins, Bins);
   for (int i = 0; i < Nbins; i++) {
-    double val =
-        (hs->GetBinContent(i + 1) - model->Eval(hs->GetBinCenter(i + 1))) /
-        hs->GetBinError(i + 1);
-    hs_pull->SetBinContent(i + 1, val);
+    if ((i + 1) >= idx_massmin && (i + 1) <= idx_massmax) {
+      double val = (hs_cp->GetBinContent(i + 1) -
+                    model->Eval(hs_cp->GetBinCenter(i + 1))) /
+                   hs_cp->GetBinError(i + 1);
+      hs_pull->SetBinContent(i + 1, val);
+    } else {
+      hs_pull->SetBinContent(i + 1, 1000.);
+    }
   }
+  delete hs_cp;
   return hs_pull;
 }
 

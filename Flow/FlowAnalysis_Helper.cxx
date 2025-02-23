@@ -104,14 +104,15 @@ TH1D *FlowAnalysis_Helper::GetMeanPt(double ptmin, double ptmax, double massmin,
 
   TH2D *tp_V2_cp_projxy =
       dynamic_cast<TH2D *>(tp_V2_cp_projxyz->Project3D("yx"));
+
   TProfile *tp_V2_cp_projx = tp_V2_cp_projxy->ProfileX(
       Form("Mass_Pt_centrFT0C_V2_%s_Projx_%g_%g_%g_%g_%g_%g", flag.c_str(),
            massmin, massmax, ptmin, ptmax, centmin, centmax));
 
-  double *Bin_mass_new = CreateBinsFromAxis(tp_V2_cp_projx->GetXaxis());
-  int NBins_mass_new = tp_V2_cp_projx->GetXaxis()->GetNbins();
-  TH1D *hist_meanPt = new TH1D(Form("ProjPt_%s", tp_V2_cp_projx->GetName()),
-                               Form("ProjPt_%s", tp_V2_cp_projx->GetName()),
+  double *Bin_mass_new = CreateBinsFromAxis(tp_V2_cp_projxy->GetXaxis());
+  int NBins_mass_new = tp_V2_cp_projxy->GetXaxis()->GetNbins();
+  TH1D *hist_meanPt = new TH1D(Form("ProjPt_%s", tp_V2_cp_projxy->GetName()),
+                               Form("ProjPt_%s", tp_V2_cp_projxy->GetName()),
                                NBins_mass_new, Bin_mass_new);
   hist_meanPt->GetXaxis()->SetTitle("mass (GeV/c2)");
   hist_meanPt->GetYaxis()->SetTitle("<#it{p}^{#mu#mu}_{T}> (GeV/c)");
