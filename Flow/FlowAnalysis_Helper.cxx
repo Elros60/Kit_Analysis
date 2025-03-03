@@ -387,7 +387,9 @@ double FlowAnalysis_Helper::GetFfactorProfile(
                                      massmax, ptmin, ptmax, centmin, centmax),
                                 NBins_mass_new, Bin_mass_new);
   for (int i = 0; i < NBins_mass_new; i++) {
-    double R_val = hist_rfactor->GetBinContent(i + 1);
+    double BinCenter = tp_V2SEPP_cp_proj->GetBinCenter(i + 1);
+    double R_val =
+        hist_rfactor->GetBinContent(hist_rfactor->FindBin(BinCenter));
     double N_SEPP = tp_V2SEPP_cp_proj->GetBinContent(i + 1);
     double N_SEMM = tp_V2SEMM_cp_proj->GetBinContent(i + 1);
 
@@ -736,7 +738,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   c_sys_yield->SetCanvasSize(1000, 400);
   TPad *pad_sys_yield =
       new TPad(Form("pad_sys_yield_%d", index), Form("pad_sys_yield_%d", index),
-               0, 0.3, 1, 1.0);
+               0, 0.5, 1, 1.0);
   pad_sys_yield->SetBottomMargin(0);
   pad_sys_yield->Draw();
   pad_sys_yield->cd();
@@ -820,9 +822,9 @@ void FlowAnalysis_Helper::PlotSystematics(
   c_sys_yield->cd();
   TPad *pad_sys_yield_chi =
       new TPad(Form("pad_sys_yield_chi2_%d", index),
-               Form("pad_sys_yield_chi2_%d", index), 0, 0., 1, 0.3);
+               Form("pad_sys_yield_chi2_%d", index), 0, 0., 1, 0.5);
   pad_sys_yield_chi->SetTopMargin(0);
-  pad_sys_yield_chi->SetBottomMargin(0.6);
+  pad_sys_yield_chi->SetBottomMargin(0.8);
   pad_sys_yield_chi->Draw();
   pad_sys_yield_chi->cd();
   TH1D *hist_chi2_yield =
@@ -833,12 +835,14 @@ void FlowAnalysis_Helper::PlotSystematics(
   }
   hist_chi2_yield->SetTitle("");
   hist_chi2_yield->GetYaxis()->SetLabelSize(0.05);
-  hist_chi2_yield->GetYaxis()->SetRangeUser(0.5, 3.);
+  hist_chi2_yield->GetYaxis()->SetRangeUser(0.5, 2.9);
+  hist_chi2_yield->GetYaxis()->SetNdivisions(205);
   hist_chi2_yield->GetYaxis()->SetTitle("#chi^{2}/ndf");
-  hist_chi2_yield->GetYaxis()->SetTitleSize(0.08);
-  hist_chi2_yield->GetYaxis()->SetTitleOffset(0.25);
-  hist_chi2_yield->GetXaxis()->SetLabelSize(0.14);
-  hist_chi2_yield->GetXaxis()->SetLabelOffset(0.02);
+  hist_chi2_yield->GetYaxis()->SetTitleSize(0.05);
+  hist_chi2_yield->GetYaxis()->SetTitleOffset(0.35);
+  hist_chi2_yield->GetXaxis()->SetLabelSize(0.08);
+  hist_chi2_yield->GetXaxis()->SetLabelOffset(0.01);
+  hist_chi2_yield->GetXaxis()->LabelsOption("v");
   hist_chi2_yield->Draw("HIST P");
   TF1 *lchi2_yield1 = new TF1("lchi2_yield1", "[0]", bins_sys_yield[0],
                               bins_sys_yield[nbCombo_yield]);
@@ -867,7 +871,7 @@ void FlowAnalysis_Helper::PlotSystematics(
   c_sys_v2->SetBottomMargin(0);
   c_sys_v2->SetCanvasSize(1200, 400);
   TPad *pad_sys_v2 = new TPad(Form("pad_sys_v2_%d", index),
-                              Form("pad_sys_v2_%d", index), 0, 0.3, 1, 1.0);
+                              Form("pad_sys_v2_%d", index), 0, 0.5, 1, 1.0);
   pad_sys_v2->SetBottomMargin(0);
   pad_sys_v2->Draw();
   pad_sys_v2->cd();
@@ -951,25 +955,27 @@ void FlowAnalysis_Helper::PlotSystematics(
   c_sys_v2->cd();
   TPad *pad_sys_v2_chi =
       new TPad(Form("pad_sys_v2_chi2_%d", index),
-               Form("pad_sys_v2_chi2_%d", index), 0, 0., 1, 0.3);
+               Form("pad_sys_v2_chi2_%d", index), 0, 0., 1, 0.5);
   pad_sys_v2_chi->SetTopMargin(0);
-  pad_sys_v2_chi->SetBottomMargin(0.6);
+  pad_sys_v2_chi->SetBottomMargin(0.8);
   pad_sys_v2_chi->Draw();
   pad_sys_v2_chi->cd();
-  TH1D *hist_chi2_v2 =
-      (TH1D *)hist_sys_v2->Clone(Form("hist_v2_chi2_%d", index));
+  TH1D *hist_chi2_v2 = new TH1D();
+  hist_chi2_v2 = (TH1D *)hist_sys_v2->Clone(Form("hist_v2_chi2_%d", index));
   for (int j = 0; j < hist_chi2_v2->GetNbinsX(); j++) {
     hist_chi2_v2->SetBinContent(j + 1, chi2_v2[j]);
     hist_chi2_v2->SetBinError(j + 1, 0.);
   }
   hist_chi2_v2->SetTitle("");
-  hist_chi2_v2->GetYaxis()->SetLabelSize(0.05);
-  hist_chi2_v2->GetYaxis()->SetRangeUser(0.5, 3.);
+  hist_chi2_v2->GetYaxis()->SetLabelSize(0.03);
+  hist_chi2_v2->GetYaxis()->SetRangeUser(0.5, 2.9);
   hist_chi2_v2->GetYaxis()->SetTitle("#chi^{2}/ndf");
-  hist_chi2_v2->GetYaxis()->SetTitleSize(0.08);
-  hist_chi2_v2->GetYaxis()->SetTitleOffset(0.25);
-  hist_chi2_v2->GetXaxis()->SetLabelSize(0.13);
-  hist_chi2_v2->GetXaxis()->SetLabelOffset(0.02);
+  hist_chi2_v2->GetYaxis()->SetTitleSize(0.05);
+  hist_chi2_v2->GetYaxis()->SetNdivisions(205);
+  hist_chi2_v2->GetYaxis()->SetTitleOffset(0.35);
+  hist_chi2_v2->GetXaxis()->SetLabelSize(0.05);
+  hist_chi2_v2->GetXaxis()->SetLabelOffset(0.01);
+  hist_chi2_v2->GetXaxis()->LabelsOption("v");
   hist_chi2_v2->Draw("HIST P");
   TF1 *lchi2_v21 =
       new TF1("lchi2_v21", "[0]", bins_sys_v2[0], bins_sys_v2[nbCombo_v2]);
@@ -993,15 +999,15 @@ void FlowAnalysis_Helper::PlotSystematics(
   ls_sys_v2->Add(c_sys_v2);
 
   // Plotting for mean Pt systematics
+  TCanvas *c_sys_meanPt = new TCanvas(
+      Form("Sys_meanPt_%g_%g_%g_%g", ptmin, ptmax, centmin, centmax), "");
   if (hist_sys_meanPt != nullptr) {
-    TCanvas *c_sys_meanPt = new TCanvas(
-        Form("Sys_meanPt_%g_%g_%g_%g", ptmin, ptmax, centmin, centmax), "");
     c_sys_meanPt->cd();
     c_sys_meanPt->SetBottomMargin(0);
     c_sys_meanPt->SetCanvasSize(1000, 400);
     TPad *pad_sys_meanPt =
         new TPad(Form("pad_sys_meanPt_%d", index),
-                 Form("pad_sys_meanPt_%d", index), 0, 0.3, 1, 1.0);
+                 Form("pad_sys_meanPt_%d", index), 0, 0.5, 1, 1.0);
     pad_sys_meanPt->SetBottomMargin(0);
     pad_sys_meanPt->Draw();
     pad_sys_meanPt->cd();
@@ -1076,12 +1082,13 @@ void FlowAnalysis_Helper::PlotSystematics(
     c_sys_meanPt->cd();
     TPad *pad_sys_meanPt_chi =
         new TPad(Form("pad_sys_meanPt_chi2_%d", index),
-                 Form("pad_sys_meanPt_chi2_%d", index), 0, 0., 1, 0.3);
+                 Form("pad_sys_meanPt_chi2_%d", index), 0, 0., 1, 0.5);
     pad_sys_meanPt_chi->SetTopMargin(0);
-    pad_sys_meanPt_chi->SetBottomMargin(0.6);
+    pad_sys_meanPt_chi->SetBottomMargin(0.8);
     pad_sys_meanPt_chi->Draw();
     pad_sys_meanPt_chi->cd();
-    TH1D *hist_chi2_meanPt =
+    TH1D *hist_chi2_meanPt = new TH1D();
+    hist_chi2_meanPt =
         (TH1D *)hist_sys_meanPt->Clone(Form("hist_meanPt_chi2_%d", index));
     for (int j = 0; j < hist_chi2_meanPt->GetNbinsX(); j++) {
       hist_chi2_meanPt->SetBinContent(j + 1, chi2_meanPt[j]);
@@ -1089,12 +1096,14 @@ void FlowAnalysis_Helper::PlotSystematics(
     }
     hist_chi2_meanPt->SetTitle("");
     hist_chi2_meanPt->GetYaxis()->SetLabelSize(0.05);
-    hist_chi2_meanPt->GetYaxis()->SetRangeUser(0.5, 3.);
+    hist_chi2_meanPt->GetYaxis()->SetRangeUser(0.5, 2.9);
     hist_chi2_meanPt->GetYaxis()->SetTitle("#chi^{2}/ndf");
-    hist_chi2_meanPt->GetYaxis()->SetTitleSize(0.08);
-    hist_chi2_meanPt->GetYaxis()->SetTitleOffset(0.25);
-    hist_chi2_meanPt->GetXaxis()->SetLabelSize(0.14);
-    hist_chi2_meanPt->GetXaxis()->SetLabelOffset(0.02);
+    hist_chi2_meanPt->GetYaxis()->SetNdivisions(205);
+    hist_chi2_meanPt->GetYaxis()->SetTitleSize(0.05);
+    hist_chi2_meanPt->GetYaxis()->SetTitleOffset(0.35);
+    hist_chi2_meanPt->GetXaxis()->SetLabelSize(0.07);
+    hist_chi2_meanPt->GetXaxis()->SetLabelOffset(0.01);
+    hist_chi2_meanPt->GetXaxis()->LabelsOption("v");
     hist_chi2_meanPt->Draw("HIST P");
     TF1 *lchi2_meanPt1 = new TF1("lchi2_meanPt1", "[0]", bins_sys_yield[0],
                                  bins_sys_yield[nbCombo_yield]);
@@ -1236,23 +1245,34 @@ void FlowAnalysis_Helper::PlotFinalResults(
       new TCanvas("jpsi_yield_raw_pT", "jpsi_yield_raw_pT");
   TCanvas *c_pt = new TCanvas("v2_pT", "v2_pT");
 
-  TGraphMultiErrors *graph_v2pt =
-      new TGraphMultiErrors("graph_v2_pt", "", size_ptbin, x_v2pt, y_v2pt,
-                            ex_v2pt, ex_v2pt, ey_v2pt, ey_v2pt);
-  graph_v2pt->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%%",
+  double *zero_pt = new double[size_ptbin];
+  for (int i = 0; i < size_ptbin; i++) {
+    zero_pt[i] = 0.;
+  }
+
+  TGraphErrors *graph_v2pt =
+      new TGraphErrors(size_ptbin, x_v2pt, y_v2pt, zero_pt, ey_v2pt);
+  TGraphErrors *graph_v2pt_sys =
+      new TGraphErrors(size_ptbin, x_v2pt, y_v2pt, ex_v2pt, eysys_v2pt);
+  graph_v2pt->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%% stat.",
                             int(cent_min), int(cent_max)));
   graph_v2pt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_v2pt->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
-  graph_v2pt->AddYError(size_ptbin, eysys_v2pt, eysys_v2pt);
+  graph_v2pt_sys->SetTitle("Syst. unc.");
+  graph_v2pt_sys->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  graph_v2pt_sys->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
 
-  TGraphMultiErrors *graph_v2pt_run2 =
-      new TGraphMultiErrors("graph_v2_pt_run2", "", 10, x_run2, y_run2, ex_run2,
-                            ex_run2, ey_run2, ey_run2);
-  graph_v2pt_run2->AddYError(10, eysys_run2, eysys_run2);
-  graph_v2pt_run2->SetTitle(Form("Run2 #sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%%",
+  TGraphErrors *graph_v2pt_run2 =
+      new TGraphErrors(size_ptbin, x_run2, y_run2, zero_pt, ey_run2);
+  TGraphErrors *graph_v2pt_run2_sys =
+      new TGraphErrors(size_ptbin, x_run2, y_run2, ex_run2, eysys_run2);
+  graph_v2pt_run2->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%% stat.",
                                  int(cent_min), int(cent_max)));
   graph_v2pt_run2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
   graph_v2pt_run2->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
+  graph_v2pt_run2_sys->SetTitle("Syst. unc.");
+  graph_v2pt_run2_sys->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  graph_v2pt_run2_sys->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
 
   TGraphMultiErrors *graph_yield =
       new TGraphMultiErrors("graph_yields_pt", "Run3", size_ptbin, x_yield,
@@ -1399,39 +1419,57 @@ void FlowAnalysis_Helper::PlotFinalResults(
   pad_pt_final->Draw();
   pad_pt_final->cd();
   TMultiGraph *mg = new TMultiGraph();
+  // mg->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  // mg->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
   graph_v2pt->SetMarkerStyle(20);
   graph_v2pt->SetMarkerSize(1.);
   graph_v2pt->SetMarkerColor(kBlue);
-  graph_v2pt->SetLineColor(kBlue);
   graph_v2pt->SetLineWidth(2);
+  graph_v2pt->SetLineColor(kBlue);
   graph_v2pt->SetFillStyle(0);
+  graph_v2pt_sys->SetLineWidth(2);
+  graph_v2pt_sys->SetLineColor(kBlue);
+  graph_v2pt_sys->SetFillStyle(0);
+
   graph_v2pt_run2->SetMarkerStyle(20);
   graph_v2pt_run2->SetMarkerSize(1.);
   graph_v2pt_run2->SetMarkerColor(kRed);
   graph_v2pt_run2->SetLineColor(kRed);
   graph_v2pt_run2->SetLineWidth(2);
   graph_v2pt_run2->SetFillStyle(0);
-  mg->Add(graph_v2pt_run2);
-  mg->Add(graph_v2pt);
-  mg->GetXaxis()->SetRangeUser(0, mg->GetXaxis()->GetXmax());
-  mg->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-  if (cent_min == 0) {
-    mg->GetYaxis()->SetRangeUser(-0.1, 0.2);
-  } else {
-    mg->GetYaxis()->SetRangeUser(-0.02, 0.2);
-  }
-  mg->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
-  mg->SetTitle("");
-  mg->Draw("A P Z ; Z ; 5 s=0.5");
-  pad_pt_final->BuildLegend();
+  graph_v2pt_run2_sys->SetLineColor(kRed);
+  graph_v2pt_run2_sys->SetLineWidth(2);
+  graph_v2pt_run2_sys->SetFillStyle(0);
+
+  mg->Add(graph_v2pt, "pz");
+  mg->Add(graph_v2pt_sys, "2z");
+  mg->Add(graph_v2pt_run2, "pz");
+  mg->Add(graph_v2pt_run2_sys, "2z");
+  mg->Draw("a");
+  TLegend *legend_v2 = new TLegend(0.13, 0.35, 0.55, 0.7);
+  legend_v2->SetBorderSize(0);
+  legend_v2->SetFillStyle(0);
+  legend_v2->AddEntry(graph_v2pt,
+                      Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%% stat.",
+                           int(cent_min), int(cent_max)),
+                      "EP");
+  legend_v2->AddEntry(graph_v2pt_run2,
+                      Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%% stat.",
+                           int(cent_min), int(cent_max)),
+                      "EP");
+  legend_v2->AddEntry(graph_v2pt_sys, "Syst. unc.", "F");
+  legend_v2->AddEntry(graph_v2pt_run2_sys, "Syst. unc.", "F");
+  legend_v2->Draw("same");
+  pad_pt_final->ModifiedUpdate();
+
   TLatex *text_pt = new TLatex();
   text_pt->SetTextSize(0.04);
   text_pt->SetTextFont(42);
-  text_pt->DrawLatexNDC(.18, .82,
+  text_pt->DrawLatexNDC(.12, .85,
                         "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
                         "= 5.36 TeV");
   pad_pt_final->ModifiedUpdate();
-  text_pt->DrawLatexNDC(.18, .77,
+  text_pt->DrawLatexNDC(.12, .80,
                         "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
                         "4");
   pad_pt_final->ModifiedUpdate();
@@ -2233,9 +2271,14 @@ void FlowAnalysis_Helper::LoadDataMEProfile(
     TProfile3D *&tp_V2MEMM, std::string muonCut, std::string dimuonCut) {
   // Load input data for analysis
   filesystem::path filePath = FileName;
-  THashList *list_hist_v2se, *list_hist_v2me;
-  TList *sublist_v2sepm, *sublist_v2sepp, *sublist_v2semm;
-  TList *sublist_v2mepm, *sublist_v2mepp, *sublist_v2memm;
+  THashList *list_hist_v2se = new THashList();
+  THashList *list_hist_v2me = new THashList();
+  TList *sublist_v2sepm = new TList();
+  TList *sublist_v2sepp = new TList();
+  TList *sublist_v2semm = new TList();
+  TList *sublist_v2mepm = new TList();
+  TList *sublist_v2mepp = new TList();
+  TList *sublist_v2memm = new TList();
   if (filePath.extension() == ".root") {
     // Load data from AnalysisResults.root
     TFile *Input_File = TFile::Open(FileName.c_str());
@@ -2366,6 +2409,8 @@ void FlowAnalysis_Helper::LoadDataMEProfile(
       InputFiles.close();
     }
   }
+  delete list_hist_v2se;
+  delete list_hist_v2me;
 }
 
 //______________________________________________________________________________
@@ -2400,16 +2445,26 @@ void FlowAnalysis_Helper::LoadDataRun2(double *&x, double *&y, double *&ex,
     y[8] = 0.068;
     y[9] = 0.002;
 
-    ex[0] = 0.5;
-    ex[1] = 0.5;
-    ex[2] = 0.5;
-    ex[3] = 0.5;
-    ex[4] = 0.5;
-    ex[5] = 0.5;
-    ex[6] = 1.;
-    ex[7] = 1.;
-    ex[8] = 1.;
-    ex[9] = 1.5;
+    // ex[0] = 0.5;
+    // ex[1] = 0.5;
+    // ex[2] = 0.5;
+    // ex[3] = 0.5;
+    // ex[4] = 0.5;
+    // ex[5] = 0.5;
+    // ex[6] = 1.;
+    // ex[7] = 1.;
+    // ex[8] = 1.;
+    // ex[9] = 1.5;
+    ex[0] = 0.25;
+    ex[1] = 0.25;
+    ex[2] = 0.25;
+    ex[3] = 0.25;
+    ex[4] = 0.25;
+    ex[5] = 0.25;
+    ex[6] = 0.25;
+    ex[7] = 0.25;
+    ex[8] = 0.25;
+    ex[9] = 0.25;
 
     ey[0] = 0.013;
     ey[1] = 0.01;
@@ -2456,16 +2511,26 @@ void FlowAnalysis_Helper::LoadDataRun2(double *&x, double *&y, double *&ex,
     y[8] = 0.049;
     y[9] = 0.022;
 
-    ex[0] = 0.5;
-    ex[1] = 0.5;
-    ex[2] = 0.5;
-    ex[3] = 0.5;
-    ex[4] = 0.5;
-    ex[5] = 0.5;
-    ex[6] = 1.;
-    ex[7] = 1.;
-    ex[8] = 1.;
-    ex[9] = 1.5;
+    // ex[0] = 0.5;
+    // ex[1] = 0.5;
+    // ex[2] = 0.5;
+    // ex[3] = 0.5;
+    // ex[4] = 0.5;
+    // ex[5] = 0.5;
+    // ex[6] = 1.;
+    // ex[7] = 1.;
+    // ex[8] = 1.;
+    // ex[9] = 1.5;
+    ex[0] = 0.25;
+    ex[1] = 0.25;
+    ex[2] = 0.25;
+    ex[3] = 0.25;
+    ex[4] = 0.25;
+    ex[5] = 0.25;
+    ex[6] = 0.25;
+    ex[7] = 0.25;
+    ex[8] = 0.25;
+    ex[9] = 0.25;
 
     ey[0] = 0.0085;
     ey[1] = 0.0069;
@@ -2512,16 +2577,26 @@ void FlowAnalysis_Helper::LoadDataRun2(double *&x, double *&y, double *&ex,
     y[8] = 0.055;
     y[9] = 0.026;
 
-    ex[0] = 0.5;
-    ex[1] = 0.5;
-    ex[2] = 0.5;
-    ex[3] = 0.5;
-    ex[4] = 0.5;
-    ex[5] = 0.5;
-    ex[6] = 1.;
-    ex[7] = 1.;
-    ex[8] = 1.;
-    ex[9] = 1.5;
+    // ex[0] = 0.5;
+    // ex[1] = 0.5;
+    // ex[2] = 0.5;
+    // ex[3] = 0.5;
+    // ex[4] = 0.5;
+    // ex[5] = 0.5;
+    // ex[6] = 1.;
+    // ex[7] = 1.;
+    // ex[8] = 1.;
+    // ex[9] = 1.5;
+    ex[0] = 0.25;
+    ex[1] = 0.25;
+    ex[2] = 0.25;
+    ex[3] = 0.25;
+    ex[4] = 0.25;
+    ex[5] = 0.25;
+    ex[6] = 0.25;
+    ex[7] = 0.25;
+    ex[8] = 0.25;
+    ex[9] = 0.25;
 
     ey[0] = 0.011;
     ey[1] = 0.0091;
@@ -2568,16 +2643,26 @@ void FlowAnalysis_Helper::LoadDataRun2(double *&x, double *&y, double *&ex,
     y[8] = 0.042;
     y[9] = 0.047;
 
-    ex[0] = 0.5;
-    ex[1] = 0.5;
-    ex[2] = 0.5;
-    ex[3] = 0.5;
-    ex[4] = 0.5;
-    ex[5] = 0.5;
-    ex[6] = 1.;
-    ex[7] = 1.;
-    ex[8] = 1.;
-    ex[9] = 1.5;
+    // ex[0] = 0.5;
+    // ex[1] = 0.5;
+    // ex[2] = 0.5;
+    // ex[3] = 0.5;
+    // ex[4] = 0.5;
+    // ex[5] = 0.5;
+    // ex[6] = 1.;
+    // ex[7] = 1.;
+    // ex[8] = 1.;
+    // ex[9] = 1.5;
+    ex[0] = 0.25;
+    ex[1] = 0.25;
+    ex[2] = 0.25;
+    ex[3] = 0.25;
+    ex[4] = 0.25;
+    ex[5] = 0.25;
+    ex[6] = 0.25;
+    ex[7] = 0.25;
+    ex[8] = 0.25;
+    ex[9] = 0.25;
 
     ey[0] = 0.0094;
     ey[1] = 0.0076;

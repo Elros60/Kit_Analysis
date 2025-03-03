@@ -129,19 +129,19 @@ void FlowAnalysis_EventMixing(
                   int(size(bkg_v2)) * int(size(mass_min_sys));
 
   // Create output file
-  TFile f(sys ? Form("FlowAnalysisResults_%s_"
-                     "EventMixing%d_%s_%g_%"
-                     "g_%dBinPt_%s_withSys.root",
-                     inputFlag.c_str(), nb_trials, muonCut.c_str(), cent_min,
-                     cent_max, int(Bin_pt_mass.size()) - 1,
-                     meanPt ? "MeanPt" : "NoMeanPt")
-              : Form("FlowAnalysisResults_%s_"
-                     "EventMixing_%s_%g_%"
-                     "g_%dBinPt_%s.root",
-                     inputFlag.c_str(), muonCut.c_str(), cent_min, cent_max,
-                     int(Bin_pt_mass.size()) - 1,
-                     meanPt ? "MeanPt" : "NoMeanPt"),
-          "RECREATE");
+  TFile *f = new TFile(
+      sys ? Form("FlowAnalysisResults_%s_"
+                 "EventMixing%d_%s_%g_%"
+                 "g_%dBinPt_%s_withSys.root",
+                 inputFlag.c_str(), nb_trials, muonCut.c_str(), cent_min,
+                 cent_max, int(Bin_pt_mass.size()) - 1,
+                 meanPt ? "MeanPt" : "NoMeanPt")
+          : Form("FlowAnalysisResults_%s_"
+                 "EventMixing_%s_%g_%"
+                 "g_%dBinPt_%s.root",
+                 inputFlag.c_str(), muonCut.c_str(), cent_min, cent_max,
+                 int(Bin_pt_mass.size()) - 1, meanPt ? "MeanPt" : "NoMeanPt"),
+      "RECREATE");
 
   ///////////////////////////////////////////////////
   ///                                             ///
@@ -166,7 +166,7 @@ void FlowAnalysis_EventMixing(
     ffactor.emplace_back(F_value);
     TList *l_rfactor = new TList();
     l_rfactor->Add(hist_rfactor);
-    f.cd();
+    f->cd();
     l_rfactor->Write(
         Form("RNormalizationFactor_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         TObject::kSingleKey);
@@ -174,6 +174,21 @@ void FlowAnalysis_EventMixing(
     delete hist_rfactor;
     delete l_rfactor;
   }
+
+  TH1D *hist_rfactor = helper->GetRfactorProfile(
+      Bin_pt_mass[0], Bin_pt_mass[int(Bin_pt_mass.size()) - 1], 0, 5, cent_min,
+      cent_max, tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
+  double F_value = helper->GetFfactorProfile(
+      Bin_pt_mass[0], Bin_pt_mass[int(Bin_pt_mass.size()) - 1], mass_min,
+      mass_max, cent_min, cent_max, tp_V2SEPP, tp_V2SEMM, tp_V2MEPM,
+      hist_rfactor);
+
+  TList *l_rfactor_fullPt = new TList();
+  l_rfactor_fullPt->Add(hist_rfactor);
+  f->cd();
+  l_rfactor_fullPt->Write("RNormalizationFactor_FullRange",
+                          TObject::kSingleKey);
+  delete hist_rfactor;
 
   // Create histogram for pt-differential v2
   double *x_yield = new double[int(Bin_pt_mass.size()) - 1];
@@ -293,9 +308,12 @@ void FlowAnalysis_EventMixing(
                              mass_max, cent_min, cent_max, tp_V2MEMM, "MEMM");
 
     // Scale mixed-event spectra with F factor
-    hs_mass_mepm_proj->Scale(ffactor[i]);
-    hs_mass_mepp_proj->Scale(ffactor[i]);
-    hs_mass_memm_proj->Scale(ffactor[i]);
+    // hs_mass_mepm_proj->Scale(ffactor[i]);
+    // hs_mass_mepp_proj->Scale(ffactor[i]);
+    // hs_mass_memm_proj->Scale(ffactor[i]);
+    hs_mass_mepm_proj->Scale(F_value);
+    hs_mass_mepp_proj->Scale(F_value);
+    hs_mass_memm_proj->Scale(F_value);
 
     // Mean pT profile
     TH1D *hs_mass_sepm_proj_meanPt = new TH1D();
@@ -349,19 +367,19 @@ void FlowAnalysis_EventMixing(
 
     SNR[i] = results_v2[4];
 
-    f.cd();
+    f->cd();
     l_SE_ME->SetOwner();
     l_SE_ME->Write(Form("Mass_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
                    TObject::kSingleKey);
     delete l_SE_ME;
 
-    f.cd();
+    f->cd();
     l_SE_ME_V2->SetOwner();
     l_SE_ME_V2->Write(Form("V2_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
                       TObject::kSingleKey);
     delete l_SE_ME_V2;
 
-    f.cd();
+    f->cd();
     l_diff_fit->SetOwner();
     l_diff_fit->Write(
         Form("DifferentialFlow_Fit_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
@@ -425,6 +443,16 @@ void FlowAnalysis_EventMixing(
                 delete hist_rfactor_sys;
               }
 
+              TH1D *hist_rfactor_sys = helper->GetRfactorProfile(
+                  Bin_pt_mass[0], Bin_pt_mass[int(Bin_pt_mass.size()) - 1],
+                  mass_min_sys[i1], mass_max_sys[i1], cent_min, cent_max,
+                  tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
+              double F_value_sys = helper->GetFfactorProfile(
+                  Bin_pt_mass[0], Bin_pt_mass[int(Bin_pt_mass.size()) - 1],
+                  mass_min_sys[i1], mass_max_sys[i1], cent_min, cent_max,
+                  tp_V2SEPP, tp_V2SEMM, tp_V2MEPM, hist_rfactor_sys);
+              delete hist_rfactor_sys;
+
               // Get mass and v2 to fit
               // Same-event profiles: mass
               TH1D *hs_mass_sepm_proj_sys = helper->GetMassProfile(
@@ -447,7 +475,8 @@ void FlowAnalysis_EventMixing(
                   mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, "MEPM");
 
               // Scale mixed-event spectra with F factor
-              hs_mass_mepm_proj_sys->Scale(ffactor_sys[i]);
+              // hs_mass_mepm_proj_sys->Scale(ffactor_sys[i]);
+              hs_mass_mepm_proj_sys->Scale(F_value_sys);
 
               // Mean pT profile
               TH1D *hs_mass_sepm_proj_meanPt_sys = new TH1D();
@@ -520,7 +549,7 @@ void FlowAnalysis_EventMixing(
                 hist_sys_meanPt[i]->SetBinError(index_sys_yield + 1,
                                                 ex_sys_pt[i][index_sys_yield]);
               }
-              f.cd();
+              f->cd();
               l_diff_sys->SetOwner();
               l_diff_sys->Write(Form("FitSys_%g_%g_%s", Bin_pt_mass[i],
                                      Bin_pt_mass[i + 1], combo_v2.Data()),
@@ -543,12 +572,11 @@ void FlowAnalysis_EventMixing(
   }
 
   // Save plots for systematics
+  TList *l_results = new TList();
+  TList *l_results_sys_yield = new TList();
+  TList *l_results_sys_v2 = new TList();
+  TList *l_results_sys_meanPt = new TList();
   if (sys) {
-    TList *l_results = new TList();
-    TList *l_results_sys_yield = new TList();
-    TList *l_results_sys_v2 = new TList();
-    TList *l_results_sys_meanPt = new TList();
-
     for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
       vector<double> stats_yield =
           helper->GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
@@ -566,7 +594,8 @@ void FlowAnalysis_EventMixing(
       ex_yield[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2.;
       x_v2pt[i] =
           meanPt ? stats_meanPt[0] : (Bin_pt_mass[i + 1] + Bin_pt_mass[i]) / 2.;
-      ex_v2pt[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2.;
+      // ex_v2pt[i] = (Bin_pt_mass[i + 1] - Bin_pt_mass[i]) / 2.;
+      ex_v2pt[i] = 0.25;
 
       y_v2pt[i] = stats_v2[0];
       ey_v2pt[i] = stats_v2[1];
@@ -596,20 +625,20 @@ void FlowAnalysis_EventMixing(
             l_results_sys_yield, l_results_sys_v2, nullptr, SaveSys);
       }
     }
-    f.cd();
+    f->cd();
     l_results_sys_yield->SetOwner();
     l_results_sys_yield->Write("FitYieldSystematics", TObject::kSingleKey);
-    delete l_results_sys_yield;
+    // delete l_results_sys_yield;
     if (meanPt) {
-      f.cd();
+      f->cd();
       l_results_sys_meanPt->SetOwner();
       l_results_sys_meanPt->Write("FitMeanPtSystematics", TObject::kSingleKey);
-      delete l_results_sys_meanPt;
+      // delete l_results_sys_meanPt;
     }
-    f.cd();
+    f->cd();
     l_results_sys_v2->SetOwner();
     l_results_sys_v2->Write("FitV2Systematics", TObject::kSingleKey);
-    delete l_results_sys_v2;
+    // delete l_results_sys_v2;
 
     // Saving final results
     helper->PlotFinalResults(int(Bin_pt_mass.size()) - 1, cent_min, cent_max,
@@ -619,14 +648,15 @@ void FlowAnalysis_EventMixing(
                              x_yield, y_yield, ex_yield, ey_yield, eysys_yield,
                              x_yield_run2, y_yield_run2, ex_yield_run2,
                              ey_yield_run2, eysys_yield_run2, l_results);
-    f.cd();
+    f->cd();
     l_results->SetOwner();
     l_results->Write("FinalResults", TObject::kSingleKey);
-    delete l_results;
+    // delete l_results;
   }
-  f.Close();
+  f->Close();
   LOG(info) << "Analysis done."; // this is a temporary solution to get rid of
                                  // destructor issue with in-list tcanvas
-  delete helper;
-  delete fitter;
+  delete f;
+  // delete helper;
+  // delete fitter;
 }

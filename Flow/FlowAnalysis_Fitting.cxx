@@ -312,11 +312,11 @@ void FlowAnalysis_Fitting::CreateModel(TF1 *&model, int flag) {
     double bin_center =
         (FlowAnalysis_Fitting::ptmin + FlowAnalysis_Fitting::ptmax) / 2;
     if (bin_center >= 0 && bin_center < 2) {
-      model->SetParameter(0, 2.5);      // a0
-      model->SetParLimits(0, -2.5, 5.); // a0
+      model->SetParameter(0, 2.7);      // a0
+      model->SetParLimits(0, 2.2, 3.8); // a0
       model->SetParName(0, "a0");       // a0
-      model->SetParameter(1, 1.);       // a1
-      model->SetParLimits(1, 0., 5.);   // a1
+      model->SetParameter(1, 3.);       // a1
+      model->SetParLimits(1, 0., 10.);  // a1
       model->SetParName(1, "a1");       // a1
       model->SetParameter(2, 0.);       // a2
       model->SetParLimits(2, -2., 2.);  // a2
@@ -1238,13 +1238,19 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   };
   if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
       "EventMixing") {
-    bkg = new TF1("bkgResidual", fct_bkgResidual, FlowAnalysis_Fitting::massmin,
+    if (FlowAnalysis_Fitting::ptmax > 2.0) {
+      bkg =
+          new TF1("bkgResidual", fct_bkgResidual, FlowAnalysis_Fitting::massmin,
                   FlowAnalysis_Fitting::massmax, 1);
-    int idx_massmin = hs_me->FindBin(FlowAnalysis_Fitting::massmin);
-    double initMin = hs_me->GetBinContent(idx_massmin);
-    bkg->SetParameter(0, 0.);
-    bkg->SetParLimits(0, -2., 0.);
-    bkg->SetParName(0, "a0");
+      int idx_massmin = hs_me->FindBin(FlowAnalysis_Fitting::massmin);
+      double initMin = hs_me->GetBinContent(idx_massmin);
+      bkg->SetParameter(0, 0.);
+      bkg->SetParLimits(0, -2., 0.);
+      bkg->SetParName(0, "a0");
+    } else {
+      // Use VWG function for low pT regions < 2 GeV/c
+      CreateModel(bkg, 5);
+    }
   } else {
     CreateModel(bkg, ModelType(FlowAnalysis_Fitting::mflag_bkg));
   }
@@ -1349,7 +1355,12 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   // Fitted background function
   auto fct_bkgResidual_norm = [](double *x, double *par) {
     double value = 0.0;
-    value = par[0] * exp(par[2] * x[0]) / par[1];
+    if (FlowAnalysis_Fitting::ptmax > 2.0) {
+      value = par[0] * exp(par[2] * x[0]) / par[1];
+    } else {
+      value = par[0] * FlowAnalysis_Fitting::VariableWidthGauss(x, &par[2]) /
+              par[1];
+    }
     return value;
   };
   TF1 *bkg_fitted = new TF1();
@@ -1357,7 +1368,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       "EventMixing") {
     bkg_fitted = new TF1("bkgResidual_norm", fct_bkgResidual_norm,
                          FlowAnalysis_Fitting::massmin,
-                         FlowAnalysis_Fitting::massmax, 3);
+                         FlowAnalysis_Fitting::massmax, nPar_bkg + 2);
   } else {
     bkg_fitted = new TF1("bkg_fitted", FlowAnalysis_Fitting::FittedBkg,
                          FlowAnalysis_Fitting::massmin,
@@ -1509,7 +1520,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
                         hs_me->FindBin(mean_fitted + 3. * sigma_fitted))
           : bkg_fitted->Integral(mean_fitted - 3. * sigma_fitted,
                                  mean_fitted + 3. * sigma_fitted);
-  TPaveStats *sb = (TPaveStats *)pad1_yield->GetPrimitive("stats");
+
+  TPaveStats *sb = new TPaveStats();
+  sb = (TPaveStats *)pad1_yield->GetPrimitive("stats");
   sb->SetName(Form(
       "Stats_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
       FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
@@ -1848,7 +1861,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     hs_model_meanPt->SetTitle("");
     hs_model_meanPt->Draw("C same");
     pad1_meanPt->ModifiedUpdate();
-    TPaveStats *sb_meanPt = (TPaveStats *)pad1_meanPt->GetPrimitive("stats");
+    TPaveStats *sb_meanPt = new TPaveStats();
+    sb_meanPt = (TPaveStats *)pad1_meanPt->GetPrimitive("stats");
     sb_meanPt->SetName("J/#psi <#it{p}_{T}> fit");
     sb_meanPt->SetX1NDC(0.64);
     sb_meanPt->SetX2NDC(0.89);
@@ -2118,7 +2132,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   hs_model_v2->SetTitle("");
   hs_model_v2->Draw("HIST same");
   pad1_v2->ModifiedUpdate();
-  TPaveStats *sb_v2 = (TPaveStats *)pad1_v2->GetPrimitive("stats");
+  TPaveStats *sb_v2 = new TPaveStats();
+  sb_v2 = (TPaveStats *)pad1_v2->GetPrimitive("stats");
   sb_v2->SetName("J/#psi v2 fit");
   sb_v2->SetX1NDC(0.64);
   sb_v2->SetX2NDC(0.89);
