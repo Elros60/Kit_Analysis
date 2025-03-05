@@ -313,10 +313,10 @@ void FlowAnalysis_Fitting::CreateModel(TF1 *&model, int flag) {
         (FlowAnalysis_Fitting::ptmin + FlowAnalysis_Fitting::ptmax) / 2;
     if (bin_center >= 0 && bin_center < 2) {
       model->SetParameter(0, 2.7);      // a0
-      model->SetParLimits(0, 2.2, 3.8); // a0
+      model->SetParLimits(0, 2.2, 3.2); // a0
       model->SetParName(0, "a0");       // a0
-      model->SetParameter(1, 3.);       // a1
-      model->SetParLimits(1, 0., 10.);  // a1
+      model->SetParameter(1, 2.);       // a1
+      model->SetParLimits(1, 0., 5.);   // a1
       model->SetParName(1, "a1");       // a1
       model->SetParameter(2, 0.);       // a2
       model->SetParLimits(2, -2., 2.);  // a2
@@ -1229,8 +1229,16 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
        << endl;
   // Construct a combined signal+background model
   TF1 *sig = new TF1();
+  TF1 *sig_bis = new TF1();
   TF1 *bkg = new TF1();
   CreateModel(sig, ModelType(FlowAnalysis_Fitting::mflag_sig));
+  CreateModel(sig_bis, ModelType(FlowAnalysis_Fitting::mflag_sig));
+  sig_bis->SetParNames("#mu^{#psi(2s)}", "#sigma^{#psi(2s)}",
+                       "#alpha_{L}^{#psi(2s)}", "n_{L}^{#psi(2s)}",
+                       "#alpha_{R}^{#psi(2s)}", "n_{R}^{#psi(2s)}");
+  sig_bis->SetParLimits(0, 3.64, 3.72);
+  sig_bis->SetParameter(0, 3.686);
+
   auto fct_bkgResidual = [](double *x, double *par) {
     double value = 0.0;
     value = exp(par[0] * x[0]);
@@ -1255,33 +1263,47 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     CreateModel(bkg, ModelType(FlowAnalysis_Fitting::mflag_bkg));
   }
   int nsig = 5.E2;
+  int nsig_bis = 0.;
   int nbkg = 5.E5;
-  TF1NormSum *sum_model = new TF1NormSum(sig, bkg, nsig, nbkg);
+  TF1NormSum *sum_model =
+      new TF1NormSum(sig, bkg, sig_bis, nsig, nbkg, nsig_bis);
   TF1 *model = new TF1("model", *sum_model, FlowAnalysis_Fitting::massmin,
                        FlowAnalysis_Fitting::massmax, sum_model->GetNpar());
   model->SetParameters(sum_model->GetParameters().data());
   model->SetParName(0, "N_{J/#psi}");
   model->SetParName(1, "N_{bkg}");
-  model->SetParLimits(0, 1., 1.E10);
-  model->SetParLimits(1, 1., 1.E10);
+  model->SetParName(2, "N_{#psi(2s)}");
+  model->SetParLimits(0, 0., 1.E10);
+  model->SetParLimits(1, 0., 1.E10);
+  model->SetParLimits(2, 0., 1.E10);
   int nPar_model = model->GetNpar();
   int nPar_sig = sig->GetNpar();
+  int nPar_sig_bis = sig_bis->GetNpar();
   int nPar_bkg = bkg->GetNpar();
-  for (int i = 2; i < nPar_model; i++) {
-    if (i < 2 + nPar_sig) {
-      model->SetParName(i, sig->GetParName(i - 2));
+
+  for (int i = 3; i < nPar_model; i++) {
+    if (i < 3 + nPar_sig) {
+      model->SetParName(i, sig->GetParName(i - 3));
       double min, max;
-      sig->GetParLimits(i - 2, min, max);
+      sig->GetParLimits(i - 3, min, max);
       model->SetParLimits(i, min, max);
-      if (i - 2 >= 2) {
+      if (i - 3 >= 2) {
+        model->FixParameter(i, model->GetParameter(i));
+      }
+    } else if (i >= 3 + nPar_sig && i < 3 + nPar_sig + nPar_bkg) {
+      model->SetParName(i, bkg->GetParName(i - 3 - nPar_sig));
+      double min, max;
+      bkg->GetParLimits(i - 3 - nPar_sig, min, max);
+      model->SetParLimits(i, min, max);
+      if (i > 3 + nPar_sig) {
         model->FixParameter(i, model->GetParameter(i));
       }
     } else {
-      model->SetParName(i, bkg->GetParName(i - 2 - nPar_sig));
+      model->SetParName(i, sig_bis->GetParName(i - 3 - nPar_sig - nPar_bkg));
       double min, max;
-      bkg->GetParLimits(i - 2 - nPar_sig, min, max);
+      sig_bis->GetParLimits(i - 3 - nPar_sig - nPar_bkg, min, max);
       model->SetParLimits(i, min, max);
-      if (i > 2 + nPar_sig) {
+      if (i - 3 - nPar_sig - nPar_bkg >= 2) {
         model->FixParameter(i, model->GetParameter(i));
       }
     }
@@ -1300,7 +1322,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
 
   // Iterative fitting
   double chi2ndf_mass;
-  int nfree_bkg = model->GetNumberFreeParameters() - 4;
+  int nfree_bkg = model->GetNumberFreeParameters() - 7;
   for (int i = nfree_bkg - 1; i < nPar_bkg; i++) {
     auto result =
         FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
@@ -1324,15 +1346,17 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
         i < nPar_bkg - 1) {
       double min, max;
       bkg->GetParLimits(i + 1, min, max);
-      model->ReleaseParameter(i + 3 + nPar_sig);
-      model->SetParLimits(i + 3 + nPar_sig, min, max);
+      model->ReleaseParameter(i + 4 + nPar_sig);
+      model->SetParLimits(i + 4 + nPar_sig, min, max);
     } else {
       break;
     }
   }
+
   // Getting components of fitted model
   int nsig_fitted = model->GetParameter(0);
   int nbkg_fitted = model->GetParameter(1);
+  int nsig_bis_fitted = model->GetParameter(2);
 
   // Fitted signal function
   TF1 *sig_fitted = new TF1("sig_fitted", FlowAnalysis_Fitting::FittedSignal,
@@ -1344,13 +1368,33 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     } else if (i == 1) {
       sig_fitted->SetParameter(i, 1.0);
     } else {
-      sig_fitted->SetParameter(i, model->GetParameter(i));
+      sig_fitted->SetParameter(i, model->GetParameter(i + 1));
     }
   }
   double int_sig = sig_fitted->Integral(FlowAnalysis_Fitting::massmin,
                                         FlowAnalysis_Fitting::massmax) /
                    model->GetParameter(0);
   sig_fitted->SetParameter(1, int_sig);
+
+  // Fitted signal bis function
+  TF1 *sig_bis_fitted =
+      new TF1("sig_bis_fitted", FlowAnalysis_Fitting::FittedSignal,
+              FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
+              nPar_sig_bis + 2);
+  for (int i = 0; i < nPar_sig_bis + 2; i++) {
+    if (i == 0) {
+      sig_bis_fitted->SetParameter(i, model->GetParameter(2));
+    } else if (i == 1) {
+      sig_bis_fitted->SetParameter(i, 1.0);
+    } else {
+      sig_bis_fitted->SetParameter(
+          i, model->GetParameter(i + nPar_sig + nPar_bkg + 1));
+    }
+  }
+  double int_sig_bis = sig_bis_fitted->Integral(FlowAnalysis_Fitting::massmin,
+                                                FlowAnalysis_Fitting::massmax) /
+                       model->GetParameter(2);
+  sig_bis_fitted->SetParameter(1, int_sig_bis);
 
   // Fitted background function
   auto fct_bkgResidual_norm = [](double *x, double *par) {
@@ -1380,7 +1424,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     } else if (i == 1) {
       bkg_fitted->SetParameter(i, 1.0);
     } else {
-      bkg_fitted->SetParameter(i, model->GetParameter(i + nPar_sig));
+      bkg_fitted->SetParameter(i, model->GetParameter(i + nPar_sig + 1));
     }
   }
   double int_bkg = bkg_fitted->Integral(FlowAnalysis_Fitting::massmin,
@@ -1504,9 +1548,14 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   sig_fitted->SetTitle("");
   sig_fitted->Draw("same");
   pad1_yield->ModifiedUpdate();
+  sig_bis_fitted->SetLineWidth(2.0);
+  sig_bis_fitted->SetLineColor(kGreen);
+  sig_bis_fitted->SetTitle("");
+  sig_bis_fitted->Draw("same");
+  pad1_yield->ModifiedUpdate();
 
-  double mean_fitted = model->GetParameter(2);
-  double sigma_fitted = model->GetParameter(3);
+  double mean_fitted = model->GetParameter(3);
+  double sigma_fitted = model->GetParameter(4);
   double S_3sigma = sig_fitted->Integral(mean_fitted - 3. * sigma_fitted,
                                          mean_fitted + 3. * sigma_fitted);
   double B_3sigma =
@@ -1543,12 +1592,18 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   TList *sb_list = sb->GetListOfLines();
   TText *tconst1 = sb->GetLineWith("N_{J/#psi}");
   TText *tconst2 = sb->GetLineWith("N_{bkg}");
+  TText *tconst3 = sb->GetLineWith("N_{#psi(2s)}");
   sb_list->Remove(tconst1);
   sb_list->Remove(tconst2);
+  sb_list->Remove(tconst3);
   sb->AddText(
       TString::Format("%s = %d #pm %d", "N_{J/#psi}",
                       int(model->GetParameter(0) / hs_se->GetBinWidth(1)),
                       int(model->GetParError(0) / hs_se->GetBinWidth(1))));
+  sb->AddText(
+      TString::Format("%s = %d #pm %d", "N_{#psi(2s)}",
+                      int(model->GetParameter(2) / hs_se->GetBinWidth(1)),
+                      int(model->GetParError(2) / hs_se->GetBinWidth(1))));
   sb->AddText(TString::Format(
       "%s = %d #pm %d", "N_{bkg}",
       FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
@@ -1571,18 +1626,6 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   pad1_yield->ModifiedUpdate();
 
   TLatex *text_info_yield = new TLatex();
-  /*
-  text_info->SetTextSize(0.04);
-  text_info->SetTextFont(42);
-  text_info->DrawLatexNDC(.12, .85,
-                          "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
-                          "= 5.36 TeV");
-  pad1_yield->ModifiedUpdate();
-  text_info->DrawLatexNDC(.12, .80,
-                          "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
-                          "4");
-  pad1_yield->ModifiedUpdate();
-  */
   text_info_yield->SetTextSize(0.05);
   text_info_yield->SetTextFont(62);
   text_info_yield->DrawLatexNDC(
@@ -1601,7 +1644,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     legend_yield->AddEntry(hs_se_res, "Residual", "P");
   }
   legend_yield->AddEntry(model, "Total");
-  legend_yield->AddEntry(sig_fitted, "Signal");
+  legend_yield->AddEntry(sig_fitted, "Signal J/#psi");
+  legend_yield->AddEntry(sig_bis_fitted, "Signal #psi(2s)");
   legend_yield->AddEntry(bkg_fitted, "Background");
   legend_yield->Draw("same");
   pad1_yield->ModifiedUpdate();
@@ -2417,7 +2461,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     gr_bkg_fitted->SetLineColor(kBlue);
     gr_bkg_fitted->SetLineStyle(kDashed);
     gr_bkg_fitted->SetTitle("");
-    TGraph *gr_sig_fitted = new TGraph(bkg_fitted);
+    TGraph *gr_sig_fitted = new TGraph(sig_fitted);
     gr_sig_fitted->SetLineWidth(2.0);
     gr_sig_fitted->SetLineColor(kRed);
     gr_sig_fitted->SetTitle("");
