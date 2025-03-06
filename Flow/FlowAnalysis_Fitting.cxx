@@ -235,6 +235,102 @@ double FlowAnalysis_Fitting::FittedBkg(double *x, double *par) {
 }
 
 //______________________________________________________________________________
+double FlowAnalysis_Fitting::FullModelWithPsi2s(double *x, double *par) {
+  double val_Nsig = par[0];
+  double val_Nbkg = par[1];
+  double val_Nsigbis = par[2];
+
+  double val_sig = 0.;
+  double val_sigbis = 0.;
+  if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+      FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+    val_sig = FlowAnalysis_Fitting::DoubleSidedCB(x, &par[3]);
+    double *par_sig = new double[6];
+    par_sig[0] = par[3] + 0.58918100;
+    par_sig[1] = par[4] * 1.01;
+    par_sig[2] = par[5];
+    par_sig[3] = par[6];
+    par_sig[4] = par[7];
+    par_sig[5] = par[8];
+    val_sigbis = FlowAnalysis_Fitting::DoubleSidedCB(x, par_sig);
+  }
+  if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+    val_sig = FlowAnalysis_Fitting::NA60Function(x, &par[3]);
+    double *par_sig = new double[10];
+    par_sig[0] = par[3] + 0.58918100;
+    par_sig[1] = par[4] * 1.01;
+    par_sig[2] = par[5];
+    par_sig[3] = par[6];
+    par_sig[4] = par[7];
+    par_sig[5] = par[8];
+    par_sig[6] = par[9];
+    par_sig[7] = par[10];
+    par_sig[8] = par[11];
+    par_sig[9] = par[12];
+    val_sigbis = FlowAnalysis_Fitting::NA60Function(x, par_sig);
+  }
+
+  double val_bkg = 0.;
+  if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+      "EventMixing") {
+    if (FlowAnalysis_Fitting::ptmax > 2.0) {
+      if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+          FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+        val_bkg = exp(par[9] * x[0]);
+      }
+      if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+        val_bkg = exp(par[13] * x[0]);
+      }
+    } else {
+      // Use VWG function for low pT regions < 2 GeV/c
+      if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+          FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+        // val_bkg = FlowAnalysis_Fitting::VariableWidthGauss(x, &par[9]);
+        val_bkg = TMath::Landau(x[0], par[9], par[10]);
+      }
+      if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+        // val_bkg = FlowAnalysis_Fitting::VariableWidthGauss(x, &par[13]);
+        val_bkg = TMath::Landau(x[0], par[13], par[14]);
+      }
+    }
+  } else {
+    if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+        FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+      val_bkg = FlowAnalysis_Fitting::Cheby7(x, &par[9]);
+    }
+    if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+      val_bkg = FlowAnalysis_Fitting::Cheby7(x, &par[13]);
+    }
+  }
+
+  return par[0] * val_sig + par[1] * val_bkg + par[2] * val_sigbis;
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Fitting::GetNparFullModel(int &nParSig, int &nParBkg) {
+
+  if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+      FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+    nParSig = 6;
+  }
+  if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+    nParSig = 10;
+  }
+
+  if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+      "EventMixing") {
+    if (FlowAnalysis_Fitting::ptmax > 2.0) {
+      nParBkg = 1;
+    } else {
+      // nParBkg = 4;
+      nParBkg = 2; // Landau
+    }
+  } else {
+    nParBkg = 7;
+  }
+}
+
+//______________________________________________________________________________
 void FlowAnalysis_Fitting::CreateModel(TF1 *&model, int flag) {
   if (flag == CB2Data) {
     model = new TF1("CB2Data", FlowAnalysis_Fitting::DoubleSidedCB,
@@ -462,6 +558,183 @@ void FlowAnalysis_Fitting::CreateModel(TF1 *&model, int flag) {
     model->SetParameter(6, 0.0);     // a6
     model->SetParLimits(6, -2., 2.); // a6
     model->SetParName(6, "a6");      // a6
+  }
+}
+
+//______________________________________________________________________________
+void FlowAnalysis_Fitting::InitFullModel(TF1 *&model) {
+  model->SetParName(0, "N_{J/#psi}");
+  model->SetParName(1, "N_{bkg}");
+  model->SetParName(2, "N_{#psi(2s)}");
+  model->SetParLimits(0, 0., 1.E10);
+  model->SetParLimits(1, 0., 1.E10);
+  model->SetParLimits(2, 0., 1.E10);
+  if (FlowAnalysis_Fitting::mflag_sig == CB2Data) {
+    model->SetParameter(3, 3.097);      // mean
+    model->SetParLimits(3, 3.05, 3.13); // mean
+    model->SetParName(3, "#mu");        // mean
+    model->SetParameter(4, 0.08);       // sigma
+    model->SetParLimits(4, 0.05, 0.12); // sigma
+    model->SetParName(4, "#sigma");     // sigma
+    model->FixParameter(5, 0.883);      // alphaL
+    model->SetParName(5, "#alpha_{L}"); // alphaL
+    model->FixParameter(6, 9.940);      // nL
+    model->SetParName(6, "n_{L}");      // nL
+    model->FixParameter(7, 1.832);      // alphaR
+    model->SetParName(7, "#alpha_{R}"); // alphaR
+    model->FixParameter(8, 15.323);     // nR
+    model->SetParName(8, "n_{R}");      // nR
+  }
+  if (FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+    model->SetParameter(3, 3.097);      // mean
+    model->SetParLimits(3, 3.05, 3.13); // mean
+    model->SetParName(3, "#mu");        // mean
+    model->SetParameter(4, 0.08);       // sigma
+    model->SetParLimits(4, 0.05, 0.12); // sigma
+    model->SetParName(4, "#sigma");     // sigma
+    model->FixParameter(5, 0.993);      // alphaL
+    // model->SetParameter(2, 1.078);      // alphaL
+    model->SetParName(5, "#alpha_{L}"); // alphaL
+    model->FixParameter(6, 2.9075);     // nL
+    // model->SetParameter(3, 2.402); // nL
+    model->SetParName(6, "n_{L}"); // nL
+    model->FixParameter(7, 2.182); // alphaR
+    // model->SetParameter(4, 2.283);      // alphaR
+    model->SetParName(7, "#alpha_{R}"); // alphaR
+    model->FixParameter(8, 3.122);      // nR
+    // model->SetParameter(5, 5.268); // nR
+    model->SetParName(8, "n_{R}"); // nR
+  }
+  if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+    model->SetParameter(3, 3.097);      // mean
+    model->SetParLimits(3, 3.05, 3.13); // mean
+    model->SetParName(3, "#mu");        // mean
+    model->SetParameter(4, 0.08);       // sigma
+    model->SetParLimits(4, 0.05, 0.12); // sigma
+    model->SetParName(4, "#sigma");     // sigma
+    model->FixParameter(5, -0.6);       // t1
+    model->SetParName(5, "t1");         // t1
+    model->FixParameter(6, 1.8);        // t2
+    model->SetParName(6, "t2");         // t2
+    model->FixParameter(7, 0.2);        // p1
+    model->SetParName(7, "p1");         // p1
+    model->FixParameter(8, 1.5);        // p2
+    model->SetParName(8, "p2");         // p2
+    model->FixParameter(9, 0.1);        // p3
+    model->SetParName(9, "p3");         // p3
+    model->FixParameter(10, 0.18);      // p4
+    model->SetParName(10, "p4");        // p4
+    model->FixParameter(11, 1.54);      // p5
+    model->SetParName(11, "p5");        // p5
+    model->FixParameter(12, 0.17);      // p6
+    model->SetParName(12, "p6");        // p6
+  }
+
+  if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+      "EventMixing") {
+    if (FlowAnalysis_Fitting::ptmax > 2.0) {
+      if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+          FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+        model->SetParameter(9, 0.);
+        model->SetParLimits(9, -2., 0.);
+        model->SetParName(9, "a0");
+      }
+      if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+        model->SetParameter(13, 0.);
+        model->SetParLimits(13, -2., 0.);
+        model->SetParName(13, "a0");
+      }
+    } else {
+      if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+          FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+        // model->SetParameter(9, 2.7);      // a0
+        // model->SetParLimits(9, 2.2, 3.2); // a0
+        // model->SetParName(9, "a0");       // a0
+        // model->SetParameter(10, 2.);      // a1
+        // model->SetParLimits(10, 0., 5.);  // a1
+        // model->SetParName(10, "a1");      // a1
+        // model->SetParameter(11, 0.);      // a2
+        // model->SetParLimits(11, -2., 2.); // a2
+        // model->SetParName(11, "a2");      // a2
+        // model->SetParameter(12, 0.);      // a2
+        // model->SetParLimits(12, -1., 1.); // a3
+        // model->SetParName(12, "a3");      // a3
+        model->SetParameter(9, 2.5);      // a0
+        model->SetParLimits(9, 2.2, 3.2); // a0
+        model->SetParName(9, "a0");       // a0
+        model->SetParameter(10, 1.);      // a1
+        model->SetParLimits(10, 0., 5.);  // a1
+        model->SetParName(10, "a1");      // a1
+      }
+      if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+        // model->SetParameter(13, 2.7);      // a0
+        // model->SetParLimits(13, 2.2, 3.2); // a0
+        // model->SetParName(13, "a0");       // a0
+        // model->SetParameter(14, 2.);       // a1
+        // model->SetParLimits(14, 0., 5.);   // a1
+        // model->SetParName(14, "a1");       // a1
+        // model->SetParameter(15, 0.);       // a2
+        // model->SetParLimits(15, -2., 2.);  // a2
+        // model->SetParName(15, "a2");       // a2
+        // model->SetParameter(16, 0.);       // a2
+        // model->SetParLimits(16, -1., 1.);  // a3
+        // model->SetParName(16, "a3");       // a3
+        model->SetParameter(13, 2.5);      // a0
+        model->SetParLimits(13, 2.2, 3.2); // a0
+        model->SetParName(13, "a0");       // a0
+        model->SetParameter(14, 1.);       // a1
+        model->SetParLimits(14, 0., 5.);   // a1
+        model->SetParName(14, "a1");       // a1
+      }
+    }
+  } else {
+    if (FlowAnalysis_Fitting::mflag_sig == CB2Data ||
+        FlowAnalysis_Fitting::mflag_sig == CB2MC) {
+      model->SetParameter(9, 0.0);      // a0
+      model->SetParLimits(9, -8., 8.);  // a0
+      model->SetParName(9, "a0");       // a0
+      model->SetParameter(10, 0.0);     // a1
+      model->SetParLimits(10, -2., 2.); // a1
+      model->SetParName(10, "a1");      // a1
+      model->SetParameter(11, 0.0);     // a2
+      model->SetParLimits(11, -2., 2.); // a2
+      model->SetParName(11, "a2");      // a2
+      model->SetParameter(12, 0.0);     // a3
+      model->SetParLimits(12, -2., 2.); // a3
+      model->SetParName(12, "a3");      // a3
+      model->SetParameter(13, 0.0);     // a4
+      model->SetParLimits(13, -2., 2.); // a4
+      model->SetParName(13, "a4");      // a4
+      model->SetParameter(14, 0.0);     // a5
+      model->SetParLimits(14, -2., 2.); // a5
+      model->SetParName(14, "a5");      // a5
+      model->SetParameter(15, 0.0);     // a6
+      model->SetParLimits(15, -2., 2.); // a6
+      model->SetParName(15, "a6");      // a6
+    }
+    if (FlowAnalysis_Fitting::mflag_sig == NA60) {
+      model->SetParameter(13, 0.0);     // a0
+      model->SetParLimits(13, -8., 8.); // a0
+      model->SetParName(13, "a0");      // a0
+      model->SetParameter(14, 0.0);     // a1
+      model->SetParLimits(14, -2., 2.); // a1
+      model->SetParName(14, "a1");      // a1
+      model->SetParameter(15, 0.0);     // a2
+      model->SetParLimits(15, -2., 2.); // a2
+      model->SetParName(15, "a2");      // a2
+      model->SetParameter(16, 0.0);     // a3
+      model->SetParLimits(16, -2., 2.); // a3
+      model->SetParName(16, "a3");      // a3
+      model->SetParameter(17, 0.0);     // a4
+      model->SetParLimits(17, -2., 2.); // a4
+      model->SetParName(17, "a4");      // a4
+      model->SetParameter(18, 0.0);     // a5
+      model->SetParLimits(18, -2., 2.); // a5
+      model->SetParName(18, "a5");      // a5
+      model->SetParameter(19, 0.0);     // a6
+      model->SetParLimits(19, -2., 2.); // a6
+      model->SetParName(19, "a6");      // a6
+    }
   }
 }
 
@@ -1228,86 +1501,104 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   cout << ">>>>>>>>>>>>>> Start processing dimuon invariant mass fit..."
        << endl;
   // Construct a combined signal+background model
-  TF1 *sig = new TF1();
-  TF1 *sig_bis = new TF1();
-  TF1 *bkg = new TF1();
-  CreateModel(sig, ModelType(FlowAnalysis_Fitting::mflag_sig));
-  CreateModel(sig_bis, ModelType(FlowAnalysis_Fitting::mflag_sig));
-  sig_bis->SetParNames("#mu^{#psi(2s)}", "#sigma^{#psi(2s)}",
-                       "#alpha_{L}^{#psi(2s)}", "n_{L}^{#psi(2s)}",
-                       "#alpha_{R}^{#psi(2s)}", "n_{R}^{#psi(2s)}");
-  sig_bis->SetParLimits(0, 3.64, 3.72);
-  sig_bis->SetParameter(0, 3.686);
+  // TF1 *sig = new TF1();
+  // TF1 *sig_bis = new TF1();
+  // TF1 *bkg = new TF1();
+  // CreateModel(sig, ModelType(FlowAnalysis_Fitting::mflag_sig));
+  // CreateModel(sig_bis, ModelType(FlowAnalysis_Fitting::mflag_sig));
+  // sig_bis->SetParNames("#mu^{#psi(2s)}", "#sigma^{#psi(2s)}",
+  //                      "#alpha_{L}^{#psi(2s)}", "n_{L}^{#psi(2s)}",
+  //                      "#alpha_{R}^{#psi(2s)}", "n_{R}^{#psi(2s)}");
+  // sig_bis->SetParLimits(0, 3.64, 3.72);
+  // sig_bis->SetParameter(0, 3.686);
 
-  auto fct_bkgResidual = [](double *x, double *par) {
-    double value = 0.0;
-    value = exp(par[0] * x[0]);
-    return value;
-  };
-  if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
-      "EventMixing") {
-    if (FlowAnalysis_Fitting::ptmax > 2.0) {
-      bkg =
-          new TF1("bkgResidual", fct_bkgResidual, FlowAnalysis_Fitting::massmin,
-                  FlowAnalysis_Fitting::massmax, 1);
-      int idx_massmin = hs_me->FindBin(FlowAnalysis_Fitting::massmin);
-      double initMin = hs_me->GetBinContent(idx_massmin);
-      bkg->SetParameter(0, 0.);
-      bkg->SetParLimits(0, -2., 0.);
-      bkg->SetParName(0, "a0");
-    } else {
-      // Use VWG function for low pT regions < 2 GeV/c
-      CreateModel(bkg, 5);
-    }
-  } else {
-    CreateModel(bkg, ModelType(FlowAnalysis_Fitting::mflag_bkg));
-  }
-  int nsig = 5.E2;
-  int nsig_bis = 0.;
-  int nbkg = 5.E5;
-  TF1NormSum *sum_model =
-      new TF1NormSum(sig, bkg, sig_bis, nsig, nbkg, nsig_bis);
-  TF1 *model = new TF1("model", *sum_model, FlowAnalysis_Fitting::massmin,
-                       FlowAnalysis_Fitting::massmax, sum_model->GetNpar());
-  model->SetParameters(sum_model->GetParameters().data());
-  model->SetParName(0, "N_{J/#psi}");
-  model->SetParName(1, "N_{bkg}");
-  model->SetParName(2, "N_{#psi(2s)}");
-  model->SetParLimits(0, 0., 1.E10);
-  model->SetParLimits(1, 0., 1.E10);
-  model->SetParLimits(2, 0., 1.E10);
-  int nPar_model = model->GetNpar();
-  int nPar_sig = sig->GetNpar();
-  int nPar_sig_bis = sig_bis->GetNpar();
-  int nPar_bkg = bkg->GetNpar();
+  // auto fct_bkgResidual = [](double *x, double *par) {
+  //   double value = 0.0;
+  //   value = exp(par[0] * x[0]);
+  //   return value;
+  // };
+  // if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
+  //     "EventMixing") {
+  //   if (FlowAnalysis_Fitting::ptmax > 2.0) {
+  //     bkg =
+  //         new TF1("bkgResidual", fct_bkgResidual,
+  //         FlowAnalysis_Fitting::massmin,
+  //                 FlowAnalysis_Fitting::massmax, 1);
+  //     bkg->SetParameter(0, 0.);
+  //     bkg->SetParLimits(0, -2., 0.);
+  //     bkg->SetParName(0, "a0");
+  //   } else {
+  //     // Use VWG function for low pT regions < 2 GeV/c
+  //     CreateModel(bkg, 5);
+  //   }
+  // } else {
+  //   CreateModel(bkg, ModelType(FlowAnalysis_Fitting::mflag_bkg));
+  // }
+  // int nsig = 5.E2;
+  // int nsig_bis = 0.;
+  // int nbkg = 5.E5;
+  // TF1NormSum *sum_model =
+  //     new TF1NormSum(sig, bkg, sig_bis, nsig, nbkg, nsig_bis);
+  // TF1 *model = new TF1("model", *sum_model, FlowAnalysis_Fitting::massmin,
+  //                      FlowAnalysis_Fitting::massmax, sum_model->GetNpar());
+  int nPar_sig, nPar_bkg;
+  FlowAnalysis_Fitting::GetNparFullModel(nPar_sig, nPar_bkg);
+  int nPar_model = nPar_sig + nPar_bkg + 3;
+  TF1 *model = new TF1("model", FlowAnalysis_Fitting::FullModelWithPsi2s,
+                       FlowAnalysis_Fitting::massmin,
+                       FlowAnalysis_Fitting::massmax, nPar_model);
 
-  for (int i = 3; i < nPar_model; i++) {
-    if (i < 3 + nPar_sig) {
-      model->SetParName(i, sig->GetParName(i - 3));
+  // model->SetParameters(sum_model->GetParameters().data());
+  // model->SetParName(0, "N_{J/#psi}");
+  // model->SetParName(1, "N_{bkg}");
+  // model->SetParName(2, "N_{#psi(2s)}");
+  // model->SetParLimits(0, 0., 1.E10);
+  // model->SetParLimits(1, 0., 1.E10);
+  // model->SetParLimits(2, 0., 1.E10);
+  FlowAnalysis_Fitting::InitFullModel(model);
+  vector<double *> ParLimitsBkg;
+  if (nPar_bkg > 1) {
+    for (int i = 4 + nPar_sig; i < nPar_model; i++) {
+      ParLimitsBkg.emplace_back(new double[2]);
       double min, max;
-      sig->GetParLimits(i - 3, min, max);
-      model->SetParLimits(i, min, max);
-      if (i - 3 >= 2) {
-        model->FixParameter(i, model->GetParameter(i));
-      }
-    } else if (i >= 3 + nPar_sig && i < 3 + nPar_sig + nPar_bkg) {
-      model->SetParName(i, bkg->GetParName(i - 3 - nPar_sig));
-      double min, max;
-      bkg->GetParLimits(i - 3 - nPar_sig, min, max);
-      model->SetParLimits(i, min, max);
-      if (i > 3 + nPar_sig) {
-        model->FixParameter(i, model->GetParameter(i));
-      }
-    } else {
-      model->SetParName(i, sig_bis->GetParName(i - 3 - nPar_sig - nPar_bkg));
-      double min, max;
-      sig_bis->GetParLimits(i - 3 - nPar_sig - nPar_bkg, min, max);
-      model->SetParLimits(i, min, max);
-      if (i - 3 - nPar_sig - nPar_bkg >= 2) {
-        model->FixParameter(i, model->GetParameter(i));
-      }
+      model->GetParLimits(i, min, max);
+      ParLimitsBkg[i - 4 - nPar_sig][0] = min;
+      ParLimitsBkg[i - 4 - nPar_sig][1] = max;
+      model->FixParameter(i, model->GetParameter(i));
     }
   }
+
+  // int nPar_model = model->GetNpar();
+  // int nPar_sig = sig->GetNpar();
+  // int nPar_sig_bis = sig_bis->GetNpar();
+  // int nPar_bkg = bkg->GetNpar();
+
+  // for (int i = 3; i < nPar_model; i++) {
+  //   if (i < 3 + nPar_sig) {
+  //     model->SetParName(i, sig->GetParName(i - 3));
+  //     double min, max;
+  //     sig->GetParLimits(i - 3, min, max);
+  //     model->SetParLimits(i, min, max);
+  //     if (i - 3 >= 2) {
+  //       model->FixParameter(i, model->GetParameter(i));
+  //     }
+  //   } else if (i >= 3 + nPar_sig && i < 3 + nPar_sig + nPar_bkg) {
+  //     model->SetParName(i, bkg->GetParName(i - 3 - nPar_sig));
+  //     double min, max;
+  //     bkg->GetParLimits(i - 3 - nPar_sig, min, max);
+  //     model->SetParLimits(i, min, max);
+  //     if (i > 3 + nPar_sig) {
+  //       model->FixParameter(i, model->GetParameter(i));
+  //     }
+  //   } else {
+  //     model->SetParName(i, sig_bis->GetParName(i - 3 - nPar_sig -
+  //     nPar_bkg)); double min, max; sig_bis->GetParLimits(i - 3 - nPar_sig -
+  //     nPar_bkg, min, max); model->SetParLimits(i, min, max); if (i - 3 -
+  //     nPar_sig - nPar_bkg >= 2) {
+  //       model->FixParameter(i, model->GetParameter(i));
+  //     }
+  //   }
+  // }
 
   // Do fitting for invariant mass
   // Configuration for fitting
@@ -1322,7 +1613,7 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
 
   // Iterative fitting
   double chi2ndf_mass;
-  int nfree_bkg = model->GetNumberFreeParameters() - 7;
+  int nfree_bkg = model->GetNumberFreeParameters() - 5;
   for (int i = nfree_bkg - 1; i < nPar_bkg; i++) {
     auto result =
         FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
@@ -1344,10 +1635,12 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     if ((chi2ndf_mass > mchi2max_mass || (bit_migrad != 0 && bit_migrad != 1) ||
          bit_minos != 0 || bit_hesse != 0) &&
         i < nPar_bkg - 1) {
-      double min, max;
-      bkg->GetParLimits(i + 1, min, max);
+      // double min, max;
+      // bkg->GetParLimits(i + 1, min, max);
       model->ReleaseParameter(i + 4 + nPar_sig);
-      model->SetParLimits(i + 4 + nPar_sig, min, max);
+      // model->SetParLimits(i + 4 + nPar_sig, min, max);
+      model->SetParLimits(i + 4 + nPar_sig, ParLimitsBkg[i - nfree_bkg + 1][0],
+                          ParLimitsBkg[i - nfree_bkg + 1][1]);
     } else {
       break;
     }
@@ -1371,30 +1664,35 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       sig_fitted->SetParameter(i, model->GetParameter(i + 1));
     }
   }
-  double int_sig = sig_fitted->Integral(FlowAnalysis_Fitting::massmin,
-                                        FlowAnalysis_Fitting::massmax) /
-                   model->GetParameter(0);
-  sig_fitted->SetParameter(1, int_sig);
+  // double int_sig = sig_fitted->Integral(FlowAnalysis_Fitting::massmin,
+  //                                       FlowAnalysis_Fitting::massmax) /
+  //                  model->GetParameter(0);
+  // sig_fitted->SetParameter(1, int_sig);
 
   // Fitted signal bis function
   TF1 *sig_bis_fitted =
       new TF1("sig_bis_fitted", FlowAnalysis_Fitting::FittedSignal,
               FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
-              nPar_sig_bis + 2);
-  for (int i = 0; i < nPar_sig_bis + 2; i++) {
+              nPar_sig + 2);
+  for (int i = 0; i < nPar_sig + 2; i++) {
     if (i == 0) {
       sig_bis_fitted->SetParameter(i, model->GetParameter(2));
     } else if (i == 1) {
       sig_bis_fitted->SetParameter(i, 1.0);
+    } else if (i == 2) {
+      sig_bis_fitted->SetParameter(i, model->GetParameter(i + 1) + 0.58918100);
+    } else if (i == 3) {
+      sig_bis_fitted->SetParameter(i, model->GetParameter(i + 1) * 1.01);
     } else {
-      sig_bis_fitted->SetParameter(
-          i, model->GetParameter(i + nPar_sig + nPar_bkg + 1));
+      sig_bis_fitted->SetParameter(i, model->GetParameter(i + 1));
     }
   }
-  double int_sig_bis = sig_bis_fitted->Integral(FlowAnalysis_Fitting::massmin,
-                                                FlowAnalysis_Fitting::massmax) /
-                       model->GetParameter(2);
-  sig_bis_fitted->SetParameter(1, int_sig_bis);
+  // double int_sig_bis =
+  // sig_bis_fitted->Integral(FlowAnalysis_Fitting::massmin,
+  //                                               FlowAnalysis_Fitting::massmax)
+  //                                               /
+  //                      model->GetParameter(2);
+  // sig_bis_fitted->SetParameter(1, int_sig_bis);
 
   // Fitted background function
   auto fct_bkgResidual_norm = [](double *x, double *par) {
@@ -1402,8 +1700,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     if (FlowAnalysis_Fitting::ptmax > 2.0) {
       value = par[0] * exp(par[2] * x[0]) / par[1];
     } else {
-      value = par[0] * FlowAnalysis_Fitting::VariableWidthGauss(x, &par[2]) /
-              par[1];
+      // value = par[0] * FlowAnalysis_Fitting::VariableWidthGauss(x, &par[2]) /
+      //         par[1];
+      value = par[0] * TMath::Landau(x[0], par[2], par[3]) / par[1];
     }
     return value;
   };
@@ -1427,10 +1726,10 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       bkg_fitted->SetParameter(i, model->GetParameter(i + nPar_sig + 1));
     }
   }
-  double int_bkg = bkg_fitted->Integral(FlowAnalysis_Fitting::massmin,
-                                        FlowAnalysis_Fitting::massmax) /
-                   model->GetParameter(1);
-  bkg_fitted->SetParameter(1, int_bkg);
+  // double int_bkg = bkg_fitted->Integral(FlowAnalysis_Fitting::massmin,
+  //                                       FlowAnalysis_Fitting::massmax) /
+  //                  model->GetParameter(1);
+  // bkg_fitted->SetParameter(1, int_bkg);
 
   // Plotting
   gStyle->SetOptStat(0);

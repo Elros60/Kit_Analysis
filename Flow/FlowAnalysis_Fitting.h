@@ -62,6 +62,8 @@ public:
 
 private:
   void CreateModel(TF1 *&model, int flag);
+  void GetNparFullModel(int &nParSig, int &nParBkg);
+  void InitFullModel(TF1 *&model);
   static double DoubleSidedCB2(double x, double mu, double width, double a1,
                                double p1, double a2, double p2);
   static double DoubleSidedCB(double *x, double *par);
@@ -76,6 +78,7 @@ private:
   static double PolyExp(double *x, double *par);
   static double FittedSignal(double *x, double *par);
   static double FittedBkg(double *x, double *par);
+  static double FullModelWithPsi2s(double *x, double *par);
 
   static double massmin;
   static double massmax;

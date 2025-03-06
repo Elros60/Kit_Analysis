@@ -194,7 +194,7 @@ void FlowAnalysis_EventMixing(
           Bin_pt_mass[i], Bin_pt_mass[i + 1], 0., 5., Bin_PoolEM[j],
           Bin_PoolEM[j + 1], tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
       double F_value = helper->GetFfactorProfile(
-          Bin_pt_mass[i], Bin_pt_mass[i + 1], 2., 5., Bin_PoolEM[j],
+          Bin_pt_mass[i], Bin_pt_mass[i + 1], 1., 5., Bin_PoolEM[j],
           Bin_PoolEM[j + 1], tp_V2SEPP, tp_V2SEMM, tp_V2MEPM, hist_rfactor);
       LOG(info) << Form("F factor for [%g - %g] (%%) [%g - %g] (GeV/c): %g",
                         Bin_PoolEM[j], Bin_PoolEM[j + 1], Bin_pt_mass[i],
@@ -203,7 +203,6 @@ void FlowAnalysis_EventMixing(
       delete hist_rfactor;
     }
   }
-  cout << "Flag1" << endl;
 
   // Create histogram for pt-differential v2
   double *x_yield = new double[int(Bin_pt_mass.size()) - 1];
@@ -276,14 +275,13 @@ void FlowAnalysis_EventMixing(
           nbCombo_yield, bins_sys_yield));
     }
   }
-  cout << "Flag2" << endl;
+
   for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
 
     // Normalisation for mixed-event spectra
     TH1D *hs_mass_mepm_proj = new TH1D();
     TH1D *hs_mass_mepp_proj = new TH1D();
     TH1D *hs_mass_memm_proj = new TH1D();
-    cout << "Flag3" << endl;
     for (int j = itmin; j < itmax; j++) {
       if (j == itmin) {
         hs_mass_mepm_proj = helper->GetMassProfile(
@@ -320,7 +318,6 @@ void FlowAnalysis_EventMixing(
                                    tp_V2MEMM, "MEMM"),
             ffactor_ptDiff[i][j - itmin]);
       }
-      cout << "Flag3" << endl;
     }
 
     // Same-event profiles: mass
@@ -363,7 +360,7 @@ void FlowAnalysis_EventMixing(
           helper->GetMeanPt(Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                             mass_max, cent_min, cent_max, tp_V2SEPM, "SEPM");
     }
-    cout << "Flag4" << endl;
+
     // Save plots for invariant mass
     TList *l_SE_ME = new TList();
     helper->PlotSEME("PM", "Mass", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
@@ -375,7 +372,7 @@ void FlowAnalysis_EventMixing(
     helper->PlotSEME("MM", "Mass", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_mass_semm_proj,
                      hs_mass_memm_proj, l_SE_ME);
-    cout << "Flag4.5" << endl;
+
     TList *l_SE_ME_V2 = new TList();
     helper->PlotSEME("PM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_v2_sepm_proj,
@@ -386,7 +383,7 @@ void FlowAnalysis_EventMixing(
     helper->PlotSEME("MM", "V2", Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min,
                      mass_max, cent_min, cent_max, hs_v2_semm_proj,
                      hs_v2_memm_proj, l_SE_ME_V2);
-    cout << "Flag5" << endl;
+
     /// Do fitting
     // Configuration for fitting
     fitter->setModel(flag_sig, flag_bkg);
@@ -407,7 +404,7 @@ void FlowAnalysis_EventMixing(
                                       l_diff_fit);
 
     SNR[i] = results_v2[4];
-    cout << "Flag6" << endl;
+
     f->cd();
     l_SE_ME->SetOwner();
     l_SE_ME->Write(Form("Mass_SEME_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
@@ -426,7 +423,7 @@ void FlowAnalysis_EventMixing(
         Form("DifferentialFlow_Fit_%g_%g", Bin_pt_mass[i], Bin_pt_mass[i + 1]),
         TObject::kSingleKey);
     delete l_diff_fit;
-    cout << "Flag7" << endl;
+
     delete hs_mass_sepm_proj;
     delete hs_mass_sepp_proj;
     delete hs_mass_semm_proj;
@@ -448,7 +445,7 @@ void FlowAnalysis_EventMixing(
     if (hs_mass_sepm_proj_meanPt) {
       delete hs_mass_sepm_proj_meanPt;
     }
-    cout << "Flag8" << endl;
+
     // Run fittings for systematics
     if (sys) {
       LOG(info) << "Processing systematics from fitting ...";
