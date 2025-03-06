@@ -659,11 +659,11 @@ void FlowAnalysis_Fitting::InitFullModel(TF1 *&model) {
         // model->SetParameter(12, 0.);      // a2
         // model->SetParLimits(12, -1., 1.); // a3
         // model->SetParName(12, "a3");      // a3
-        model->SetParameter(9, 2.5);      // a0
-        model->SetParLimits(9, 2.2, 3.2); // a0
+        model->SetParameter(9, 2.6);      // a0
+        model->SetParLimits(9, 2.3, 3.2); // a0
         model->SetParName(9, "a0");       // a0
-        model->SetParameter(10, 1.);      // a1
-        model->SetParLimits(10, 0., 5.);  // a1
+        model->SetParameter(10, 0.5);     // a1
+        model->SetParLimits(10, 0.2, 5.); // a1
         model->SetParName(10, "a1");      // a1
       }
       if (FlowAnalysis_Fitting::mflag_sig == NA60) {
@@ -679,11 +679,11 @@ void FlowAnalysis_Fitting::InitFullModel(TF1 *&model) {
         // model->SetParameter(16, 0.);       // a2
         // model->SetParLimits(16, -1., 1.);  // a3
         // model->SetParName(16, "a3");       // a3
-        model->SetParameter(13, 2.5);      // a0
-        model->SetParLimits(13, 2.2, 3.2); // a0
+        model->SetParameter(13, 2.6);      // a0
+        model->SetParLimits(13, 2.3, 3.2); // a0
         model->SetParName(13, "a0");       // a0
-        model->SetParameter(14, 1.);       // a1
-        model->SetParLimits(14, 0., 5.);   // a1
+        model->SetParameter(14, 0.5);      // a1
+        model->SetParLimits(14, 0.2, 5.);  // a1
         model->SetParName(14, "a1");       // a1
       }
     }
@@ -1564,7 +1564,10 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       model->GetParLimits(i, min, max);
       ParLimitsBkg[i - 4 - nPar_sig][0] = min;
       ParLimitsBkg[i - 4 - nPar_sig][1] = max;
-      model->FixParameter(i, model->GetParameter(i));
+      if (FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] !=
+          "EventMixing") {
+        model->FixParameter(i, model->GetParameter(i));
+      }
     }
   }
 
@@ -2667,8 +2670,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     text_info_yield_all->DrawLatexNDC(
         .65, .70,
         Form("%s = %d #pm %d", "N_{J/#psi}",
-             int(model->GetParameter(0) / hs_se->GetBinWidth(1)),
-             int(model->GetParError(0) / hs_se->GetBinWidth(1))));
+             int(sig_fitted->GetParameter(0) / hs_se->GetBinWidth(1)),
+             int(sig_fitted->GetParError(0) / hs_se->GetBinWidth(1))));
     text_info_yield_all->DrawLatexNDC(
         .65, .60, Form("%s = %.2f", "(S/B)_{3#sigma}", S_3sigma / B_3sigma));
 
@@ -2792,8 +2795,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
     text_info_yield_all->DrawLatexNDC(
         .65, .70,
         Form("%s = %d #pm %d", "N_{J/#psi}",
-             int(model->GetParameter(0) / hs_se->GetBinWidth(1)),
-             int(model->GetParError(0) / hs_se->GetBinWidth(1))));
+             int(sig_fitted->GetParameter(0) / hs_se->GetBinWidth(1)),
+             int(sig_fitted->GetParError(0) / hs_se->GetBinWidth(1))));
     text_info_yield_all->DrawLatexNDC(
         .65, .60, Form("%s = %.2f", "(S/B)_{3#sigma}", S_3sigma / B_3sigma));
     TLegend *legend_yield_all = new TLegend(0.13, 0.05, 0.35, 0.45);
@@ -2837,8 +2840,8 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   cout << endl;
   results.emplace_back(model_v2->GetParameter(0));
   results.emplace_back(model_v2->GetParError(0));
-  results.emplace_back(model->GetParameter(0) / hs_se->GetBinWidth(1));
-  results.emplace_back(model->GetParError(0) / hs_se->GetBinWidth(1));
+  results.emplace_back(sig_fitted->GetParameter(0) / hs_se->GetBinWidth(1));
+  results.emplace_back(sig_fitted->GetParError(0) / hs_se->GetBinWidth(1));
   results.emplace_back(S_3sigma / B_3sigma);
   results.emplace_back(chi2ndf_mass);
   results.emplace_back(chi2ndf_v2);

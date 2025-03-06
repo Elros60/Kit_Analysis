@@ -63,8 +63,8 @@ void FlowAnalysis_EventMixing(
     int flag_run2yield, std::string FileName = "AnalysisResults.root",
     double mass_min = 2.3, double mass_max = 4.3, double cent_min = 10.,
     double cent_max = 50., double chi2max_mass = 2., double chi2max_v2 = 2.,
-    bool sys = false, bool meanPt = false, bool SaveSys = false,
-    std::string inputFlag = "goodmedium",
+    double fmin = 1., double fmax = 5., bool sys = false, bool meanPt = false,
+    bool SaveSys = false, std::string inputFlag = "goodmedium",
     std::string muonCut = "muonLowPt210SigmaPDCA", std::string dimuonCut = "") {
 
   LOG(info) << "Start flow analysis...";
@@ -167,8 +167,8 @@ void FlowAnalysis_EventMixing(
         0., 20., 0., 5., Bin_PoolEM[i], Bin_PoolEM[i + 1], tp_V2MEPM, tp_V2MEPP,
         tp_V2MEMM);
     double F_value = helper->GetFfactorProfile(
-        0., 20., mass_min, mass_max, Bin_PoolEM[i], Bin_PoolEM[i + 1],
-        tp_V2SEPP, tp_V2SEMM, tp_V2MEPM, hist_rfactor);
+        0., 20., fmin, fmax, Bin_PoolEM[i], Bin_PoolEM[i + 1], tp_V2SEPP,
+        tp_V2SEMM, tp_V2MEPM, hist_rfactor);
     LOG(info) << Form("F factor for [%g - %g] (%%): %g", Bin_PoolEM[i],
                       Bin_PoolEM[i + 1], F_value);
     ffactor.emplace_back(F_value);
@@ -194,7 +194,7 @@ void FlowAnalysis_EventMixing(
           Bin_pt_mass[i], Bin_pt_mass[i + 1], 0., 5., Bin_PoolEM[j],
           Bin_PoolEM[j + 1], tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
       double F_value = helper->GetFfactorProfile(
-          Bin_pt_mass[i], Bin_pt_mass[i + 1], 1., 5., Bin_PoolEM[j],
+          Bin_pt_mass[i], Bin_pt_mass[i + 1], fmin, fmax, Bin_PoolEM[j],
           Bin_PoolEM[j + 1], tp_V2SEPP, tp_V2SEMM, tp_V2MEPM, hist_rfactor);
       LOG(info) << Form("F factor for [%g - %g] (%%) [%g - %g] (GeV/c): %g",
                         Bin_PoolEM[j], Bin_PoolEM[j + 1], Bin_pt_mass[i],
@@ -463,33 +463,25 @@ void FlowAnalysis_EventMixing(
                                         sig_enum[bkg_mass[i3]].c_str(),
                                         mass_min_sys[i1], mass_max_sys[i1]);
             for (int i4 = 0; i4 < int(size(bkg_v2)); i4++) {
-              // Get F factors
-              // Calculate R factors and F factors
-              LOG(info) << "Processing analysis for R and F factors ...";
-              vector<double> ffactor_sys;
-              for (int k = 0; k < int(Bin_pt_mass.size()) - 1; k++) {
-                TH1D *hist_rfactor_sys = helper->GetRfactorProfile(
-                    Bin_pt_mass[k], Bin_pt_mass[k + 1], mass_min_sys[i1],
-                    mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, tp_V2MEPP,
-                    tp_V2MEMM);
-                double F_value = helper->GetFfactorProfile(
-                    Bin_pt_mass[k], Bin_pt_mass[k + 1], mass_min_sys[i1],
-                    mass_max_sys[i1], cent_min, cent_max, tp_V2SEPP, tp_V2SEMM,
-                    tp_V2MEPM, hist_rfactor_sys);
 
-                ffactor_sys.emplace_back(F_value);
-                delete hist_rfactor_sys;
+              // Normalisation for mixed-event spectra
+              TH1D *hs_mass_mepm_proj_sys = new TH1D();
+              for (int k = itmin; k < itmax; k++) {
+                if (k == itmin) {
+                  hs_mass_mepm_proj_sys = helper->GetMassProfile(
+                      Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
+                      mass_max_sys[i1], Bin_PoolEM[k], Bin_PoolEM[k + 1],
+                      tp_V2MEPM, "MEPM");
+                  hs_mass_mepm_proj_sys->Scale(ffactor_ptDiff[i][k - itmin]);
+                } else {
+                  hs_mass_mepm_proj_sys->Add(
+                      helper->GetMassProfile(Bin_pt_mass[i], Bin_pt_mass[i + 1],
+                                             mass_min_sys[i1], mass_max_sys[i1],
+                                             Bin_PoolEM[k], Bin_PoolEM[k + 1],
+                                             tp_V2MEPM, "MEPM"),
+                      ffactor_ptDiff[i][k - itmin]);
+                }
               }
-
-              TH1D *hist_rfactor_sys = helper->GetRfactorProfile(
-                  Bin_pt_mass[0], Bin_pt_mass[int(Bin_pt_mass.size()) - 1],
-                  mass_min_sys[i1], mass_max_sys[i1], cent_min, cent_max,
-                  tp_V2MEPM, tp_V2MEPP, tp_V2MEMM);
-              double F_value_sys = helper->GetFfactorProfile(
-                  Bin_pt_mass[0], Bin_pt_mass[int(Bin_pt_mass.size()) - 1],
-                  mass_min_sys[i1], mass_max_sys[i1], cent_min, cent_max,
-                  tp_V2SEPP, tp_V2SEMM, tp_V2MEPM, hist_rfactor_sys);
-              delete hist_rfactor_sys;
 
               // Get mass and v2 to fit
               // Same-event profiles: mass
@@ -502,26 +494,17 @@ void FlowAnalysis_EventMixing(
                   Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
                   mass_max_sys[i1], cent_min, cent_max, tp_V2SEPM, "SEPM");
 
-              // Mixed-event profiles: mass
-              TH1D *hs_mass_mepm_proj_sys = helper->GetMassProfile(
-                  Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
-                  mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, "MEPM");
-
               // Mixed-event profiles: v2
               TH1D *hs_v2_mepm_proj_sys = helper->GetV2Profile(
                   Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
                   mass_max_sys[i1], cent_min, cent_max, tp_V2MEPM, "MEPM");
 
-              // Scale mixed-event spectra with F factor
-              // hs_mass_mepm_proj_sys->Scale(ffactor_sys[i]);
-              hs_mass_mepm_proj_sys->Scale(F_value_sys);
-
               // Mean pT profile
               TH1D *hs_mass_sepm_proj_meanPt_sys = new TH1D();
               if (meanPt) {
                 hs_mass_sepm_proj_meanPt_sys = helper->GetMeanPt(
-                    Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min, mass_max,
-                    cent_min, cent_max, tp_V2SEPM, "MeanPt");
+                    Bin_pt_mass[i], Bin_pt_mass[i + 1], mass_min_sys[i1],
+                    mass_max_sys[i1], cent_min, cent_max, tp_V2SEPM, "MeanPt");
               }
 
               TString combo_v2 =
