@@ -1657,17 +1657,18 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
                             FlowAnalysis_Fitting::massmax, nPar_sig + 2);
   for (int i = 0; i < nPar_sig + 2; i++) {
     if (i == 0) {
-      sig_fitted->SetParameter(i, model->GetParameter(0));
+      sig_fitted->SetParameter(i, 1.);
     } else if (i == 1) {
-      sig_fitted->SetParameter(i, 1.0);
+      sig_fitted->SetParameter(i, 1.);
     } else {
       sig_fitted->SetParameter(i, model->GetParameter(i + 1));
     }
   }
-  // double int_sig = sig_fitted->Integral(FlowAnalysis_Fitting::massmin,
-  //                                       FlowAnalysis_Fitting::massmax) /
-  //                  model->GetParameter(0);
-  // sig_fitted->SetParameter(1, int_sig);
+  double int_sig = sig_fitted->Integral(FlowAnalysis_Fitting::massmin,
+                                        FlowAnalysis_Fitting::massmax);
+  sig_fitted->SetParameter(0, model->GetParameter(0) * int_sig);
+  sig_fitted->SetParError(0, model->GetParError(0) * int_sig);
+  sig_fitted->SetParameter(1, int_sig);
 
   // Fitted signal bis function
   TF1 *sig_bis_fitted =
@@ -1676,9 +1677,9 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
               nPar_sig + 2);
   for (int i = 0; i < nPar_sig + 2; i++) {
     if (i == 0) {
-      sig_bis_fitted->SetParameter(i, model->GetParameter(2));
+      sig_bis_fitted->SetParameter(i, 1.);
     } else if (i == 1) {
-      sig_bis_fitted->SetParameter(i, 1.0);
+      sig_bis_fitted->SetParameter(i, 1.);
     } else if (i == 2) {
       sig_bis_fitted->SetParameter(i, model->GetParameter(i + 1) + 0.58918100);
     } else if (i == 3) {
@@ -1687,12 +1688,11 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
       sig_bis_fitted->SetParameter(i, model->GetParameter(i + 1));
     }
   }
-  // double int_sig_bis =
-  // sig_bis_fitted->Integral(FlowAnalysis_Fitting::massmin,
-  //                                               FlowAnalysis_Fitting::massmax)
-  //                                               /
-  //                      model->GetParameter(2);
-  // sig_bis_fitted->SetParameter(1, int_sig_bis);
+  double int_sig_bis = sig_bis_fitted->Integral(FlowAnalysis_Fitting::massmin,
+                                                FlowAnalysis_Fitting::massmax);
+  sig_bis_fitted->SetParameter(0, model->GetParameter(2) * int_sig_bis);
+  sig_bis_fitted->SetParError(0, model->GetParError(2) * int_sig_bis);
+  sig_bis_fitted->SetParameter(1, int_sig_bis);
 
   // Fitted background function
   auto fct_bkgResidual_norm = [](double *x, double *par) {
@@ -1719,17 +1719,19 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   }
   for (int i = 0; i < nPar_bkg + 2; i++) {
     if (i == 0) {
-      bkg_fitted->SetParameter(i, model->GetParameter(1));
+      bkg_fitted->SetParameter(i, 1.);
     } else if (i == 1) {
-      bkg_fitted->SetParameter(i, 1.0);
+      bkg_fitted->SetParameter(i, 1.);
     } else {
       bkg_fitted->SetParameter(i, model->GetParameter(i + nPar_sig + 1));
     }
   }
-  // double int_bkg = bkg_fitted->Integral(FlowAnalysis_Fitting::massmin,
-  //                                       FlowAnalysis_Fitting::massmax) /
-  //                  model->GetParameter(1);
-  // bkg_fitted->SetParameter(1, int_bkg);
+
+  double int_bkg = bkg_fitted->Integral(FlowAnalysis_Fitting::massmin,
+                                        FlowAnalysis_Fitting::massmax);
+  bkg_fitted->SetParameter(0, model->GetParameter(1) * int_bkg);
+  bkg_fitted->SetParError(0, model->GetParError(1) * int_bkg);
+  bkg_fitted->SetParameter(1, int_bkg);
 
   // Plotting
   gStyle->SetOptStat(0);
@@ -1897,20 +1899,21 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   sb_list->Remove(tconst3);
   sb->AddText(
       TString::Format("%s = %d #pm %d", "N_{J/#psi}",
-                      int(model->GetParameter(0) / hs_se->GetBinWidth(1)),
-                      int(model->GetParError(0) / hs_se->GetBinWidth(1))));
-  sb->AddText(
-      TString::Format("%s = %d #pm %d", "N_{#psi(2s)}",
-                      int(model->GetParameter(2) / hs_se->GetBinWidth(1)),
-                      int(model->GetParError(2) / hs_se->GetBinWidth(1))));
+                      int(sig_fitted->GetParameter(0) / hs_se->GetBinWidth(1)),
+                      int(sig_fitted->GetParError(0) / hs_se->GetBinWidth(1))));
+  sb->AddText(TString::Format(
+      "%s = %d #pm %d", "N_{#psi(2s)}",
+      int(sig_bis_fitted->GetParameter(0) / hs_se->GetBinWidth(1)),
+      int(sig_bis_fitted->GetParError(0) / hs_se->GetBinWidth(1))));
   sb->AddText(TString::Format(
       "%s = %d #pm %d", "N_{bkg}",
       FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
               "EventMixing"
-          ? int(model->GetParameter(1) / hs_se->GetBinWidth(1) +
-                hs_me->Integral())
-          : int(model->GetParameter(1) / hs_se->GetBinWidth(1)),
-      int(model->GetParError(1) / hs_se->GetBinWidth(1))));
+          ? int(bkg_fitted->GetParameter(0) / hs_se->GetBinWidth(1) +
+                hs_me->Integral(FlowAnalysis_Fitting::massmin,
+                                FlowAnalysis_Fitting::massmax))
+          : int(bkg_fitted->GetParameter(0) / hs_se->GetBinWidth(1)),
+      int(bkg_fitted->GetParError(0) / hs_se->GetBinWidth(1))));
   sb->AddText(
       TString::Format("%s = %f", "(S/B)_{3#sigma}", S_3sigma / B_3sigma));
   sb->AddText(TString::Format("%s = %f", "(S / #sqrt{S+B})_{3#sigma}",
