@@ -72,17 +72,24 @@ void FlowAnalysis_EventMixing(
   FlowAnalysis_Helper *helper = new FlowAnalysis_Helper();
 
   // Load input data for analysis
-  TProfile3D *tp_V2SEPM, *tp_V2SEPP, *tp_V2SEMM;
-  TProfile3D *tp_V2MEPM, *tp_V2MEPP, *tp_V2MEMM;
+  TProfile3D *tp_V2SEPM = new TProfile3D();
+  TProfile3D *tp_V2SEPP = new TProfile3D();
+  TProfile3D *tp_V2SEMM = new TProfile3D();
+  TProfile3D *tp_V2MEPM = new TProfile3D();
+  TProfile3D *tp_V2MEPP = new TProfile3D();
+  TProfile3D *tp_V2MEMM = new TProfile3D();
 
   helper->LoadDataMEProfile(FileName, tp_V2SEPM, tp_V2SEPP, tp_V2SEMM,
                             tp_V2MEPM, tp_V2MEPP, tp_V2MEMM, muonCut,
                             dimuonCut);
 
   // Get general binning information
-  TAxis *massAxis = tp_V2SEPM->GetXaxis();
-  TAxis *ptAxis = tp_V2SEPM->GetYaxis();
-  TAxis *centAxis = tp_V2SEPM->GetZaxis();
+  TAxis *massAxis = new TAxis();
+  TAxis *ptAxis = new TAxis();
+  TAxis *centAxis = new TAxis();
+  massAxis = tp_V2SEPM->GetXaxis();
+  ptAxis = tp_V2SEPM->GetYaxis();
+  centAxis = tp_V2SEPM->GetZaxis();
   int Nbins_mass = massAxis->GetNbins();
   int Nbins_pt = ptAxis->GetNbins();
   int Nbins_cent = centAxis->GetNbins();

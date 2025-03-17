@@ -40,9 +40,9 @@ TH1D *FlowAnalysis_Helper::GetMass(double ptmin, double ptmax, double massmin,
       Form("Mass_Pt_centrFT0C_V2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
 
   // Set axes' ranges for mass-differential study
-  hist_V2_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hist_V2_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hist_V2_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hist_V2_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hist_V2_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hist_V2_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
   // Get mass
   TH1D *hist_proj = hist_V2_cp->Projection(0);
@@ -70,9 +70,9 @@ TH1D *FlowAnalysis_Helper::GetMassProfile(double ptmin, double ptmax,
       Form("Mass_Pt_centrFT0C_V2_%s_Pxyz_%g_%g_%g_%g_%g_%g", flag.c_str(),
            massmin, massmax, ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
   TH1D *tp_V2_cp_proj = dynamic_cast<TH1D *>(tp_V2_cp_projxyz->Project3D("x"));
   TH1D *hist_mass_proj = dynamic_cast<TH1D *>(
       tp_V2_cp_proj->Clone(Form("Proj_%s", tp_V2_cp_proj->GetName())));
@@ -98,9 +98,9 @@ TH1D *FlowAnalysis_Helper::GetMeanPt(double ptmin, double ptmax, double massmin,
       Form("Mass_Pt_centrFT0C_V2_%s_Pxyz_%g_%g_%g_%g_%g_%g", flag.c_str(),
            massmin, massmax, ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
 
   TH2D *tp_V2_cp_projxy =
       dynamic_cast<TH2D *>(tp_V2_cp_projxyz->Project3D("yx"));
@@ -149,17 +149,17 @@ TH1D *FlowAnalysis_Helper::GetRfactor(double ptmin, double ptmax,
                             massmin, massmax, ptmin, ptmax, centmin, centmax)));
 
   // Set axes' ranges for mass-differential study
-  hs_V2MEPM_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_V2MEPM_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_V2MEPM_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hs_V2MEPM_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_V2MEPM_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_V2MEPM_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
-  hs_V2MEPP_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_V2MEPP_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_V2MEPP_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hs_V2MEPP_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_V2MEPP_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_V2MEPP_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
-  hs_V2MEMM_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_V2MEMM_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_V2MEMM_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hs_V2MEMM_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_V2MEMM_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_V2MEMM_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
   TH1D *hs_V2MEPM_cp_proj = hs_V2MEPM_cp->Projection(0);
   TH1D *hs_V2MEPP_cp_proj = hs_V2MEPP_cp->Projection(0);
@@ -214,9 +214,9 @@ TH1D *FlowAnalysis_Helper::GetRfactorProfile(double ptmin, double ptmax,
       Form("MEPM_Mass_Pt_centrFT0C_V2_Pxyz_%g_%g_%g_%g_%g_%g", massmin, massmax,
            ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2MEPM_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2MEPM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2MEPM_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2MEPM_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2MEPM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2MEPM_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
   TH1D *tp_V2MEPM_cp_proj =
       dynamic_cast<TH1D *>(tp_V2MEPM_cp_projxyz->Project3D("x"));
 
@@ -224,9 +224,9 @@ TH1D *FlowAnalysis_Helper::GetRfactorProfile(double ptmin, double ptmax,
       Form("MEPP_Mass_Pt_centrFT0C_V2_Pxyz_%g_%g_%g_%g_%g_%g", massmin, massmax,
            ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2MEPP_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2MEPP_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2MEPP_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2MEPP_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2MEPP_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2MEPP_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
   TH1D *tp_V2MEPP_cp_proj =
       dynamic_cast<TH1D *>(tp_V2MEPP_cp_projxyz->Project3D("x"));
 
@@ -234,9 +234,9 @@ TH1D *FlowAnalysis_Helper::GetRfactorProfile(double ptmin, double ptmax,
       Form("MEMM_Mass_Pt_centrFT0C_V2_Pxyz_%g_%g_%g_%g_%g_%g", massmin, massmax,
            ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2MEMM_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2MEMM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2MEMM_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2MEMM_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2MEMM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2MEMM_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
   TH1D *tp_V2MEMM_cp_proj =
       dynamic_cast<TH1D *>(tp_V2MEMM_cp_projxyz->Project3D("x"));
 
@@ -288,17 +288,17 @@ FlowAnalysis_Helper::GetFfactor(double ptmin, double ptmax, double massmin,
                             massmin, massmax, ptmin, ptmax, centmin, centmax)));
 
   // Set axes' ranges for mass-differential study
-  hs_V2SEPP_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_V2SEPP_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_V2SEPP_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hs_V2SEPP_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_V2SEPP_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_V2SEPP_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
-  hs_V2SEMM_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_V2SEMM_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_V2SEMM_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hs_V2SEMM_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_V2SEMM_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_V2SEMM_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
-  hs_V2MEPM_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_V2MEPM_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_V2MEPM_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hs_V2MEPM_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_V2MEPM_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_V2MEPM_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
   TH1D *hs_V2SEPP_cp_proj = hs_V2SEPP_cp->Projection(0);
   TH1D *hs_V2SEMM_cp_proj = hs_V2SEMM_cp->Projection(0);
@@ -353,9 +353,9 @@ double FlowAnalysis_Helper::GetFfactorProfile(
       Form("SEPP_Mass_Pt_centrFT0C_V2_Pxyz_%g_%g_%g_%g_%g_%g", massmin, massmax,
            ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2SEPP_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2SEPP_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2SEPP_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2SEPP_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2SEPP_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2SEPP_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
   TH1D *tp_V2SEPP_cp_proj =
       dynamic_cast<TH1D *>(tp_V2SEPP_cp_projxyz->Project3D("x"));
 
@@ -363,9 +363,9 @@ double FlowAnalysis_Helper::GetFfactorProfile(
       Form("SEMM_Mass_Pt_centrFT0C_V2_Pxyz_%g_%g_%g_%g_%g_%g", massmin, massmax,
            ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2SEMM_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2SEMM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2SEMM_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2SEMM_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2SEMM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2SEMM_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
   TH1D *tp_V2SEMM_cp_proj =
       dynamic_cast<TH1D *>(tp_V2SEMM_cp_projxyz->Project3D("x"));
 
@@ -373,9 +373,9 @@ double FlowAnalysis_Helper::GetFfactorProfile(
       Form("MEPM_Mass_Pt_centrFT0C_V2_Pxyz_%g_%g_%g_%g_%g_%g", massmin, massmax,
            ptmin, ptmax, centmin, centmax),
       "B");
-  tp_V2MEPM_cp_projxyz->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2MEPM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2MEPM_cp_projxyz->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2MEPM_cp_projxyz->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2MEPM_cp_projxyz->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2MEPM_cp_projxyz->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
   TH1D *tp_V2MEPM_cp_proj =
       dynamic_cast<TH1D *>(tp_V2MEPM_cp_projxyz->Project3D("x"));
 
@@ -426,9 +426,9 @@ TH1D *FlowAnalysis_Helper::GetV2(double ptmin, double ptmax, double massmin,
       Form("Mass_Pt_centrFT0C_V2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
 
   // Set axes' ranges for mass-differential study
-  hist_V2_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hist_V2_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hist_V2_cp->GetAxis(3)->SetRangeUser(centmin, centmax);
+  hist_V2_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hist_V2_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hist_V2_cp->GetAxis(3)->SetRangeUser(centmin + 1E-5, centmax);
 
   // Get v2
   TH2D *hs_v2_sp_proj = hist_V2_cp->Projection(4, 0);
@@ -447,7 +447,7 @@ TH1D *FlowAnalysis_Helper::GetV2(double ptmin, double ptmax, double massmin,
   for (int i = 0; i < NBins_mass_new; i++) {
     TH2D *hs_v2_sp_proj_cp =
         dynamic_cast<TH2D *>(hs_v2_sp_proj->Clone("Mass_V2SP_Copy"));
-    hs_v2_sp_proj_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_v2_sp_proj_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                Bin_mass_new[i + 1]);
     double v2sp = hs_v2_sp_proj_cp->GetMean(2);
     double v2spe = hs_v2_sp_proj_cp->GetMean(12);
@@ -473,9 +473,9 @@ TH1D *FlowAnalysis_Helper::GetV2Profile(double ptmin, double ptmax,
   TProfile3D *tp_V2_cp = dynamic_cast<TProfile3D *>(tp_V2->Clone(
       Form("Mass_Pt_centrFT0C_V2_%s_Copy_%g_%g_%g_%g_%g_%g", flag.c_str(),
            massmin, massmax, ptmin, ptmax, centmin, centmax)));
-  tp_V2_cp->GetXaxis()->SetRangeUser(massmin, massmax);
-  tp_V2_cp->GetYaxis()->SetRangeUser(ptmin, ptmax);
-  tp_V2_cp->GetZaxis()->SetRangeUser(centmin, centmax);
+  tp_V2_cp->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  tp_V2_cp->GetYaxis()->SetRangeUser(ptmin + 1E-5, ptmax);
+  tp_V2_cp->GetZaxis()->SetRangeUser(centmin + 1E-5, centmax);
 
   TProfile2D *tp_V2_cp_projxy = tp_V2_cp->Project3DProfile("yx");
   TProfile *tp_V2_cp_projx = tp_V2_cp_projxy->ProfileX(
@@ -533,27 +533,27 @@ TH1D *FlowAnalysis_Helper::GetV2EM(
       "Mass_Pt_centrFT0C_R2SPBC_2_Copy_%s_%g_%g", flag.c_str(), ptmin, ptmax)));
 
   // Set axes' ranges for mass-differential study
-  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(2)->SetRangeUser(centmin, centmax);
+  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_u2q2_cosDeltaPhi_ME1_cp->GetAxis(2)->SetRangeUser(centmin + 1E-5, centmax);
 
-  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(0)->SetRangeUser(massmin, massmax);
-  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(1)->SetRangeUser(ptmin, ptmax);
-  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(2)->SetRangeUser(centmin, centmax);
+  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(0)->SetRangeUser(massmin + 1E-5, massmax);
+  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(1)->SetRangeUser(ptmin + 1E-5, ptmax);
+  hs_u2q2_cosDeltaPhi_ME2_cp->GetAxis(2)->SetRangeUser(centmin + 1E-5, centmax);
 
-  hs_r2spAB1_cp->GetXaxis()->SetRangeUser(massmin, massmax);
-  hs_r2spAB1_cp->GetYaxis()->SetRangeUser(centmin, centmax);
-  hs_r2spAC1_cp->GetXaxis()->SetRangeUser(massmin, massmax);
-  hs_r2spAC1_cp->GetYaxis()->SetRangeUser(centmin, centmax);
-  hs_r2spBC1_cp->GetXaxis()->SetRangeUser(massmin, massmax);
-  hs_r2spBC1_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+  hs_r2spAB1_cp->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  hs_r2spAB1_cp->GetYaxis()->SetRangeUser(centmin + 1E-5, centmax);
+  hs_r2spAC1_cp->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  hs_r2spAC1_cp->GetYaxis()->SetRangeUser(centmin + 1E-5, centmax);
+  hs_r2spBC1_cp->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  hs_r2spBC1_cp->GetYaxis()->SetRangeUser(centmin + 1E-5, centmax);
 
-  hs_r2spAB2_cp->GetXaxis()->SetRangeUser(massmin, massmax);
-  hs_r2spAB2_cp->GetYaxis()->SetRangeUser(centmin, centmax);
-  hs_r2spAC2_cp->GetXaxis()->SetRangeUser(massmin, massmax);
-  hs_r2spAC2_cp->GetYaxis()->SetRangeUser(centmin, centmax);
-  hs_r2spBC2_cp->GetXaxis()->SetRangeUser(massmin, massmax);
-  hs_r2spBC2_cp->GetYaxis()->SetRangeUser(centmin, centmax);
+  hs_r2spAB2_cp->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  hs_r2spAB2_cp->GetYaxis()->SetRangeUser(centmin + 1E-5, centmax);
+  hs_r2spAC2_cp->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  hs_r2spAC2_cp->GetYaxis()->SetRangeUser(centmin + 1E-5, centmax);
+  hs_r2spBC2_cp->GetXaxis()->SetRangeUser(massmin + 1E-5, massmax);
+  hs_r2spBC2_cp->GetYaxis()->SetRangeUser(centmin + 1E-5, centmax);
 
   // Get u2q2 and cosDeltaPhi
   TH2D *hs_u2q2_proj1 = hs_u2q2_cosDeltaPhi_ME1_cp->Projection(3, 0);
@@ -581,46 +581,46 @@ TH1D *FlowAnalysis_Helper::GetV2EM(
   for (int i = 0; i < NBins_mass_new; i++) {
     TH2D *hs_u2q2_proj1_cp =
         dynamic_cast<TH2D *>(hs_u2q2_proj1->Clone("u2q2_1_Copy"));
-    hs_u2q2_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_u2q2_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                Bin_mass_new[i + 1]);
     TH2D *hs_u2q2_proj2_cp =
         dynamic_cast<TH2D *>(hs_u2q2_proj2->Clone("u2q2_2_Copy"));
-    hs_u2q2_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_u2q2_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                Bin_mass_new[i + 1]);
 
     TH2D *hs_cosDeltaPhi_proj1_cp =
         dynamic_cast<TH2D *>(hs_cosDeltaPhi_proj1->Clone("cosDeltaPhi_1_Copy"));
-    hs_cosDeltaPhi_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_cosDeltaPhi_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                       Bin_mass_new[i + 1]);
     TH2D *hs_cosDeltaPhi_proj2_cp =
         dynamic_cast<TH2D *>(hs_cosDeltaPhi_proj2->Clone("cosDeltaPhi_2_Copy"));
-    hs_cosDeltaPhi_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_cosDeltaPhi_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                       Bin_mass_new[i + 1]);
 
     TH2D *hs_r2spAB_proj1_cp =
         dynamic_cast<TH2D *>(hs_r2spAB_proj1->Clone("r2spAB_1_Copy"));
-    hs_r2spAB_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_r2spAB_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                  Bin_mass_new[i + 1]);
     TH2D *hs_r2spAC_proj1_cp =
         dynamic_cast<TH2D *>(hs_r2spAC_proj1->Clone("r2spAC_1_Copy"));
-    hs_r2spAC_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_r2spAC_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                  Bin_mass_new[i + 1]);
     TH2D *hs_r2spBC_proj1_cp =
         dynamic_cast<TH2D *>(hs_r2spBC_proj1->Clone("r2spBC_1_Copy"));
-    hs_r2spBC_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_r2spBC_proj1_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                  Bin_mass_new[i + 1]);
 
     TH2D *hs_r2spAB_proj2_cp =
         dynamic_cast<TH2D *>(hs_r2spAB_proj2->Clone("r2spAB_2_Copy"));
-    hs_r2spAB_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_r2spAB_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                  Bin_mass_new[i + 1]);
     TH2D *hs_r2spAC_proj2_cp =
         dynamic_cast<TH2D *>(hs_r2spAC_proj2->Clone("r2spAC_2_Copy"));
-    hs_r2spAC_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_r2spAC_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                  Bin_mass_new[i + 1]);
     TH2D *hs_r2spBC_proj2_cp =
         dynamic_cast<TH2D *>(hs_r2spBC_proj2->Clone("r2spBC_2_Copy"));
-    hs_r2spBC_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i],
+    hs_r2spBC_proj2_cp->GetXaxis()->SetRangeUser(Bin_mass_new[i] + 1E-5,
                                                  Bin_mass_new[i + 1]);
 
     double u2q2_1 = hs_u2q2_proj1_cp->GetMean(2);
