@@ -82,41 +82,38 @@ void FlowAnalysis_SingleMuV2(std::string FileName = "AnalysisResults.root") {
                                   Bin_pt, Nbins_cent, Bin_cent);
   TH2D *hist_v24single = new TH2D("hist_v24single", "hist_v24single", Nbins_pt,
                                   Bin_pt, Nbins_cent, Bin_cent);
-
+  TH2D *hist_mult = new TH2D("Multiplicity_singlemu", "Multiplicity_singlemu",
+                             Nbins_pt, Bin_pt, Nbins_cent, Bin_cent);
   for (int i = 0; i < Nbins_pt; i++) {
     for (int j = 0; j < Nbins_cent; j++) {
+      int global_id = tp_corr2ref->GetBin(i + 1, j + 1);
+      double val_mult = tp_corr2ref->GetBinEntries(global_id);
       double val_corr2ref = tp_corr2ref->GetBinContent(i + 1, j + 1);
       double val_corr4ref = tp_corr4ref->GetBinContent(i + 1, j + 1);
       double val_corr2poi = tp_corr2poi->GetBinContent(i + 1, j + 1);
       double val_corr4poi = tp_corr4poi->GetBinContent(i + 1, j + 1);
 
-      double d22 =
-          isnan(val_corr2poi) || isinf(val_corr2poi) ? 0. : val_corr2poi;
-      double v22 =
-          isnan(val_corr2ref) || isinf(val_corr2ref) || (val_corr2ref <= 0)
-              ? 0.
-              : d22 / pow(val_corr2ref, 0.5);
+      double d22 = val_corr2poi;
+      double v22 = d22 / pow(val_corr2ref, 0.5);
 
-      double c24 = isnan(val_corr2ref) || isinf(val_corr2ref) ||
-                           isnan(val_corr4ref) || isinf(val_corr4ref)
-                       ? 0.
-                       : val_corr4ref - 2.0 * pow(val_corr2ref, 2.0);
-      double d24 = isnan(val_corr2ref) || isinf(val_corr2ref) ||
-                           isnan(val_corr2poi) || isinf(val_corr2poi) ||
-                           isnan(val_corr4poi) || isinf(val_corr4poi)
-                       ? 0.
-                       : val_corr4poi - 2.0 * val_corr2poi * val_corr2ref;
-      double v24 = isnan(c24) || isinf(c24) || (c24 >= 0)
-                       ? 0.
-                       : d24 / pow(-1. * c24, 3. / 4.);
+      double c24 = val_corr4ref - 2.0 * pow(val_corr2ref, 2.0);
+      double d24 = val_corr4poi - 2.0 * val_corr2poi * val_corr2ref;
+      double v24 = d24 / pow(-1. * c24, 3. / 4.);
 
-      hist_v22single->SetBinContent(i + 1, j + 1, v22 == 0.?1000.:v22);
-      hist_v24single->SetBinContent(i + 1, j + 1, v24 == 0.? 1000.:v24);
+      v22 = isnan(v22) || isinf(v22) ? 1000. : v22;
+      v24 = isnan(v24) || isinf(v24) ? 1000. : v24;
+      hist_v22single->SetBinContent(i + 1, j + 1, v22);
+      //   hist_v22single->SetBinError(i + 1, j + 1, v22 <= 0. ? -1. * v22 :
+      //   0.);
+      hist_v24single->SetBinContent(i + 1, j + 1,
+                                    isnan(v24) || isinf(v24) ? 1000. : v24);
+      hist_mult->SetBinContent(i + 1, j + 1, val_mult);
     }
   }
 
   TFile *f = new TFile("FlowAnalysisResults_SingleMuV2.root", "RECREATE");
   f->cd();
+  hist_mult->Write();
   hist_v22single->Write();
   hist_v24single->Write();
   f->Close();
