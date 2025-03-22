@@ -130,7 +130,7 @@ void FlowAnalysis_EventMixing(
   double mass_max_sys[3] = {4.2, 4.3, 4.4};
   string sig_enum[5] = {"CB2(data)", "CB2(MC)", "NA60", "Chebychev",
                         "EventMixing"};
-  string bkg_v2_enum[2] = {"EventMixing(beta free)", "EventMixing(beta fix)"};
+  string bkg_v2_enum[2] = {"EventMixing(beta fix)", "EventMixing(beta free)"};
   int sig_mass[3] = {0, 1, 2}; // CB2(MC,data) NA60
   int bkg_mass[2] = {3, 4};    // Chebychev Event-Mixing
   int bkg_v2[2] = {0, 1};      // Event-Mixing, beta fix or free
