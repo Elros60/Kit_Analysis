@@ -48,14 +48,83 @@
 using namespace std;
 
 // Predefined binnings
+vector<double> Bin_pt_mass_5 = {0, 2, 4, 6, 8, 15};
+vector<double> Bin_pt_mass_8 = {0, 2, 3, 4, 5, 6, 8, 10, 15};
 vector<double> Bin_pt_mass_10 = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 20};
 vector<double> Bin_pt_mass_11 = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20};
+vector<double> Bin_pt_mass_13 = {0., 0.5, 1., 1.5, 2.,  2.5, 3.,
+                                 4., 5.,  6., 8.,  10., 12., 15.};
 vector<double> Bin_pt_mass_15 = {0., 0.3, 1., 2.,  3.,  4.,  5.,  6.,
                                  7., 8.,  9., 10., 11., 12., 15., 20.};
+vector<double> Bin_pt_mass_16 = {0.,  0.3, 1., 1.5, 2., 2.5, 3.,  3.5, 4.,
+                                 4.5, 5.,  6., 7.,  8., 10., 12., 20.};
 vector<double> Bin_pt_mass_18 = {0,   1, 1.5, 2, 2.5, 3,  3.5, 4,  4.5, 5,
                                  5.5, 6, 7,   8, 9,   10, 12,  15, 20};
 vector<double> Bin_PoolEM = {0.,  5.,  10., 20., 30., 40.,
                              50., 60., 70., 80., 90.};
+
+// Systematic from trials without rebin
+vector<double> eysys_v2pt_NoRebin_0_10_13 = {
+    pow(0.00463643 * 0.00463643 + 0.00456309 * 0.00456309, 0.5),
+    pow(0.00564614 * 0.00564614 + 0.00303515 * 0.00303515, 0.5),
+    pow(0.00144274 * 0.00144274 + 0.00174553 * 0.00174553, 0.5),
+    pow(0.000993098 * 0.000993098 + 0.00139923 * 0.00139923, 0.5),
+    pow(0.00412057 * 0.00412057 + 0.00420554 * 0.00420554, 0.5),
+    pow(0.00136656 * 0.00136656 + 0.00157385 * 0.00157385, 0.5),
+    pow(0.000715074 * 0.000715074 + 0.000788404 * 0.000788404, 0.5),
+    pow(0.00482697 * 0.00482697 + 0.00119732 * 0.00119732, 0.5),
+    pow(0.00169435 * 0.00169435 + 0.00282634 * 0.00282634, 0.5),
+    pow(0.00557251 * 0.00557251 + 0.00144485 * 0.00144485, 0.5),
+    pow(0.00420313 * 0.00420313 + 0.00160075 * 0.00160075, 0.5),
+    pow(0.00736095 * 0.00736095 + 0.00487474 * 0.00487474, 0.5),
+    pow(0.00331245 * 0.00331245 + 0.00370653 * 0.00370653, 0.5)};
+
+vector<double> eysys_v2pt_NoRebin_10_30_13 = {
+    0.00152273,
+    0.00157584,
+    0.00290032,
+    0.00488251,
+    0.00487099,
+    0.00365355,
+    pow(0.00105513 * 0.00105513 + 0.000614241 * 0.000614241, 0.5),
+    pow(0.00117072 * 0.00117072 + 0.000944041 * 0.000944041, 0.5),
+    pow(0.00339559 * 0.00339559 + 0.00265115 * 0.00265115, 0.5),
+    pow(0.00183549 * 0.00183549 + 0.00110483 * 0.00110483, 0.5),
+    pow(0.00503057 * 0.00503057 + 0.0040029 * 0.0040029, 0.5),
+    pow(0.00640357 * 0.00640357 + 0.0045649 * 0.0045649, 0.5),
+    pow(0.0107917 * 0.0107917 + 0.00425879 * 0.00425879, 0.5)};
+
+vector<double> eysys_v2pt_NoRebin_30_50_13 = {
+    pow(0.00374924 * 0.00374924 + 0.00196144 * 0.00196144, 0.5),
+    pow(0.00359179 * 0.00359179 + 0.00292885 * 0.00292885, 0.5),
+    pow(0.00339447 * 0.00339447 + 0.00408512 * 0.00408512, 0.5),
+    pow(0.00384483 * 0.00384483 + 0.00469391 * 0.00469391, 0.5),
+    pow(0.00216772 * 0.00216772 + 0.00224786 * 0.00224786, 0.5),
+    pow(0.00141501 * 0.00141501 + 0.00141861 * 0.00141861, 0.5),
+    pow(0.0012698 * 0.0012698 + 0.00103359 * 0.00103359, 0.5),
+    pow(0.00154091 * 0.00154091 + 0.00154724 * 0.00154724, 0.5),
+    pow(0.00406893 * 0.00406893 + 0.00354114 * 0.00354114, 0.5),
+    pow(0.0047061 * 0.0047061 + 0.00649449 * 0.00649449, 0.5),
+    pow(0.00301424 * 0.00301424 + 0.00594215 * 0.00594215, 0.5),
+    pow(0.00604328 * 0.00604328 + 0.00759305 * 0.00759305, 0.5),
+    pow(0.00822803 * 0.00822803 + 0.00761211 * 0.00761211, 0.5)};
+
+vector<double> eysys_v2pt_NoRebin_10_30_5 = {
+    pow(0.000508947 * 0.000508947 + 0.000126549 * 0.000126549, 0.5),
+    pow(0.00204559 * 0.00204559 + 0.00199851 * 0.00199851, 0.5),
+    pow(0.00121664 * 0.00121664 + 0.000797629 * 0.000797629, 0.5),
+    pow(0.25 * 0.00907546 * 0.00907546 + 0.00146574 * 0.00146574, 0.5),
+    pow(0.25 * 0.0117726 * 0.0117726 + 0.00260399 * 0.00260399, 0.5)};
+
+vector<double> eysys_v2pt_NoRebin_50_80_8 = {
+    pow(0.000756238 * 0.000756238 + 0.000389973 * 0.000389973, 0.5),
+    pow(0.00150519 * 0.00150519 + 0.000266339 * 0.000266339, 0.5),
+    pow(0.000865833 * 0.000865833 + 0.00101453 * 0.00101453, 0.5),
+    pow(0.0040134 * 0.0040134 + 0.00292761 * 0.00292761, 0.5),
+    pow(0.00145515 * 0.00145515 + 0.00299028 * 0.00299028, 0.5),
+    pow(0.00517746 * 0.00517746 + 0.00203027 * 0.00203027, 0.5),
+    pow(0. * 0. + 0.00136538 * 0.00136538, 0.5),
+    pow(0.00331188 * 0.00331188 + 0.00441371 * 0.00441371, 0.5)};
 
 //______________________________________________________________________________
 void FlowAnalysis_EventMixing(
@@ -107,14 +176,26 @@ void FlowAnalysis_EventMixing(
   // Define variables' range for analysis
   vector<double> Bin_pt_mass;
   switch (flag_binning) {
+  case 5:
+    Bin_pt_mass = Bin_pt_mass_5;
+    break;
+  case 8:
+    Bin_pt_mass = Bin_pt_mass_8;
+    break;
   case 10:
     Bin_pt_mass = Bin_pt_mass_10;
     break;
   case 11:
     Bin_pt_mass = Bin_pt_mass_11;
     break;
+  case 13:
+    Bin_pt_mass = Bin_pt_mass_13;
+    break;
   case 15:
     Bin_pt_mass = Bin_pt_mass_15;
+    break;
+  case 16:
+    Bin_pt_mass = Bin_pt_mass_16;
     break;
   case 18:
     Bin_pt_mass = Bin_pt_mass_11;
@@ -606,14 +687,14 @@ void FlowAnalysis_EventMixing(
   TList *l_results_sys_meanPt = new TList();
   if (sys) {
     for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
-      vector<double> stats_yield =
-          helper->GetStats(nbCombo_yield, y_sys_yield[i], ey_sys_yield[i]);
+      vector<double> stats_yield = helper->GetStats(
+          nbCombo_yield, y_sys_yield[i], ey_sys_yield[i], chi2_yield[i]);
       vector<double> stats_v2 =
-          helper->GetStats(nbCombo_v2, y_sys_v2[i], ey_sys_v2[i]);
+          helper->GetStats(nbCombo_v2, y_sys_v2[i], ey_sys_v2[i], chi2_v2[i]);
       vector<double> stats_meanPt;
       if (meanPt) {
-        stats_meanPt =
-            helper->GetStats(nbCombo_yield, x_sys_pt[i], ex_sys_pt[i]);
+        stats_meanPt = helper->GetStats(nbCombo_yield, x_sys_pt[i],
+                                        ex_sys_pt[i], chi2_meanPt[i]);
       }
 
       // Fill pT-differential v2 and jpsi yields
@@ -627,7 +708,9 @@ void FlowAnalysis_EventMixing(
 
       y_v2pt[i] = stats_v2[0];
       ey_v2pt[i] = stats_v2[1];
-      eysys_v2pt[i] = stats_v2[2];
+      // eysys_v2pt[i] = stats_v2[2];
+      eysys_v2pt[i] = pow(
+          pow(stats_v2[2], 2.) + pow(eysys_v2pt_NoRebin_0_10_13[i], 2.), 0.5);
 
       y_yield[i] = stats_yield[0] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
       ey_yield[i] = stats_yield[1] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
@@ -678,6 +761,12 @@ void FlowAnalysis_EventMixing(
     f->cd();
     l_results->SetOwner();
     l_results->Write("FinalResults", TObject::kSingleKey);
+
+    for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
+      cout << "[" << Bin_pt_mass[i] << "-" << Bin_pt_mass[i + 1] << "]  "
+           << "<pT>:" << x_v2pt[i] << "  v2:" << y_v2pt[i]
+           << " stat:" << ey_v2pt[i] << " sys:" << eysys_v2pt[i] << endl;
+    }
   }
   f->Close();
   LOG(info) << "Analysis done."; // this is a temporary solution to get rid of

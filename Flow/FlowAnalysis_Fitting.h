@@ -32,7 +32,8 @@ enum ModelType {
   CB2MC,
   NA60,
   Chebychev,
-  EventMixing,
+  EventMixing_Landau,
+  EventMixing_GausExp,
   VWG,
   Exp2,
   PolExp

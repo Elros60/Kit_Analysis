@@ -697,7 +697,8 @@ TH1D *FlowAnalysis_Helper::GetV2EM(
 
 //______________________________________________________________________________
 vector<double> FlowAnalysis_Helper::GetStats(int size, double *sample,
-                                             double *sample_error) {
+                                             double *sample_error,
+                                             double *chi2) {
   vector<double> results;
   double mean = 0.;
   double mean_error = 0.;
@@ -705,14 +706,37 @@ vector<double> FlowAnalysis_Helper::GetStats(int size, double *sample,
     mean += sample[i] / size;
     mean_error += sample_error[i] / size;
   }
-  results.emplace_back(mean);
-  results.emplace_back(mean_error);
-
   double sum2 = 0;
   for (int i = 0; i < size; i++) {
     sum2 += pow(sample[i] - mean, 2.) / size;
   }
   double rms = pow(sum2, 0.5);
+
+  vector<double> selected;
+  vector<double> selected_error;
+  for (int i = 0; i < size; i++) {
+    if (chi2[i] <= 2 && sample[i] >= (mean - 1.5 * rms) &&
+        sample[i] <= (mean + 1.5 * rms) &&
+        sample_error[i] <= 1.5 * mean_error) {
+      selected.emplace_back(sample[i]);
+      selected_error.emplace_back(sample_error[i]);
+    }
+  }
+
+  mean = 0.;
+  mean_error = 0.;
+  sum2 = 0;
+  for (int i = 0; i < int(selected.size()); i++) {
+    mean += selected[i] / int(selected.size());
+    mean_error += selected_error[i] / int(selected.size());
+  }
+  for (int i = 0; i < int(selected.size()); i++) {
+    sum2 += pow(selected[i] - mean, 2.) / int(selected.size());
+  }
+  rms = pow(sum2, 0.5);
+
+  results.emplace_back(mean);
+  results.emplace_back(mean_error);
   results.emplace_back(rms);
   return results;
 }
@@ -1263,9 +1287,9 @@ void FlowAnalysis_Helper::PlotFinalResults(
   graph_v2pt_sys->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
 
   TGraphErrors *graph_v2pt_run2 =
-      new TGraphErrors(size_ptbin, x_run2, y_run2, zero_pt, ey_run2);
+      new TGraphErrors(10, x_run2, y_run2, zero_pt, ey_run2);
   TGraphErrors *graph_v2pt_run2_sys =
-      new TGraphErrors(size_ptbin, x_run2, y_run2, ex_run2, eysys_run2);
+      new TGraphErrors(10, x_run2, y_run2, ex_run2, eysys_run2);
   graph_v2pt_run2->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d%% stat.",
                                  int(cent_min), int(cent_max)));
   graph_v2pt_run2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
@@ -1312,7 +1336,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
   text_yield->SetTextSize(0.04);
   text_yield->SetTextFont(42);
   text_yield->DrawLatexNDC(.3, .82,
-                           "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
+                           "ALICE Preliminary, Pb-Pb #sqrt{#it{s}_{NN}} "
                            "= 5.36 TeV");
   pad_yield_final->ModifiedUpdate();
   text_yield->DrawLatexNDC(.3, .77,
@@ -1466,7 +1490,7 @@ void FlowAnalysis_Helper::PlotFinalResults(
   text_pt->SetTextSize(0.04);
   text_pt->SetTextFont(42);
   text_pt->DrawLatexNDC(.12, .85,
-                        "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
+                        "ALICE Preliminary, Pb-Pb #sqrt{#it{s}_{NN}} "
                         "= 5.36 TeV");
   pad_pt_final->ModifiedUpdate();
   text_pt->DrawLatexNDC(.12, .80,
@@ -1494,32 +1518,47 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   TCanvas *c_yield = new TCanvas("jpsi_yield_cent", "jpsi_yield_cent");
   TCanvas *c_cent = new TCanvas("v2_cent", "v2_cent");
 
-  TGraphMultiErrors *graph_v2cent =
-      new TGraphMultiErrors("graph_v2_pt", "", size_centbin, x_v2cent, y_v2cent,
-                            ex_v2cent, ex_v2cent, ey_v2cent, ey_v2cent);
-  graph_v2cent->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d GeV/c",
+  double *zero_cent = new double[size_centbin];
+  for (int i = 0; i < size_centbin; i++) {
+    zero_cent[i] = 0.;
+  }
+
+  TGraphErrors *graph_v2cent =
+      new TGraphErrors(size_centbin, x_v2cent, y_v2cent, zero_cent, ey_v2cent);
+  TGraphErrors *graph_v2cent_sys = new TGraphErrors(
+      size_centbin, x_v2cent, y_v2cent, ex_v2cent, eysys_v2cent);
+  graph_v2cent->SetTitle(Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d%% stat.",
                               int(pt_min), int(pt_max)));
   graph_v2cent->GetXaxis()->SetTitle("Centrality (%)");
-  graph_v2cent->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
-  graph_v2cent->AddYError(size_centbin, eysys_v2cent, eysys_v2cent);
+  graph_v2cent->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP, |#Delta#eta|>1.7}");
+  graph_v2cent_sys->SetTitle("Syst. unc.");
+  graph_v2cent_sys->GetXaxis()->SetTitle("Centrality (%)");
+  graph_v2cent_sys->GetYaxis()->SetTitle(
+      "v^{J/#psi}_{2}{SP, |#Delta#eta|>1.7}");
 
-  TGraphMultiErrors *graph_v2cent_run2 =
-      new TGraphMultiErrors("graph_v2_cent_run2", "", 7, x_run2, y_run2,
-                            ex_run2, ex_run2, ey_run2, ey_run2);
-  graph_v2cent_run2->AddYError(7, eysys_run2, eysys_run2);
+  TGraphErrors *graph_v2cent_run2 =
+      new TGraphErrors(7, x_run2, y_run2, zero_cent, ey_run2);
+  TGraphErrors *graph_v2cent_run2_sys =
+      new TGraphErrors(7, x_run2, y_run2, ex_run2, eysys_run2);
   graph_v2cent_run2->SetTitle(
-      Form("Run2 #sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d GeV/c", int(pt_min),
+      Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d (GeV/c) stat.", int(pt_min),
            int(pt_max)));
   graph_v2cent_run2->GetXaxis()->SetTitle("Centrality (%)");
-  graph_v2cent_run2->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
+  graph_v2cent_run2->GetYaxis()->SetTitle(
+      "v^{J/#psi}_{2}{SP, |#Delta#eta|>1.7}");
+  graph_v2cent_run2_sys->SetTitle("Syst. unc.");
+  graph_v2cent_run2_sys->GetXaxis()->SetTitle("Centrality (%)");
+  graph_v2cent_run2_sys->GetYaxis()->SetTitle(
+      "v^{J/#psi}_{2}{SP, |#Delta#eta|>1.7}");
 
   TGraphMultiErrors *graph_yield =
       new TGraphMultiErrors("graph_yields_cent", "Run3", size_centbin, x_yield,
                             y_yield, ex_yield, ex_yield, ey_yield, ey_yield);
-  graph_yield->SetTitle(Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d GeV/c",
-                             int(pt_min), int(pt_max)));
+  graph_yield->SetTitle(
+      Form("Run3 #sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d (GeV/c)", int(pt_min),
+           int(pt_max)));
   graph_yield->GetXaxis()->SetTitle("Centrality (%)");
-  graph_yield->GetYaxis()->SetTitle("N_{J/#psi}");
+  graph_yield->GetYaxis()->SetTitle("dN_{J/#psi}/d#it{p}_{T} (GeV/c)^{-1}");
   graph_yield->AddYError(size_centbin, eysys_yield, eysys_yield);
 
   // Save final results
@@ -1541,7 +1580,7 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   text_yield->SetTextSize(0.04);
   text_yield->SetTextFont(42);
   text_yield->DrawLatexNDC(.3, .82,
-                           "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
+                           "ALICE Preliminary, Pb-Pb #sqrt{#it{s}_{NN}} "
                            "= 5.36 TeV");
   pad_yield_final->ModifiedUpdate();
   text_yield->DrawLatexNDC(.3, .77,
@@ -1550,7 +1589,7 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   pad_yield_final->ModifiedUpdate();
   ls->Add(c_yield);
 
-  // Saving plot for J/psi v2 as function of centrality and
+  // Saving plot for J/psi v2 as function of pT and
   // compared with Run2
   c_cent->cd();
   TPad *pad_cent_final =
@@ -1558,46 +1597,62 @@ void FlowAnalysis_Helper::PlotFinalResultsCent(
   pad_cent_final->Draw();
   pad_cent_final->cd();
   TMultiGraph *mg = new TMultiGraph();
+  // mg->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  // mg->GetYaxis()->SetTitle("v^{J/#psi}_{2}{SP}");
   graph_v2cent->SetMarkerStyle(20);
   graph_v2cent->SetMarkerSize(1.);
   graph_v2cent->SetMarkerColor(kBlue);
-  graph_v2cent->SetLineColor(kBlue);
   graph_v2cent->SetLineWidth(2);
+  graph_v2cent->SetLineColor(kBlue);
   graph_v2cent->SetFillStyle(0);
+  graph_v2cent_sys->SetLineWidth(2);
+  graph_v2cent_sys->SetLineColor(kBlue);
+  graph_v2cent_sys->SetFillStyle(0);
+
   graph_v2cent_run2->SetMarkerStyle(20);
   graph_v2cent_run2->SetMarkerSize(1.);
   graph_v2cent_run2->SetMarkerColor(kRed);
   graph_v2cent_run2->SetLineColor(kRed);
   graph_v2cent_run2->SetLineWidth(2);
   graph_v2cent_run2->SetFillStyle(0);
-  mg->Add(graph_v2cent);
-  mg->Add(graph_v2cent_run2);
-  mg->GetXaxis()->SetLimits(cent_bins[0], cent_bins[size_centbin]);
-  mg->GetXaxis()->SetTitle("Centrality (%)");
-  if (pt_min == 0) {
-    mg->GetYaxis()->SetRangeUser(-0.02, 0.2);
-  } else {
-    mg->GetYaxis()->SetRangeUser(-0.01, 0.1);
-  }
-  mg->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
-  mg->SetTitle("");
-  mg->Draw("A P Z ; Z ; 5 s=0.5");
-  pad_cent_final->BuildLegend();
+  graph_v2cent_run2_sys->SetLineColor(kRed);
+  graph_v2cent_run2_sys->SetLineWidth(2);
+  graph_v2cent_run2_sys->SetFillStyle(0);
+
+  mg->Add(graph_v2cent, "pz");
+  mg->Add(graph_v2cent_sys, "2z");
+  mg->Add(graph_v2cent_run2, "pz");
+  mg->Add(graph_v2cent_run2_sys, "2z");
+  mg->Draw("a");
+  TLegend *legend_v2 = new TLegend(0.13, 0.35, 0.55, 0.7);
+  legend_v2->SetBorderSize(0);
+  legend_v2->SetFillStyle(0);
+  legend_v2->AddEntry(graph_v2cent,
+                      Form("#sqrt{#it{s}_{NN}} = 5.36 TeV, %d-%d (GeV/c) stat.",
+                           int(pt_min), int(pt_max)),
+                      "EP");
+  legend_v2->AddEntry(graph_v2cent_run2,
+                      Form("#sqrt{#it{s}_{NN}} = 5.02 TeV, %d-%d (GeV/c) stat.",
+                           int(pt_min), int(pt_max)),
+                      "EP");
+  legend_v2->AddEntry(graph_v2cent_sys, "Syst. unc.", "F");
+  legend_v2->AddEntry(graph_v2cent_run2_sys, "Syst. unc.", "F");
+  legend_v2->Draw("same");
+  pad_cent_final->ModifiedUpdate();
+
   TLatex *text_cent = new TLatex();
   text_cent->SetTextSize(0.04);
   text_cent->SetTextFont(42);
-  text_cent->DrawLatexNDC(.18, .82,
-                          "ALICE Performance, Pb-Pb #sqrt{#it{s}_{NN}} "
+  text_cent->DrawLatexNDC(.12, .85,
+                          "ALICE Preliminary, Pb-Pb #sqrt{#it{s}_{NN}} "
                           "= 5.36 TeV");
   pad_cent_final->ModifiedUpdate();
-  text_cent->DrawLatexNDC(.18, .77,
+  text_cent->DrawLatexNDC(.12, .80,
                           "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < "
                           "4");
-  text_cent->DrawLatexNDC(.18, .72,
-                          Form("%g < #it{p}_{T} < %g GeV/c", pt_min, pt_max));
   pad_cent_final->ModifiedUpdate();
   TF1 *lv2_cent =
-      new TF1("lv2_cent", "[0]", cent_bins[0], cent_bins[size_centbin]);
+      new TF1("lv2_pt", "[0]", cent_bins[0], cent_bins[size_centbin]);
   lv2_cent->SetParameter(0, 0.);
   lv2_cent->SetLineColor(18);
   lv2_cent->SetLineWidth(3);

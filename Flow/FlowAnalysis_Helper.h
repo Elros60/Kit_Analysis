@@ -131,7 +131,8 @@ public:
                            double massmax, double centmin, double centmax,
                            TProfile3D *tp_V2SEPP, TProfile3D *tp_V2SEMM,
                            TProfile3D *tp_V2MEPM, TH1D *hist_rfactor);
-  vector<double> GetStats(int size, double *sample, double *sample_error);
+  vector<double> GetStats(int size, double *sample, double *sample_error,
+                          double *chi2);
   void PlotSNRvsRun2(int size_ptbin, double *pt_bins, int size_run3,
                      double *x_run3, double *snr_run3, int size_run2,
                      double *x_run2, double *snr_run2, TList *ls);
