@@ -72,7 +72,7 @@ vector<double> eysys_v2cent_NoRebin_5_20_9 = {
     pow(0.00243138 * 0.00243138 + 0.00215011 * 0.00215011, 0.5),
     pow(0.00197147 * 0.00197147 + 0.00228562 * 0.00228562, 0.5),
     pow(0.00793068 * 0.00793068 + 0.00542257 * 0.00542257, 0.5),
-    pow(0.00133508 * 0.00133508 + 0.00322171 * 0.00322171, 0.5)};
+    pow(0.0133508 * 0.0133508 + 0.00322171 * 0.00322171, 0.5)};
 
 //______________________________________________________________________________
 void FlowAnalysis_EventMixing_CentDiff(
@@ -559,7 +559,7 @@ void FlowAnalysis_EventMixing_CentDiff(
 
     for (int i = 0; i < int(Bin_cent_mass.size()) - 1; i++) {
       cout << "[" << Bin_cent_mass[i] << "-" << Bin_cent_mass[i + 1] << "]  "
-           << "<pT>:" << x_v2cent[i] << "  v2:" << y_v2cent[i]
+           << "cent:" << x_v2cent[i] << "  v2:" << y_v2cent[i]
            << " stat:" << ey_v2cent[i] << " sys:" << eysys_v2cent[i] << endl;
     }
   }

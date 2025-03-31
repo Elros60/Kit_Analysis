@@ -715,9 +715,8 @@ vector<double> FlowAnalysis_Helper::GetStats(int size, double *sample,
   vector<double> selected;
   vector<double> selected_error;
   for (int i = 0; i < size; i++) {
-    if (chi2[i] <= 2 && sample[i] >= (mean - 1.5 * rms) &&
-        sample[i] <= (mean + 1.5 * rms) &&
-        sample_error[i] <= 1.5 * mean_error) {
+    if (chi2[i] <= 3 && sample[i] >= (mean - 5. * rms) &&
+        sample[i] <= (mean + 5. * rms) && sample_error[i] <= 2.5 * mean_error) {
       selected.emplace_back(sample[i]);
       selected_error.emplace_back(sample_error[i]);
     }

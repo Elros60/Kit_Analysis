@@ -48,6 +48,9 @@
 using namespace std;
 
 // Predefined binnings
+vector<double> Bin_pt_mass_3 = {0, 3, 5, 15};
+vector<double> Bin_pt_mass_3_bis = {1, 3, 5, 15};
+vector<double> Bin_pt_mass_4 = {1, 2, 3, 5, 15};
 vector<double> Bin_pt_mass_5 = {0, 2, 4, 6, 8, 15};
 vector<double> Bin_pt_mass_8 = {0, 2, 3, 4, 5, 6, 8, 10, 15};
 vector<double> Bin_pt_mass_10 = {0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 20};
@@ -78,6 +81,22 @@ vector<double> eysys_v2pt_NoRebin_0_10_13 = {
     pow(0.00420313 * 0.00420313 + 0.00160075 * 0.00160075, 0.5),
     pow(0.00736095 * 0.00736095 + 0.00487474 * 0.00487474, 0.5),
     pow(0.00331245 * 0.00331245 + 0.00370653 * 0.00370653, 0.5)};
+
+vector<double> eysys_v2pt_NoRebin_10_30_3 = {
+    pow(0.000618051 * 0.000618051 + 0.000259399 * 0.000259399, 0.5),
+    pow(0.000748265 * 0.000748265 + 0.000799561 * 0.000799561, 0.5),
+    pow(0.00210638 * 0.00210638 + 0.00194496 * 0.00194496, 0.5)};
+
+vector<double> eysys_v2pt_NoRebin_10_30_3_bis = {
+    pow(0.00169754 * 0.00169754 + 0.0018156 * 0.0018156, 0.5),
+    pow(0.000748265 * 0.000748265 + 0.000799561 * 0.000799561, 0.5),
+    pow(0.00210638 * 0.00210638 + 0.00194496 * 0.00194496, 0.5)};
+
+vector<double> eysys_v2pt_NoRebin_10_30_4 = {
+    pow(0.00150231 * 0.00150231 + 0.0017001 * 0.0017001, 0.5),
+    pow(0.00282274 * 0.00282274 + 0.0027296 * 0.0027296, 0.5),
+    pow(0.000748265 * 0.000748265 + 0.000799561 * 0.000799561, 0.5),
+    pow(0.00210638 * 0.00210638 + 0.00194496 * 0.00194496, 0.5)};
 
 vector<double> eysys_v2pt_NoRebin_10_30_13 = {
     0.00152273,
@@ -176,6 +195,15 @@ void FlowAnalysis_EventMixing(
   // Define variables' range for analysis
   vector<double> Bin_pt_mass;
   switch (flag_binning) {
+  case 3:
+    Bin_pt_mass = Bin_pt_mass_3;
+    break;
+  case 30:
+    Bin_pt_mass = Bin_pt_mass_3_bis;
+    break;
+  case 4:
+    Bin_pt_mass = Bin_pt_mass_4;
+    break;
   case 5:
     Bin_pt_mass = Bin_pt_mass_5;
     break;
@@ -710,7 +738,7 @@ void FlowAnalysis_EventMixing(
       ey_v2pt[i] = stats_v2[1];
       // eysys_v2pt[i] = stats_v2[2];
       eysys_v2pt[i] = pow(
-          pow(stats_v2[2], 2.) + pow(eysys_v2pt_NoRebin_0_10_13[i], 2.), 0.5);
+          pow(stats_v2[2], 2.) + pow(eysys_v2pt_NoRebin_10_30_5[i], 2.), 0.5);
 
       y_yield[i] = stats_yield[0] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
       ey_yield[i] = stats_yield[1] / (Bin_pt_mass[i + 1] - Bin_pt_mass[i]);
@@ -764,7 +792,7 @@ void FlowAnalysis_EventMixing(
 
     for (int i = 0; i < int(Bin_pt_mass.size()) - 1; i++) {
       cout << "[" << Bin_pt_mass[i] << "-" << Bin_pt_mass[i + 1] << "]  "
-           << "<pT>:" << x_v2pt[i] << "  v2:" << y_v2pt[i]
+           << "pT:" << x_v2pt[i] << "  v2:" << y_v2pt[i]
            << " stat:" << ey_v2pt[i] << " sys:" << eysys_v2pt[i] << endl;
     }
   }
