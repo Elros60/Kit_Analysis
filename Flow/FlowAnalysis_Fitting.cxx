@@ -2979,17 +2979,14 @@ vector<double> FlowAnalysis_Fitting::runFittingMassOnly(TH1D *hs_input,
 
   // Make copies for input histograms for safety
   TH1D *hs = dynamic_cast<TH1D *>(hs_input->Clone(Form(
-      "Proj_Mass_%s_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
+      "Proj_Mass_%s_%g_%g_%g_%g_%g_%g_%s_%s",
       FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
-      FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder,
       FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
       FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
       FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
       FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_sig]
           .c_str(),
       FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg]
-          .c_str(),
-      FlowAnalysis_Fitting::v2bkg_string[FlowAnalysis_Fitting::mflag_bkg_v2]
           .c_str())));
 
   //////////////////////////////////////////////////////////////////////////////
@@ -3051,7 +3048,7 @@ vector<double> FlowAnalysis_Fitting::runFittingMassOnly(TH1D *hs_input,
   double chi2ndf_mass;
   int nfree_bkg = model->GetNumberFreeParameters() - 4;
   for (int i = nfree_bkg - 1; i < nPar_bkg; i++) {
-    auto result = hs->Fit("model", "S Q B 0");
+    auto result = hs->Fit("model", "L S Q B 0");
     int fitStatus = result;
     int bit_improve = int(fitStatus / 1000);
     int bit_minos = int((fitStatus - 1000 * bit_improve) / 100);
@@ -3123,46 +3120,37 @@ vector<double> FlowAnalysis_Fitting::runFittingMassOnly(TH1D *hs_input,
   gROOT->ForceStyle();
   TCanvas *c = new TCanvas(
       Form(
-          "Fitted_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
+          "Fitted_%s_Mass_%g_%g_%g_%g_%g_%g_%s_%s",
           FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
-          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder,
           FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
           FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
           FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_sig]
               .c_str(),
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg]
-              .c_str(),
-          FlowAnalysis_Fitting::v2bkg_string[FlowAnalysis_Fitting::mflag_bkg_v2]
               .c_str()),
       Form(
-          "Fitted_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
+          "Fitted_%s_Mass_%g_%g_%g_%g_%g_%g_%s_%s",
           FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
-          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder,
           FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
           FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
           FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_sig]
               .c_str(),
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg]
-              .c_str(),
-          FlowAnalysis_Fitting::v2bkg_string[FlowAnalysis_Fitting::mflag_bkg_v2]
               .c_str()));
   c->cd();
   c->SetBottomMargin(0);
   TPad *pad1_yield = new TPad(
       Form(
-          "Pad1_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
+          "Pad1_%s_Mass_%g_%g_%g_%g_%g_%g_%s_%s",
           FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
-          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder,
           FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
           FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
           FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_sig]
               .c_str(),
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg]
-              .c_str(),
-          FlowAnalysis_Fitting::v2bkg_string[FlowAnalysis_Fitting::mflag_bkg_v2]
               .c_str()),
       "", 0, 0.3, 1, 1.0);
   pad1_yield->SetBottomMargin(0);
@@ -3201,17 +3189,14 @@ vector<double> FlowAnalysis_Fitting::runFittingMassOnly(TH1D *hs_input,
 
   TPaveStats *sb = (TPaveStats *)pad1_yield->GetPrimitive("stats");
   sb->SetName(Form(
-      "Stats_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%s_%s_%s",
+      "Stats_%s_Mass_%g_%g_%g_%g_%g_%g_%s_%s",
       FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
-      FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder,
       FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
       FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
       FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
       FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_sig]
           .c_str(),
       FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg]
-          .c_str(),
-      FlowAnalysis_Fitting::v2bkg_string[FlowAnalysis_Fitting::mflag_bkg_v2]
           .c_str()));
   sb->SetX1NDC(0.7);
   sb->SetX2NDC(0.95);
@@ -3255,18 +3240,14 @@ vector<double> FlowAnalysis_Fitting::runFittingMassOnly(TH1D *hs_input,
   c->cd();
   TPad *pad2_yield = new TPad(
       Form(
-          "Pad2_%s_Mass_v%d%d_%g_%g_%g_%g_%g_%g_%"
-          "s_%s_%s",
+          "Pad2_%s_Mass_%g_%g_%g_%g_%g_%g_%s_%s",
           FlowAnalysis_Fitting::mode_string[FlowAnalysis_Fitting::mode].c_str(),
-          FlowAnalysis_Fitting::nhar, FlowAnalysis_Fitting::norder,
           FlowAnalysis_Fitting::ptmin, FlowAnalysis_Fitting::ptmax,
           FlowAnalysis_Fitting::massmin, FlowAnalysis_Fitting::massmax,
           FlowAnalysis_Fitting::centmin, FlowAnalysis_Fitting::centmax,
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_sig]
               .c_str(),
           FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg]
-              .c_str(),
-          FlowAnalysis_Fitting::v2bkg_string[FlowAnalysis_Fitting::mflag_bkg_v2]
               .c_str()),
       "", 0, 0., 1, 0.3);
   pad2_yield->SetTopMargin(0);
@@ -3316,10 +3297,10 @@ vector<double> FlowAnalysis_Fitting::runFittingMassOnly(TH1D *hs_input,
 
   cout << endl;
   cout << endl;
-  results.emplace_back(model->GetParameter(0) / hs->GetBinWidth(1));
-  results.emplace_back(model->GetParError(0) / hs->GetBinWidth(1));
-  results.emplace_back(S_3sigma / B_3sigma);
-  results.emplace_back(chi2ndf_mass);
+  results.emplace_back(model->GetParameter(2));
+  results.emplace_back(model->GetParError(2));
+  results.emplace_back(model->GetParameter(3));
+  results.emplace_back(model->GetParError(3));
 
   return results;
 }
@@ -3353,9 +3334,11 @@ TH1D *FlowAnalysis_Fitting::GetPull(TH1D *hs, TF1 *model, string fit_case) {
       "", Nbins, Bins);
   for (int i = 0; i < Nbins; i++) {
     if ((i + 1) >= idx_massmin && (i + 1) <= idx_massmax) {
-      double val = (hs_cp->GetBinContent(i + 1) -
-                    model->Eval(hs_cp->GetBinCenter(i + 1))) /
-                   hs_cp->GetBinError(i + 1);
+      double val = hs_cp->GetBinError(i + 1) == 0
+                       ? 1000.
+                       : (hs_cp->GetBinContent(i + 1) -
+                          model->Eval(hs_cp->GetBinCenter(i + 1))) /
+                             hs_cp->GetBinError(i + 1);
       hs_pull->SetBinContent(i + 1, val);
     } else {
       hs_pull->SetBinContent(i + 1, 1000.);
