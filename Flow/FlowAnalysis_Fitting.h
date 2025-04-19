@@ -59,6 +59,7 @@ public:
   vector<double> runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
                               TH1D *hs_v2se_input, TH1D *hs_v2me_input,
                               TH1D *hs_meanPt_input, TList *ls);
+  vector<double> runFittingMassOnly(TH1D *hs_input, TList *ls);
   void Print();
 
 private:
