@@ -50,9 +50,9 @@ using namespace std;
 //______________________________________________________________________________
 void FlowAnalysis_MassOnly(int flag_sig, int flag_bkg, double mass_min = 2.3,
                            double mass_max = 4.3, double chi2max_mass = 2.,
+                           std::string label = "template",
                            std::string FileName = "AnalysisResults.root",
-                           std::string muonCut = "muonLowPt510SigmaPDCA",
-                           std::string label = "template") {
+                           std::string muonCut = "muonLowPt510SigmaPDCA") {
   // Init Helper class
   FlowAnalysis_Helper *helper = new FlowAnalysis_Helper();
 
@@ -81,7 +81,9 @@ void FlowAnalysis_MassOnly(int flag_sig, int flag_bkg, double mass_min = 2.3,
       Form("FlowAnalysisResults_MassOnly_%s.root", label.c_str()), "RECREATE");
 
   // Pt bins
-  vector<double> Bin_pt = {0, 2, 4, 6, 10, 20};
+  vector<double> Bin_pt = {0, 2, 4, 6, 8, 10, 12, 20};
+  vector<double> BinCenter_pt = {1, 3, 5, 7, 9, 11, 16};
+  vector<double> BinError_pt = {1, 1, 1, 1, 1, 1, 4};
   vector<double> Mean_pt;
   vector<double> MeanError_pt;
   vector<double> Width_pt;
@@ -120,6 +122,24 @@ void FlowAnalysis_MassOnly(int flag_sig, int flag_bkg, double mass_min = 2.3,
 
     delete l_diff_fit;
   }
+
+  TList *l_final = new TList();
+  TH1D *hist_peak = new TH1D("PeakVsPt", "PeakVsPt", Bin_pt.size() - 1,
+                             reinterpret_cast<double *>(Bin_pt.data()));
+  TH1D *hist_width = new TH1D("WidthVsPt", "WidthVsPt", Bin_pt.size() - 1,
+                              reinterpret_cast<double *>(Bin_pt.data()));
+  for (int i = 0; i < Bin_pt.size() - 1; i++) {
+    hist_peak->SetBinContent(i + 1, Mean_pt[i]);
+    hist_peak->SetBinError(i + 1, MeanError_pt[i]);
+    hist_width->SetBinContent(i + 1, Width_pt[i]);
+    hist_width->SetBinError(i + 1, WidthError_pt[i]);
+  }
+  l_final->Add(hist_peak);
+  l_final->Add(hist_width);
+  f->cd();
+  l_final->SetOwner();
+  l_final->Write("FinalResults", TObject::kSingleKey);
+
   f->Close();
   delete f;
 }

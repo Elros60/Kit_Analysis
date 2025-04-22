@@ -1034,9 +1034,11 @@ vector<double> FlowAnalysis_Fitting::runFitting(TH1D *hs_input,
   double mean_fitted = model->GetParameter(2);
   double sigma_fitted = model->GetParameter(3);
   double S_3sigma = sig_fitted->Integral(mean_fitted - 3. * sigma_fitted,
-                                         mean_fitted + 3. * sigma_fitted);
+                                         mean_fitted + 3. * sigma_fitted) /
+                    hs->GetBinWidth(1);
   double B_3sigma = bkg_fitted->Integral(mean_fitted - 3. * sigma_fitted,
-                                         mean_fitted + 3. * sigma_fitted);
+                                         mean_fitted + 3. * sigma_fitted) /
+                    hs->GetBinWidth(1);
 
   TPaveStats *sb = (TPaveStats *)pad1_yield->GetPrimitive("stats");
   sb->SetName(Form(
@@ -1952,18 +1954,19 @@ FlowAnalysis_Fitting::runFittingEM(TH1D *hs_mse_input, TH1D *hs_mme_input,
   double mean_fitted = model->GetParameter(3);
   double sigma_fitted = model->GetParameter(4);
   double S_3sigma = sig_fitted->Integral(mean_fitted - 3. * sigma_fitted,
-                                         mean_fitted + 3. * sigma_fitted);
+                                         mean_fitted + 3. * sigma_fitted) /
+                    hs_se->GetBinWidth(1);
   double B_3sigma =
       FlowAnalysis_Fitting::model_string[FlowAnalysis_Fitting::mflag_bkg] ==
               "EventMixing"
           ? bkg_fitted->Integral(mean_fitted - 3. * sigma_fitted,
-                                 mean_fitted + 3. * sigma_fitted) +
-                hs_me->GetBinWidth(1) *
-                    hs_me->Integral(
-                        hs_me->FindBin(mean_fitted - 3. * sigma_fitted),
-                        hs_me->FindBin(mean_fitted + 3. * sigma_fitted))
+                                 mean_fitted + 3. * sigma_fitted) /
+                    hs_se->GetBinWidth(1) +
+                hs_me->Integral(hs_me->FindBin(mean_fitted - 3. * sigma_fitted),
+                                hs_me->FindBin(mean_fitted + 3. * sigma_fitted))
           : bkg_fitted->Integral(mean_fitted - 3. * sigma_fitted,
-                                 mean_fitted + 3. * sigma_fitted);
+                                 mean_fitted + 3. * sigma_fitted) /
+                hs_se->GetBinWidth(1);
 
   TPaveStats *sb = new TPaveStats();
   sb = (TPaveStats *)pad1_yield->GetPrimitive("stats");
@@ -3183,9 +3186,11 @@ vector<double> FlowAnalysis_Fitting::runFittingMassOnly(TH1D *hs_input,
   double mean_fitted = model->GetParameter(2);
   double sigma_fitted = model->GetParameter(3);
   double S_3sigma = sig_fitted->Integral(mean_fitted - 3. * sigma_fitted,
-                                         mean_fitted + 3. * sigma_fitted);
+                                         mean_fitted + 3. * sigma_fitted) /
+                    hs->GetBinWidth(1);
   double B_3sigma = bkg_fitted->Integral(mean_fitted - 3. * sigma_fitted,
-                                         mean_fitted + 3. * sigma_fitted);
+                                         mean_fitted + 3. * sigma_fitted) /
+                    hs->GetBinWidth(1);
 
   TPaveStats *sb = (TPaveStats *)pad1_yield->GetPrimitive("stats");
   sb->SetName(Form(
